@@ -183,6 +183,7 @@ OX.init(config)
         }
       });
       car.scale.set(0.5, 0.5, 0.5);
+      scene.clear();
       scene.add(car);
 
       // All loaded, so hide loading screen
