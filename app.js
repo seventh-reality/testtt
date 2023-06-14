@@ -162,19 +162,18 @@ OX.init(config)
 
       document.getElementById("silver").addEventListener("click", () => {
 //         changeCarColor(0xffffff);
-        const 
-        Loader = new GLTFLoader();
-      gltfLoader.load("bloodsny.glb", (gltf) => {
-        car = gltf.scene;
-        car.traverse((child) => {
-          if (child.material) {
-            console.log("updating material");
-            child.material.envMap = envMap;
-            child.material.needsUpdate = true;
-          }
-        });
-        car.scale.set(0.5, 0.5, 0.5);
-        scene.add(car);
+      gltfLoader.load("range_rover.glb", (gltf) => {
+      car = gltf.scene;
+      car.traverse((child) => {
+        if (child.material) {
+          console.log("updating material");
+          child.material.envMap = envMap;
+          child.material.needsUpdate = true;
+        }
+      });
+      car.scale.set(0.5, 0.5, 0.5);
+      scene.add(car);
+	  });
       });
 
       document.getElementById("orange").addEventListener("click", () => {
