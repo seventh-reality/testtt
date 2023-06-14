@@ -156,24 +156,14 @@ OX.init(config)
         rotateCar((rotationSlider.value * Math.PI) / 180);
       });
 
-      document.getElementById("black").addEventListener("click", () => {
+    
+    });
+  document.getElementById("black").addEventListener("click", () => {
         changeCarColor(0x111111);
       });
 
       document.getElementById("silver").addEventListener("click", () => {
-//         changeCarColor(0xffffff);
-      gltfLoader.load("range_rover.glb", (gltf) => {
-      car = gltf.scene;
-      car.traverse((child) => {
-        if (child.material) {
-          console.log("updating material");
-          child.material.envMap = envMap;
-          child.material.needsUpdate = true;
-        }
-      });
-      car.scale.set(0.5, 0.5, 0.5);
-      scene.add(car);
-	  });
+        changeCarColor(0xffffff);
       });
 
       document.getElementById("orange").addEventListener("click", () => {
@@ -183,8 +173,6 @@ OX.init(config)
       document.getElementById("blue").addEventListener("click", () => {
         changeCarColor(0x0011ff);
       });
-    });
-
     // Subscribe to events
     OX.subscribe(OnirixSDK.Events.OnPose, function (pose) {
       updatePose(pose);
