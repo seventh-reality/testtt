@@ -167,8 +167,22 @@ OX.init(config)
       });
 
       document.getElementById("orange").addEventListener("click", () => {
-        changeCarColor(0xff2600);
+       // changeCarColor(0xff2600);
+	      const gltfLoader = new GLTFLoader();
+    gltfLoader.load("bloodsny.glb", (gltf) => {
+      car = gltf.scene;
+      car.traverse((child) => {
+        if (child.material) {
+          console.log("updating material");
+          child.material.envMap = envMap;
+          child.material.needsUpdate = true;
+        }
       });
+    car.scale.set(0.5, 0.5, 0.5);
+      scene.clear();
+	  
+      scene.add(car);
+
 
       document.getElementById("blue").addEventListener("click", () => {
         // changeCarColor(0x0011ff);
