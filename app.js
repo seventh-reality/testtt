@@ -134,7 +134,19 @@ OX.init(config)
         }
       });
       car.scale.set(0.5, 0.5, 0.5);
-      scene.add(car);
+      scene.add(car,blood);
+const gltfLoader = new GLTFLoader();
+    gltfLoader.load("bloodsny.glb", (gltf) => {
+      blood = gltf.scene;
+      blood.traverse((child) => {
+        if (child.material) {
+          console.log("updating material");
+          child.material.envMap = envMap;
+          child.material.needsUpdate = true;
+        }
+      });
+      blood.scale.set(1, 1, 1);
+      scene.add(car,blood);	    
 
       // All loaded, so hide loading screen
       document.getElementById("loading-screen").style.display = "none";
