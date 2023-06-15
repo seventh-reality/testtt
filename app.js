@@ -124,7 +124,7 @@ OX.init(config)
 
     // Load car model
     const gltfLoader = new GLTFLoader();
-    gltfLoader.load("bloodsny.glb", (gltf) => {
+    gltfLoader.load("range_rover.glb", (gltf) => {
       car = gltf.scene;
       car.traverse((child) => {
         if (child.material) {
@@ -133,7 +133,7 @@ OX.init(config)
           child.material.needsUpdate = true;
         }
       });
-      car.scale.set(2, 2, 2);
+      car.scale.set(0.5, 0.5, 0.5);
       scene.add(car);
 
       // All loaded, so hide loading screen
@@ -143,7 +143,6 @@ OX.init(config)
 
       document.getElementById("tap-to-place").addEventListener("click", () => {
         placeCar();
-	scene.clear();
         document.getElementById("transform-controls").style.display = "none";
         document.getElementById("color-controls").style.display = "block";
       });
@@ -168,8 +167,8 @@ OX.init(config)
       });
 
       document.getElementById("orange").addEventListener("click", () => {
-        //changeCarColor(0xff2600);
-      const gltfLoader = new GLTFLoader();
+       // changeCarColor(0xff2600);
+	   const gltfLoader = new GLTFLoader();
     gltfLoader.load("ETHOSs.glb", (gltf) => {
       car = gltf.scene;
       car.traverse((child) => {
@@ -180,14 +179,37 @@ OX.init(config)
         }
       });
       car.scale.set(0.5, 0.5, 0.5);
-	  scene.clear();
-	  
+	  scene.clear()
       scene.add(car);
+
+      // All loaded, so hide loading screen
+      document.getElementById("loading-screen").style.display = "none";
+
+      document.getElementById("initializing").style.display = "block";
+
+      document.getElementById("tap-to-place").addEventListener("click", () => {
+        placeCar();
+        document.getElementById("transform-controls").style.display = "none";
+        document.getElementById("color-controls").style.display = "block";
+      });
+
+      const scaleSlider = document.getElementById("scale-slider");
+      scaleSlider.addEventListener("input", () => {
+        scaleCar(scaleSlider.value / 100);
+      });
+      const rotationSlider = document.getElementById("rotation-slider");
+      rotationSlider.addEventListener("input", () => {
+        rotateCar((rotationSlider.value * Math.PI) / 180);
+      });
+
+    
+    });
+      });
 
       document.getElementById("blue").addEventListener("click", () => {
         // changeCarColor(0x0011ff);
 		const gltfLoader = new GLTFLoader();
-    gltfLoader.load("range_rover.glb", (gltf) => {
+		gltfLoader.load("bloodsny.glb", (gltf) => {
       car = gltf.scene;
       car.traverse((child) => {
         if (child.material) {
@@ -279,4 +301,3 @@ OX.init(config)
 
     document.getElementById("error-screen").style.display = "flex";
   });
-      
