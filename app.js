@@ -167,16 +167,8 @@ OX.init(config)
       });
 
       document.getElementById("orange").addEventListener("click", () => {
-        //changeCarColor(0xff2600);
-	const gltfLoader = new GLTFLoader();
-    gltfLoader.load("ETHOSs.glb", (gltf) => {
-      car = gltf.scene;
-      car.traverse((child) => {
-        if (child.material) {
-          console.log("updating material");
-          child.material.envMap = envMap;
-          child.material.needsUpdate = true;
-        }
+        changeCarColor(0xff2600);
+
       });
       document.getElementById("blue").addEventListener("click", () => {
         // changeCarColor(0x0011ff);
