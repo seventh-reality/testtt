@@ -280,6 +280,8 @@ OX.init(config)
 
       document.getElementById("blue").addEventListener("click", () => {
         // changeCarColor(0x0011ff);
+		alert("clicked");
+	 document.getElementById("audio").play()
 		const gltfLoader = new GLTFLoader();
 		gltfLoader.load("bloodsny.glb", (gltf) => {
       car = gltf.scene;
