@@ -373,3 +373,7 @@ OX.init(config)
 
     document.getElementById("error-screen").style.display = "flex";
   });
+function play(){
+	console.log("Play clicked");
+	document.getElementById("audio").play()
+}
