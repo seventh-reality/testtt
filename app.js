@@ -167,7 +167,7 @@ OX.init(config)
       });
 
       document.getElementById("orange").addEventListener("click", () => {
-        //changeCarColor(0xff2600);
+        changeCarColor(0xff2600);
 	     
 	});
 
