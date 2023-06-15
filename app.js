@@ -168,12 +168,12 @@ OX.init(config)
 
       document.getElementById("orange").addEventListener("click", () => {
         changeCarColor(0xff2600);
-
       });
+
       document.getElementById("blue").addEventListener("click", () => {
         // changeCarColor(0x0011ff);
 		const gltfLoader = new GLTFLoader();
-    gltfLoader.load("ETHOSs.glb", (gltf) => {
+    gltfLoader.load("bloodsny.glb", (gltf) => {
       car = gltf.scene;
       car.traverse((child) => {
         if (child.material) {
