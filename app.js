@@ -178,11 +178,6 @@ OX.init(config)
           child.material.needsUpdate = true;
         }
       });
-      car.scale.set(0.5, 0.5, 0.5);
-	  scene.clear();
-	  
-      scene.add(car);
-
       document.getElementById("blue").addEventListener("click", () => {
         // changeCarColor(0x0011ff);
 		const gltfLoader = new GLTFLoader();
