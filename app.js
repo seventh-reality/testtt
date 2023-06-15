@@ -319,6 +319,11 @@ OX.init(config)
     });
 		
       });
+	   document.getElementById("playfile").addEventListener("click", () => {
+	 alert("clicked");
+	 document.getElementById("audio").play()
+ });
+ 
     // Subscribe to events
     OX.subscribe(OnirixSDK.Events.OnPose, function (pose) {
       updatePose(pose);
@@ -373,6 +378,3 @@ OX.init(config)
 
     document.getElementById("error-screen").style.display = "flex";
   });
- document.getElementById("playfile").addEventListener("click", () => {
-	 document.getElementById("audio").play()
- });
