@@ -133,7 +133,7 @@ OX.init(config)
           child.material.needsUpdate = true;
         }
       });
-      car.scale.set(0.5, 0.5, 0.5);
+      car.scale.set(2, 2, 2);
       scene.add(car);
 
       // All loaded, so hide loading screen
