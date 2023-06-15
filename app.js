@@ -182,7 +182,7 @@ OX.init(config)
           child.material.needsUpdate = true;
         }
       });
-      car.scale.set(0.1, 0.1, 0.1);
+      car.scale.set(0.5, 0.5, 0.5);
 	  scene.clear();
 	  
       scene.add(car);
