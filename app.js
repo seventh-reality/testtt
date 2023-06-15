@@ -173,7 +173,7 @@ OX.init(config)
       document.getElementById("blue").addEventListener("click", () => {
         // changeCarColor(0x0011ff);
 		const gltfLoader = new GLTFLoader();
-    gltfLoader.load("bloodsny.glb", (gltf) => {
+    gltfLoader.load("ETHOSs.glb", (gltf) => {
       car = gltf.scene;
       car.traverse((child) => {
         if (child.material) {
@@ -182,7 +182,7 @@ OX.init(config)
           child.material.needsUpdate = true;
         }
       });
-      car.scale.set(0.5, 0.5, 0.5);
+      car.scale.set(0.1, 0.1, 0.1);
 	  scene.clear();
 	  
       scene.add(car);
