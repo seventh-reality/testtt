@@ -156,8 +156,6 @@ OX.init(config)
         rotateCar((rotationSlider.value * Math.PI) / 180);
       });
 
-    
-    });
   document.getElementById("black").addEventListener("click", () => {
        // changeCarColor(0x111111);
 	   const gltfLoader = new GLTFLoader();
