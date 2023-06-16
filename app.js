@@ -239,9 +239,7 @@ OX.init(config)
 
       document.getElementById("orange").addEventListener("click", () => {
        // changeCarColor(0xff2600);
-	<audio>
-            <source src="v.mp3">
-        </audio>     
+	    
 	   const gltfLoader = new GLTFLoader();
     gltfLoader.load("ETHOSs.glb", (gltf) => {
       car = gltf.scene;
