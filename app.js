@@ -158,6 +158,8 @@ OX.init(config)
 
   document.getElementById("black").addEventListener("click", () => {
        // changeCarColor(0x111111);
+	  alert("clicked");
+	 document.getElementById("audio").play()
 	   const gltfLoader = new GLTFLoader();
     gltfLoader.load("C_ARM.glb", (gltf) => {
       car = gltf.scene;
@@ -198,6 +200,8 @@ OX.init(config)
 
       document.getElementById("silver").addEventListener("click", () => {
         //changeCarColor(0xffffff);
+	      alert("clicked");
+	 document.getElementById("audio").play()
  
 		const gltfLoader = new GLTFLoader();
     gltfLoader.load("VITAL SIGNS MONITOR.glb", (gltf) => {
