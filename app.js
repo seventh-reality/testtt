@@ -280,9 +280,7 @@ OX.init(config)
 
       document.getElementById("blue").addEventListener("click", () => {
         // changeCarColor(0x0011ff);
-	      <audio controls>
-            <source src="v.mp3">
-        </audio>
+	     
 		alert("clicked");
 	 document.getElementById("audio").play()
 		const gltfLoader = new GLTFLoader();
