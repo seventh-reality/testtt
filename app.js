@@ -198,9 +198,7 @@ OX.init(config)
 
       document.getElementById("silver").addEventListener("click", () => {
         //changeCarColor(0xffffff);
-	<audio controls>
-            <source src="v.mp3">
-        </audio>      
+ 
 		const gltfLoader = new GLTFLoader();
     gltfLoader.load("VITAL SIGNS MONITOR.glb", (gltf) => {
       car = gltf.scene;
