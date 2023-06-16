@@ -321,9 +321,7 @@ OX.init(config)
     });
 		
       });
-	   document.getElementById("playfile").addEventListener("click", () => {
-	 alert("clicked");
-	 document.getElementById("audio").play()
+	 
  });
  
     // Subscribe to events
