@@ -378,5 +378,4 @@ OX.init(config)
         break;
     }
 
-    document.getElementById("error-screen").style.display = "flex";
   });
