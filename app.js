@@ -158,7 +158,7 @@ OX.init(config)
 
   document.getElementById("black").addEventListener("click", () => {
        // changeCarColor(0x111111);
-	  alert("clicked");
+	  
 	 document.getElementById("audio").play()
 	   const gltfLoader = new GLTFLoader();
     gltfLoader.load("C_ARM.glb", (gltf) => {
@@ -243,7 +243,7 @@ OX.init(config)
 
       document.getElementById("orange").addEventListener("click", () => {
        // changeCarColor(0xff2600);
-	    alert("clicked");
+	    
 	 document.getElementById("audio").play()
 	   const gltfLoader = new GLTFLoader();
     gltfLoader.load("ETHOSs.glb", (gltf) => {
@@ -286,7 +286,7 @@ OX.init(config)
       document.getElementById("blue").addEventListener("click", () => {
         // changeCarColor(0x0011ff);
 	     
-		alert("clicked");
+		
 	 document.getElementById("audio").play()
 		const gltfLoader = new GLTFLoader();
 		gltfLoader.load("bloodsny.glb", (gltf) => {
