@@ -307,6 +307,51 @@ OX.init(config)
 	  scene.clear();
 	  
       scene.add(car);
+  function loadModel(scene) {
+  const loader = new GLTFLoader();
+  loader.crossOrigin = "anonymous";
+  loader.load('https://rawcdn.githack.com/mrdoob/three.js/76d16bd828c8d3e1870eac45aa466c20313cf944/examples/models/gltf/Nefertiti/Nefertiti.glb',(gltf) => {
+    
+    const model = gltf.scene.children[0]
+    model.scale.multiplyScalar(0.1)
+    model.position.y = - 1.5
+    
+    scene.add(model)
+    
+    createMarker(model, new Vector3(0,17,8))
+    createMarker(model, new Vector3(4,15,1.7))
+    createMarker(model, new Vector3(-6,0,4))
+
+  })
+  
+  
+}
+
+
+function createMarker(model, position) {
+  const loader = new TextureLoader();
+  loader.crossOrigin = "";
+  const map = loader.load("https://i.imgur.com/EZynrrA.png");
+  map.encoding = sRGBEncoding
+  
+  const spriteMaterialFront = new SpriteMaterial( { map } );
+  
+  const spriteFront = new Sprite( spriteMaterialFront );
+  spriteFront.position.copy(position) 
+  
+  const spriteMaterialRear = new SpriteMaterial({ 
+    map,
+    opacity: 0.3, 
+    transparent: true, 
+    depthTest: false
+  });
+  
+  const spriteRear = new Sprite( spriteMaterialRear );
+  spriteRear.position.copy(position) 
+  
+  model.add(spriteFront, spriteRear)
+}
+
 
       // All loaded, so hide loading screen
       document.getElementById("loading-screen").style.display = "none";
