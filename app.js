@@ -27,19 +27,19 @@ function setupRenderer(rendererCanvas) {
 
   // Create an empty scene
   scene = new THREE.Scene();
-//Add lights some.
+//Add lights some
 	const hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 2 );
 				hemiLight.color.setHSL( 0.6, 1, 0.6 );
 				hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
 				hemiLight.position.set( 0, 50, 0 );
 				scene.add( hemiLight );
 
-				const hemiLightHelper = new THREE.HemisphereLightHelper( hemiLight, 10 );
+	const hemiLightHelper = new THREE.HemisphereLightHelper( hemiLight, 10 );
 				scene.add( hemiLightHelper );
 
-				//
+				
 
-				const dirLight = new THREE.DirectionalLight( 0xffffff, 3 );
+	const dirLight = new THREE.DirectionalLight( 0xffffff, 3 );
 				dirLight.color.setHSL( 0.1, 1, 0.95 );
 				dirLight.position.set( - 1, 1.75, 1 );
 				dirLight.position.multiplyScalar( 30 );
@@ -50,7 +50,7 @@ function setupRenderer(rendererCanvas) {
 				dirLight.shadow.mapSize.width = 2048;
 				dirLight.shadow.mapSize.height = 2048;
 
-				const d = 50;
+	const d = 50;
 
 				dirLight.shadow.camera.left = - d;
 				dirLight.shadow.camera.right = d;
@@ -62,13 +62,39 @@ function setupRenderer(rendererCanvas) {
 
 				const dirLightHelper = new THREE.DirectionalLightHelper( dirLight, 10 );
 				scene.add( dirLightHelper );
-  // Add some lights
-  const hemisphereLight = new THREE.HemisphereLight(0xbbbbff, 0x444422);
-  scene.add(hemisphereLight);
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-  directionalLight.position.set(0, 10, 0);
-  scene.add(directionalLight);
+  
+const params = {
+					toggleHemisphereLight: function () {
 
+						hemiLight.visible = ! hemiLight.visible;
+						hemiLightHelper.visible = ! hemiLightHelper.visible;
+
+					},
+					toggleDirectionalLight: function () {
+
+						dirLight.visible = ! dirLight.visible;
+						dirLightHelper.visible = ! dirLightHelper.visible;
+
+					},
+					shadowIntensity: 1
+				};
+
+				const gui = new GUI();
+
+				gui.add( params, 'toggleHemisphereLight' ).name( 'toggle hemisphere light' );
+				gui.add( params, 'toggleDirectionalLight' ).name( 'toggle directional light' );
+				gui.add( params, 'shadowIntensity', 0, 1 ).name( 'shadow intensity' ).onChange( ( value ) => {
+
+					dirLight.shadow.intensity = value;
+
+				} );
+				gui.open();
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize );
+
+			}
   // Load env map
   const textureLoader = new THREE.TextureLoader();
   envMap = textureLoader.load("envmap.jpg");
