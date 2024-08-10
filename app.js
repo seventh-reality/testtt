@@ -270,7 +270,7 @@ OX.init(config)
   function loadModel(scene) {
   const loader = new GLTFLoader();
   loader.crossOrigin = "anonymous";
-  loader.load('https://rawcdn.githack.com/mrdoob/three.js/76d16bd828c8d3e1870eac45aa466c20313cf944/examples/models/gltf/Nefertiti/Nefertiti.glb',(gltf) => {
+  loader.load('Steerad.glb',(gltf) => {
     
     const model = gltf.scene.children[0]
     model.scale.multiplyScalar(0.1)
@@ -291,7 +291,7 @@ OX.init(config)
 function createMarker(model, position) {
   const loader = new TextureLoader();
   loader.crossOrigin = "";
-  const map = loader.load("https://i.imgur.com/EZynrrA.png");
+  const map = loader.load("virtual1.jpg");
   map.encoding = sRGBEncoding
   
   const spriteMaterialFront = new SpriteMaterial( { map } );
