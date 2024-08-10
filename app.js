@@ -32,7 +32,6 @@ function setupRenderer(rendererCanvas) {
   scene.add(hemisphereLight);
   const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
   directionalLight.position.set(0, 10, 0);
-  directionalLight.rotation.set(0, 45, 0);	
   scene.add(directionalLight);
 
   // Load env map
