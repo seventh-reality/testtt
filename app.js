@@ -30,7 +30,7 @@ function setupRenderer(rendererCanvas) {
   // Add some lights
   const hemisphereLight = new THREE.HemisphereLight(0xbbbbff, 0x444422);
   scene.add(hemisphereLight);
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 5);
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 15);
   directionalLight.position.set(0, 10, 0);
   directionalLight.rotation.set(0, 45, 0);	
   scene.add(directionalLight);
@@ -162,7 +162,7 @@ OX.init(config)
 	  
 	 document.getElementById("audio").play()
 	   const gltfLoader = new GLTFLoader();
-    gltfLoader.load("C_ARM.glb", (gltf) => {
+    gltfLoader.load("Steeradtext.glb", (gltf) => {
       car = gltf.scene;
       car.traverse((child) => {
         if (child.material) {
@@ -247,7 +247,7 @@ OX.init(config)
 	    
 	 document.getElementById("audio").play()
 	   const gltfLoader = new GLTFLoader();
-    gltfLoader.load("ETHOSs.glb", (gltf) => {
+    gltfLoader.load("sterrad_anim.glb", (gltf) => {
       car = gltf.scene;
       car.traverse((child) => {
         if (child.material) {
