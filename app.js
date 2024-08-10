@@ -199,13 +199,13 @@ OX.init(config)
     });
       });
 
-      document.getElementById("silver").addEventListener("click", () => {
+      document.getElementById("orange").addEventListener("click", () => {
         //changeCarColor(0xffffff);
 	      
 	 document.getElementById("audio").play()
  
 		const gltfLoader = new GLTFLoader();
-    gltfLoader.load("VITAL SIGNS MONITOR.glb", (gltf) => {
+    gltfLoader.load("Steeradtext.glb", (gltf) => {
       car = gltf.scene;
       car.traverse((child) => {
         if (child.material) {
@@ -242,47 +242,6 @@ OX.init(config)
     });
       });
 
-      document.getElementById("orange").addEventListener("click", () => {
-       // changeCarColor(0xff2600);
-	    
-	 document.getElementById("audio").play()
-	   const gltfLoader = new GLTFLoader();
-    gltfLoader.load("sterrad_anim.glb", (gltf) => {
-      car = gltf.scene;
-      car.traverse((child) => {
-        if (child.material) {
-          console.log("updating material");
-          child.material.envMap = envMap;
-          child.material.needsUpdate = true;
-        }
-      });
-      car.scale.set(0.5, 0.5, 0.5);
-	  scene.clear()
-      scene.add(car);
-
-      // All loaded, so hide loading screen
-      document.getElementById("loading-screen").style.display = "none";
-
-      document.getElementById("initializing").style.display = "block";
-
-      document.getElementById("tap-to-place").addEventListener("click", () => {
-        placeCar();
-        document.getElementById("transform-controls").style.display = "none";
-        document.getElementById("color-controls").style.display = "block";
-      });
-
-      const scaleSlider = document.getElementById("scale-slider");
-      scaleSlider.addEventListener("input", () => {
-        scaleCar(scaleSlider.value / 100);
-      });
-      const rotationSlider = document.getElementById("rotation-slider");
-      rotationSlider.addEventListener("input", () => {
-        rotateCar((rotationSlider.value * Math.PI) / 180);
-      });
-
-    
-    });
-      });
 
       document.getElementById("blue").addEventListener("click", () => {
         // changeCarColor(0x0011ff);
@@ -290,7 +249,7 @@ OX.init(config)
 		
 	 document.getElementById("audio").play()
 		const gltfLoader = new GLTFLoader();
-		gltfLoader.load("bloodsny.glb", (gltf) => {
+		gltfLoader.load("sterrad_anim.glb", (gltf) => {
       car = gltf.scene;
       const animations = gltf.animations;		
       car.traverse((child) => {
