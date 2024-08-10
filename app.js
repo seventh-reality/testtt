@@ -1,8 +1,15 @@
 // ====== Imports ======
-
+import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
+import { BoxLineGeometry } from 'three/examples/jsm/geometries/BoxLineGeometry.js';
 import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.8.1/dist/ox-sdk.esm.js";
 import * as THREE from "https://cdn.skypack.dev/three@0.127.0";
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/loaders/GLTFLoader.js";
+import ThreeMeshUI from '../src/three-mesh-ui.js';
+import VRControl from './utils/VRControl.js';
+import ShadowedLight from './utils/ShadowedLight.js';
+
+import FontJSON from './assets/Roboto-msdf.json';
+import FontImage from './assets/Roboto-msdf.png';
 
 // ====== ThreeJS ======
 
