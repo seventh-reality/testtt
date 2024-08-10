@@ -3,7 +3,7 @@
 import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.8.1/dist/ox-sdk.esm.js";
 import * as THREE from "https://cdn.skypack.dev/three@0.127.0";
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/loaders/GLTFLoader.js";
-import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+
 
 
 // ====== ThreeJS ======
@@ -64,38 +64,8 @@ function setupRenderer(rendererCanvas) {
 				const dirLightHelper = new THREE.DirectionalLightHelper( dirLight, 10 );
 				scene.add( dirLightHelper );
   
-const params = {
-					toggleHemisphereLight: function () {
-
-						hemiLight.visible = ! hemiLight.visible;
-						hemiLightHelper.visible = ! hemiLightHelper.visible;
-
-					},
-					toggleDirectionalLight: function () {
-
-						dirLight.visible = ! dirLight.visible;
-						dirLightHelper.visible = ! dirLightHelper.visible;
-
-					},
-					shadowIntensity: 1
-				};
-
-				const gui = new GUI();
-
-				gui.add( params, 'toggleHemisphereLight' ).name( 'toggle hemisphere light' );
-				gui.add( params, 'toggleDirectionalLight' ).name( 'toggle directional light' );
-				gui.add( params, 'shadowIntensity', 0, 1 ).name( 'shadow intensity' ).onChange( ( value ) => {
-
-					dirLight.shadow.intensity = value;
-
-				} );
-				gui.open();
-
-				//
-
-				window.addEventListener( 'resize', onWindowResize );
-
-			}
+                          
+				
   // Load env map
   const textureLoader = new THREE.TextureLoader();
   envMap = textureLoader.load("envmap.jpg");
