@@ -388,7 +388,6 @@ function turnOnOff() {
                 image.src =
 "https://media.geeksforgeeks.org/wp-content/uploads/ONbulb.jpg";
         }
-    </script>
  
     <img id="Image" onclick="turnOnOff()" src=
 "https://media.geeksforgeeks.org/wp-content/uploads/OFFbulb.jpg">	  
