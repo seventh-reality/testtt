@@ -94,7 +94,7 @@ function loadNewModel(url) {
   document.getElementById("audio").play();
   scene.clear();
   const gltfLoader = new GLTFLoader();
-  gltfLoader.load(Steerad.glb, (gltf) => {
+  gltfLoader.load(url, (gltf) => {
     model = gltf.scene;
     const animations = gltf.animations;
     if (animations && animations.length) {
