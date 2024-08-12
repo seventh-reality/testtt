@@ -107,11 +107,27 @@ function rotateCar(value) {
   car.rotation.y = value;
 }
 
-function changeCarColor(value) {
-  car.traverse((child) => {
-    if (child.material && child.material.name === "CarPaint") {
-      child.material.color.setHex(value);
+// ====== Change Model ======
+function loadNewModel(url) {
+  document.getElementById("audio").play();
+  scene.clear();
+  const gltfLoader = new GLTFLoader();
+  gltfLoader.load(url, (gltf) => {
+    model = gltf.scene;
+    const animations = gltf.animations;
+    if (animations && animations.length) {
+      const mixer = new THREE.AnimationMixer(model);
+      animations.forEach((clip) => mixer.clipAction(clip).play());
+      animationMixers.push(mixer);
     }
+    model.traverse((child) => {
+      if (child.material) {
+        child.material.envMap = envMap;
+        child.material.needsUpdate = true;
+      }
+    });
+    model.scale.set(0.5, 0.5, 0.5);
+    scene.add(model);
   });
 }
 
@@ -127,276 +143,37 @@ const config = {
 
 OX.init(config)
   .then((rendererCanvas) => {
-    // Setup ThreeJS renderer
     setupRenderer(rendererCanvas);
 
-    // Load car model
-    const gltfLoader = new GLTFLoader();
-    gltfLoader.load("Steerad.glb", (gltf) => {
-      car = gltf.scene;
-      car.traverse((child) => {
-        if (child.material) {
-          console.log("updating material");
-          child.material.envMap = envMap;
-          child.material.needsUpdate = true;
-        }
-      });
-      car.scale.set(0.5, 0.5, 0.5);
-      scene.add(car);
+    loadNewModel("Steerad.glb");
 
-      // All loaded, so hide loading screen
-      document.getElementById("loading-screen").style.display = "none";
-
-      document.getElementById("initializing").style.display = "block";
-
-      document.getElementById("tap-to-place").addEventListener("click", () => {
-        placeCar();
-        document.getElementById("transform-controls").style.display = "none";
-        document.getElementById("color-controls").style.display = "block";
-      });
-
-      const scaleSlider = document.getElementById("scale-slider");
-      scaleSlider.addEventListener("input", () => {
-        scaleCar(scaleSlider.value / 100);
-      });
-      const rotationSlider = document.getElementById("rotation-slider");
-      rotationSlider.addEventListener("input", () => {
-        rotateCar((rotationSlider.value * Math.PI) / 180);
-      });
-
-  document.getElementById("black").addEventListener("click", () => {
-       // changeCarColor(0x111111);
-	  
-	 document.getElementById("audio").play()
-	   const gltfLoader = new GLTFLoader();
-    gltfLoader.load("C_ARM.glb", (gltf) => {
-      car = gltf.scene;
-      car.traverse((child) => {
-        if (child.material) {
-          console.log("updating material");
-          child.material.envMap = envMap;
-          child.material.needsUpdate = true;
-        }
-      });
-      car.scale.set(0.5, 0.5, 0.5);
-	  scene.clear()
-      scene.add(car);
-
-      // All loaded, so hide loading screen
-      document.getElementById("loading-screen").style.display = "none";
-
-      document.getElementById("initializing").style.display = "block";
-
-      document.getElementById("tap-to-place").addEventListener("click", () => {
-        placeCar();
-        document.getElementById("transform-controls").style.display = "none";
-        document.getElementById("color-controls").style.display = "block";
-      });
-
-      const scaleSlider = document.getElementById("scale-slider");
-      scaleSlider.addEventListener("input", () => {
-        scaleCar(scaleSlider.value / 100);
-      });
-      const rotationSlider = document.getElementById("rotation-slider");
-      rotationSlider.addEventListener("input", () => {
-        rotateCar((rotationSlider.value * Math.PI) / 180);
-      });
-
-    
+    document.getElementById("tap-to-place").addEventListener("click", () => {
+      placeModel();
+      document.getElementById("transform-controls").style.display = "none";
+      document.getElementById("color-controls").style.display = "block";
     });
-      });
 
-      document.getElementById("silver").addEventListener("click", () => {
-        //changeCarColor(0xffffff);
-	      
-	 document.getElementById("audio").play()
- 
-		const gltfLoader = new GLTFLoader();
-    gltfLoader.load("VITAL SIGNS MONITOR.glb", (gltf) => {
-      car = gltf.scene;
-      car.traverse((child) => {
-        if (child.material) {
-          console.log("updating material");
-          child.material.envMap = envMap;
-          child.material.needsUpdate = true;
-        }
-      });
-      car.scale.set(0.5, 0.5, 0.5);
-	  scene.clear()
-      scene.add(car);
-
-      // All loaded, so hide loading screen
-      document.getElementById("loading-screen").style.display = "none";
-
-      document.getElementById("initializing").style.display = "block";
-
-      document.getElementById("tap-to-place").addEventListener("click", () => {
-        placeCar();
-        document.getElementById("transform-controls").style.display = "none";
-        document.getElementById("color-controls").style.display = "block";
-      });
-
-      const scaleSlider = document.getElementById("scale-slider");
-      scaleSlider.addEventListener("input", () => {
-        scaleCar(scaleSlider.value / 100);
-      });
-      const rotationSlider = document.getElementById("rotation-slider");
-      rotationSlider.addEventListener("input", () => {
-        rotateCar((rotationSlider.value * Math.PI) / 180);
-      });
-
-    
+    const scaleSlider = document.getElementById("scale-slider");
+    scaleSlider.addEventListener("input", () => {
+      scaleModel(scaleSlider.value / 100);
     });
-      });
 
-      document.getElementById("orange").addEventListener("click", () => {
-       // changeCarColor(0xff2600);
-	    
-	 document.getElementById("audio").play()
-	   const gltfLoader = new GLTFLoader();
-    gltfLoader.load("ETHOSs.glb", (gltf) => {
-      car = gltf.scene;
-      car.traverse((child) => {
-        if (child.material) {
-          console.log("updating material");
-          child.material.envMap = envMap;
-          child.material.needsUpdate = true;
-        }
-      });
-      car.scale.set(0.5, 0.5, 0.5);
-	  scene.clear()
-      scene.add(car);
-
-      // All loaded, so hide loading screen
-      document.getElementById("loading-screen").style.display = "none";
-
-      document.getElementById("initializing").style.display = "block";
-
-      document.getElementById("tap-to-place").addEventListener("click", () => {
-        placeCar();
-        document.getElementById("transform-controls").style.display = "none";
-        document.getElementById("color-controls").style.display = "block";
-      });
-
-      const scaleSlider = document.getElementById("scale-slider");
-      scaleSlider.addEventListener("input", () => {
-        scaleCar(scaleSlider.value / 100);
-      });
-      const rotationSlider = document.getElementById("rotation-slider");
-      rotationSlider.addEventListener("input", () => {
-        rotateCar((rotationSlider.value * Math.PI) / 180);
-      });
-
-    
+    const rotationSlider = document.getElementById("rotation-slider");
+    rotationSlider.addEventListener("input", () => {
+      rotateModel((rotationSlider.value * Math.PI) / 180);
     });
-      });
 
-      document.getElementById("blue").addEventListener("click", () => {
-        // changeCarColor(0x0011ff);
-	     
-		
-	 document.getElementById("audio").play()
-		const gltfLoader = new GLTFLoader();
-		gltfLoader.load("bloodsny.glb", (gltf) => {
-      car = gltf.scene;
-      const animations = gltf.animations;		
-      car.traverse((child) => {
-        if (child.material) {
-          console.log("updating material");
-          child.material.envMap = envMap;
-          child.material.needsUpdate = true;
-        }
-	const mixer = new THREE.AnimationMixer(model);
-      const action = mixer.clipAction(animations[0]);
-      action.play();
-      animationMixers.push(mixer);      
-      });
-      car.scale.set(0.5, 0.5, 0.5);
-	  scene.clear();
-	  
-      scene.add(car);
-  function loadModel(scene) {
-  const loader = new GLTFLoader();
-  loader.crossOrigin = "anonymous";
-  loader.load('https://rawcdn.githack.com/mrdoob/three.js/76d16bd828c8d3e1870eac45aa466c20313cf944/examples/models/gltf/Nefertiti/Nefertiti.glb',(gltf) => {
-    
-    const model = gltf.scene.children[0]
-    model.scale.multiplyScalar(0.1)
-    model.position.y = - 1.5
-    
-    scene.add(model)
-    
-    createMarker(model, new Vector3(0,17,8))
-    createMarker(model, new Vector3(4,15,1.7))
-    createMarker(model, new Vector3(-6,0,4))
-
-  })
-  
-  
-}
-
-
-function createMarker(model, position) {
-  const loader = new TextureLoader();
-  loader.crossOrigin = "";
-  const map = loader.load("https://i.imgur.com/EZynrrA.png");
-  map.encoding = sRGBEncoding
-  
-  const spriteMaterialFront = new SpriteMaterial( { map } );
-  
-  const spriteFront = new Sprite( spriteMaterialFront );
-  spriteFront.position.copy(position) 
-  
-  const spriteMaterialRear = new SpriteMaterial({ 
-    map,
-    opacity: 0.3, 
-    transparent: true, 
-    depthTest: false
-  });
-  
-  const spriteRear = new Sprite( spriteMaterialRear );
-  spriteRear.position.copy(position) 
-  
-  model.add(spriteFront, spriteRear)
-}
-
-
-      // All loaded, so hide loading screen
-      document.getElementById("loading-screen").style.display = "none";
-
-      document.getElementById("initializing").style.display = "block";
-
-      document.getElementById("tap-to-place").addEventListener("click", () => {
-        placeCar();
-        document.getElementById("transform-controls").style.display = "none";
-        document.getElementById("color-controls").style.display = "block";
-      });
-
-      const scaleSlider = document.getElementById("scale-slider");
-      scaleSlider.addEventListener("input", () => {
-        scaleCar(scaleSlider.value / 100);
-      });
-      const rotationSlider = document.getElementById("rotation-slider");
-      rotationSlider.addEventListener("input", () => {
-        rotateCar((rotationSlider.value * Math.PI) / 180);
-      });
-    document.getElementById("black").addEventListener("click", () => loadNewModel("Steeradtext.glb"));
-    document.getElementById("silver").addEventListener("click", () => loadNewModel("Steerad.glb"));
-    document.getElementById("orange").addEventListener("click", () => loadNewModel("ETHOSs.glb"));
-    document.getElementById("blue").addEventListener("click", () => loadNewModel("sterrad_anim.glb"));
+    document.getElementById("black").addEventListener("click", () => loadNewModel("Steerad.glb"));
+    document.getElementById("silver").addEventListener("click", () => loadNewModel("Steeradtext.glb"));
+    document.getElementById("orange").addEventListener("click", () => loadNewModel("sterrad_anim.glb"));
+    document.getElementById("blue").addEventListener("click", () => loadNewModel("Steeradtext.glb"));
 
     OX.subscribe(OnirixSDK.Events.OnPose, updatePose);
     OX.subscribe(OnirixSDK.Events.OnResize, onResize);
     OX.subscribe(OnirixSDK.Events.OnTouch, onTouch);
     OX.subscribe(OnirixSDK.Events.OnHitTestResult, onHitResult);
     OX.subscribe(OnirixSDK.Events.OnFrame, render);
-    
-    });
-		
-      });
-	 
- });
-
+  })
  
     // Subscribe to events
     OX.subscribe(OnirixSDK.Events.OnPose, function (pose) {
