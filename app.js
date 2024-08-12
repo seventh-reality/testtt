@@ -160,11 +160,26 @@ OX.init(config)
     document.getElementById("orange").addEventListener("click", () => loadNewModel("sterrad_anim.glb"));
     document.getElementById("blue").addEventListener("click", () => loadNewModel("Steeradtext.glb"));
 
-    OX.subscribe(OnirixSDK.Events.OnPose, updatePose);
-    OX.subscribe(OnirixSDK.Events.OnResize, onResize);
-    OX.subscribe(OnirixSDK.Events.OnTouch, onTouch);
-    OX.subscribe(OnirixSDK.Events.OnHitTestResult, onHitResult);
-    OX.subscribe(OnirixSDK.Events.OnFrame, render);
+    OX.subscribe(OnirixSDK.Events.OnPose, function (pose) {
+      updatePose(pose);
+    });
+
+    OX.subscribe(OnirixSDK.Events.OnResize, function () {
+      onResize();
+    });
+
+    OX.subscribe(OnirixSDK.Events.OnTouch, function (touchPos) {
+      onTouch(touchPos);
+    });
+
+    OX.subscribe(OnirixSDK.Events.OnHitTestResult, function (hitResult) {
+      document.getElementById("initializing").style.display = "none";
+      onHitResult(hitResult);
+    });
+
+    OX.subscribe(OnirixSDK.Events.OnFrame, function() {
+      render();
+    });
   })
  
   .catch((error) => {
