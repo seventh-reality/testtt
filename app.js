@@ -166,29 +166,6 @@ OX.init(config)
     OX.subscribe(OnirixSDK.Events.OnFrame, render);
   })
  
-    // Subscribe to events
-    OX.subscribe(OnirixSDK.Events.OnPose, function (pose) {
-      updatePose(pose);
-    });
-
-    OX.subscribe(OnirixSDK.Events.OnResize, function () {
-      onResize();
-    });
-
-    OX.subscribe(OnirixSDK.Events.OnTouch, function (touchPos) {
-      onTouch(touchPos);
-    });
-
-    OX.subscribe(OnirixSDK.Events.OnHitTestResult, function (hitResult) {
-      document.getElementById("initializing").style.display = "none";
-      onHitResult(hitResult);
-    });
-
-    OX.subscribe(OnirixSDK.Events.OnFrame, function() {
-      render();
-    });
-
-  })
   .catch((error) => {
     // An error ocurred, chech error type and display it
     document.getElementById("loading-screen").style.display = "none";
