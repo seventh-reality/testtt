@@ -30,9 +30,8 @@ function setupRenderer(rendererCanvas) {
   // Add some lights
   const hemisphereLight = new THREE.HemisphereLight(0xbbbbff, 0x444422);
   scene.add(hemisphereLight);
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 15);
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
   directionalLight.position.set(0, 10, 0);
-  directionalLight.rotation.set(0, 45, 0);	
   scene.add(directionalLight);
 
   // Load env map
@@ -125,8 +124,7 @@ OX.init(config)
 
     // Load car model
     const gltfLoader = new GLTFLoader();
-    gltfLoader.load("Steerad.glb", (gltf) => {
-	id="toggle-model"    
+    gltfLoader.load("range_rover.glb", (gltf) => {
       car = gltf.scene;
       car.traverse((child) => {
         if (child.material) {
@@ -158,72 +156,229 @@ OX.init(config)
         rotateCar((rotationSlider.value * Math.PI) / 180);
       });
 
-  const models = ['Steerad.glb', 'Steeradtext.glb', 'sterrad_anim.glb'];
-    const toggleModel = document.querySelector('#toggle-model');
-    // let j = 0;
-    // setInterval(() => toggleModel.setAttribute('src', `${models[j++ % 2]}`), 2000);
-    function switchSrc(indx,src){
-        // if(indx == 2){
-        //     document.getElementById("iitpl").style.setProperty('display','none');
-        //     document.getElementById("tna").style.setProperty('display','none');
-        //     document.getElementById("Brochure").style.setProperty('display','inline');
-        //     document.getElementById("tna2").style.setProperty('display','inline');
-        //     document.getElementById("tna2").style.setProperty('float','right');
-        // }else if(indx== 3){
-        //     document.getElementById("iitpl").setAttribute('style','display:inline');
-        //     document.getElementById("tna").setAttribute('style','display:inline');
-        //     document.getElementById("tna").style.setProperty('float','right');
-        //     document.getElementById("Brochure").setAttribute('style','display:none');
-        //     document.getElementById("tna2").setAttribute('style','display:none');
-        // }else if(indx== 5){
-        //     document.getElementById("iitpl").setAttribute('style','display:inline');
-        //     document.getElementById("tna").setAttribute('style','display:inline');
-        //     document.getElementById("tna").style.setProperty('float','right');
-        // }
-                document.getElementById("1").style.setProperty('display','inline');
-                document.getElementById("2").style.setProperty('display','inline');
-                document.getElementById("3").style.setProperty('display','inline');
-        switch (indx) {
-            case 2:
-		document.getElementById("1").style.setProperty('display','inline');
-		document.getElementById("11").style.setProperty('display','inline');
-		document.getElementById("22").style.setProperty('display','none');
-		document.getElementById("33").style.setProperty('display','none');	
-			
-                document.getElementById("2").style.setProperty('display','inline');
-                document.getElementById("3").style.setProperty('display','inline');
-		
-                
-                break;
-		case 3:
-		document.getElementById("1").style.setProperty('display','inline');
-		document.getElementById("11").style.setProperty('display','none');
-		document.getElementById("22").style.setProperty('display','inline');
-		document.getElementById("33").style.setProperty('display','none');		
-                document.getElementById("2").style.setProperty('display','inline');
-                document.getElementById("3").style.setProperty('display','inline');
-   
-                break;
-		case 3:
-		document.getElementById("1").style.setProperty('display','inline');
-		document.getElementById("11").style.setProperty('display','none');
-		document.getElementById("22").style.setProperty('display','none');
-		document.getElementById("33").style.setProperty('display','inline');		
-                document.getElementById("2").style.setProperty('display','inline');
-                document.getElementById("3").style.setProperty('display','inline');       
-                break;		  
-            default:
-                document.getElementById("1").style.setProperty('display','inline');
-	        document.getElementById("2").style.setProperty('display','inline');
-                document.getElementById("3").style.setProperty('display','inline');
-		
-            break;
+  document.getElementById("black").addEventListener("click", () => {
+       // changeCarColor(0x111111);
+	  
+	 document.getElementById("audio").play()
+	   const gltfLoader = new GLTFLoader();
+    gltfLoader.load("C_ARM.glb", (gltf) => {
+      car = gltf.scene;
+      car.traverse((child) => {
+        if (child.material) {
+          console.log("updating material");
+          child.material.envMap = envMap;
+          child.material.needsUpdate = true;
         }
-        toggleModel.setAttribute('src', `${src}`);  
-    }
+      });
+      car.scale.set(0.5, 0.5, 0.5);
+	  scene.clear()
+      scene.add(car);
 
       // All loaded, so hide loading screen
-      
+      document.getElementById("loading-screen").style.display = "none";
+
+      document.getElementById("initializing").style.display = "block";
+
+      document.getElementById("tap-to-place").addEventListener("click", () => {
+        placeCar();
+        document.getElementById("transform-controls").style.display = "none";
+        document.getElementById("color-controls").style.display = "block";
+      });
+
+      const scaleSlider = document.getElementById("scale-slider");
+      scaleSlider.addEventListener("input", () => {
+        scaleCar(scaleSlider.value / 100);
+      });
+      const rotationSlider = document.getElementById("rotation-slider");
+      rotationSlider.addEventListener("input", () => {
+        rotateCar((rotationSlider.value * Math.PI) / 180);
+      });
+
+    
+    });
+      });
+
+      document.getElementById("silver").addEventListener("click", () => {
+        //changeCarColor(0xffffff);
+	      
+	 document.getElementById("audio").play()
+ 
+		const gltfLoader = new GLTFLoader();
+    gltfLoader.load("VITAL SIGNS MONITOR.glb", (gltf) => {
+      car = gltf.scene;
+      car.traverse((child) => {
+        if (child.material) {
+          console.log("updating material");
+          child.material.envMap = envMap;
+          child.material.needsUpdate = true;
+        }
+      });
+      car.scale.set(0.5, 0.5, 0.5);
+	  scene.clear()
+      scene.add(car);
+
+      // All loaded, so hide loading screen
+      document.getElementById("loading-screen").style.display = "none";
+
+      document.getElementById("initializing").style.display = "block";
+
+      document.getElementById("tap-to-place").addEventListener("click", () => {
+        placeCar();
+        document.getElementById("transform-controls").style.display = "none";
+        document.getElementById("color-controls").style.display = "block";
+      });
+
+      const scaleSlider = document.getElementById("scale-slider");
+      scaleSlider.addEventListener("input", () => {
+        scaleCar(scaleSlider.value / 100);
+      });
+      const rotationSlider = document.getElementById("rotation-slider");
+      rotationSlider.addEventListener("input", () => {
+        rotateCar((rotationSlider.value * Math.PI) / 180);
+      });
+
+    
+    });
+      });
+
+      document.getElementById("orange").addEventListener("click", () => {
+       // changeCarColor(0xff2600);
+	    
+	 document.getElementById("audio").play()
+	   const gltfLoader = new GLTFLoader();
+    gltfLoader.load("ETHOSs.glb", (gltf) => {
+      car = gltf.scene;
+      car.traverse((child) => {
+        if (child.material) {
+          console.log("updating material");
+          child.material.envMap = envMap;
+          child.material.needsUpdate = true;
+        }
+      });
+      car.scale.set(0.5, 0.5, 0.5);
+	  scene.clear()
+      scene.add(car);
+
+      // All loaded, so hide loading screen
+      document.getElementById("loading-screen").style.display = "none";
+
+      document.getElementById("initializing").style.display = "block";
+
+      document.getElementById("tap-to-place").addEventListener("click", () => {
+        placeCar();
+        document.getElementById("transform-controls").style.display = "none";
+        document.getElementById("color-controls").style.display = "block";
+      });
+
+      const scaleSlider = document.getElementById("scale-slider");
+      scaleSlider.addEventListener("input", () => {
+        scaleCar(scaleSlider.value / 100);
+      });
+      const rotationSlider = document.getElementById("rotation-slider");
+      rotationSlider.addEventListener("input", () => {
+        rotateCar((rotationSlider.value * Math.PI) / 180);
+      });
+
+    
+    });
+      });
+
+      document.getElementById("blue").addEventListener("click", () => {
+        // changeCarColor(0x0011ff);
+	     
+		
+	 document.getElementById("audio").play()
+		const gltfLoader = new GLTFLoader();
+		gltfLoader.load("bloodsny.glb", (gltf) => {
+      car = gltf.scene;
+      const animations = gltf.animations;		
+      car.traverse((child) => {
+        if (child.material) {
+          console.log("updating material");
+          child.material.envMap = envMap;
+          child.material.needsUpdate = true;
+        }
+	const mixer = new THREE.AnimationMixer(model);
+      const action = mixer.clipAction(animations[0]);
+      action.play();
+      animationMixers.push(mixer);      
+      });
+      car.scale.set(0.5, 0.5, 0.5);
+	  scene.clear();
+	  
+      scene.add(car);
+  function loadModel(scene) {
+  const loader = new GLTFLoader();
+  loader.crossOrigin = "anonymous";
+  loader.load('https://rawcdn.githack.com/mrdoob/three.js/76d16bd828c8d3e1870eac45aa466c20313cf944/examples/models/gltf/Nefertiti/Nefertiti.glb',(gltf) => {
+    
+    const model = gltf.scene.children[0]
+    model.scale.multiplyScalar(0.1)
+    model.position.y = - 1.5
+    
+    scene.add(model)
+    
+    createMarker(model, new Vector3(0,17,8))
+    createMarker(model, new Vector3(4,15,1.7))
+    createMarker(model, new Vector3(-6,0,4))
+
+  })
+  
+  
+}
+
+
+function createMarker(model, position) {
+  const loader = new TextureLoader();
+  loader.crossOrigin = "";
+  const map = loader.load("https://i.imgur.com/EZynrrA.png");
+  map.encoding = sRGBEncoding
+  
+  const spriteMaterialFront = new SpriteMaterial( { map } );
+  
+  const spriteFront = new Sprite( spriteMaterialFront );
+  spriteFront.position.copy(position) 
+  
+  const spriteMaterialRear = new SpriteMaterial({ 
+    map,
+    opacity: 0.3, 
+    transparent: true, 
+    depthTest: false
+  });
+  
+  const spriteRear = new Sprite( spriteMaterialRear );
+  spriteRear.position.copy(position) 
+  
+  model.add(spriteFront, spriteRear)
+}
+
+
+      // All loaded, so hide loading screen
+      document.getElementById("loading-screen").style.display = "none";
+
+      document.getElementById("initializing").style.display = "block";
+
+      document.getElementById("tap-to-place").addEventListener("click", () => {
+        placeCar();
+        document.getElementById("transform-controls").style.display = "none";
+        document.getElementById("color-controls").style.display = "block";
+      });
+
+      const scaleSlider = document.getElementById("scale-slider");
+      scaleSlider.addEventListener("input", () => {
+        scaleCar(scaleSlider.value / 100);
+      });
+      const rotationSlider = document.getElementById("rotation-slider");
+      rotationSlider.addEventListener("input", () => {
+        rotateCar((rotationSlider.value * Math.PI) / 180);
+      });
+
+    
+    });
+		
+      });
+	 
+ });
  
     // Subscribe to events
     OX.subscribe(OnirixSDK.Events.OnPose, function (pose) {
