@@ -195,6 +195,5 @@ OX.init(config)
         document.getElementById("error-message").innerText = "This experience does not exist or has been unpublished.";
         break;
     }
-    document.getElementById("error-title").innerText = errorMessage;
     document.getElementById("error-screen").style.display = "flex";
   });
