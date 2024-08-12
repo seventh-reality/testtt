@@ -132,7 +132,7 @@ OX.init(config)
 
     // Load car model
     const gltfLoader = new GLTFLoader();
-    gltfLoader.load("range_rover.glb", (gltf) => {
+    gltfLoader.load("Steerad.glb", (gltf) => {
       car = gltf.scene;
       car.traverse((child) => {
         if (child.material) {
@@ -380,10 +380,10 @@ function createMarker(model, position) {
       rotationSlider.addEventListener("input", () => {
         rotateCar((rotationSlider.value * Math.PI) / 180);
       });
-    document.getElementById("black").addEventListener("click", () => loadNewModel("C_ARM.glb"));
-    document.getElementById("silver").addEventListener("click", () => loadNewModel("VITAL SIGNS MONITOR.glb"));
+    document.getElementById("black").addEventListener("click", () => loadNewModel("Steeradtext.glb"));
+    document.getElementById("silver").addEventListener("click", () => loadNewModel("Steerad.glb"));
     document.getElementById("orange").addEventListener("click", () => loadNewModel("ETHOSs.glb"));
-    document.getElementById("blue").addEventListener("click", () => loadNewModel("bloodsny.glb"));
+    document.getElementById("blue").addEventListener("click", () => loadNewModel("sterrad_anim.glb"));
 
     OX.subscribe(OnirixSDK.Events.OnPose, updatePose);
     OX.subscribe(OnirixSDK.Events.OnResize, onResize);
