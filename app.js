@@ -74,9 +74,10 @@ function onResize() {
 }
 
 function render() {
-  // Just render the scene
+  animationMixers.forEach((mixer) => mixer.update(0.01)); // Update animation mixers
   renderer.render(scene, camera);
 }
+
 
 function onHitResult(hitResult) {
   if (model && !isModelPlaced) {
@@ -194,5 +195,6 @@ OX.init(config)
         document.getElementById("error-message").innerText = "This experience does not exist or has been unpublished.";
         break;
     }
+    document.getElementById("error-title").innerText = errorMessage;
     document.getElementById("error-screen").style.display = "flex";
   });
