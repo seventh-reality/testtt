@@ -6,8 +6,8 @@ import { GLTFLoader } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/l
 
 // ====== ThreeJS ======
 
-var renderer, scene, camera, floor, car, envMap, model;
-var isModelPlaced = false;
+let renderer, scene, camera, floor, model, envMap, animationMixers = [];
+let isModelPlaced = false;
 
 function setupRenderer(rendererCanvas) {
   const width = rendererCanvas.width;
