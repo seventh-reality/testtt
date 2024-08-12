@@ -114,7 +114,7 @@ function loadNewModel(url) {
 }
 
 // ====== Onirix SDK Setup ======
-const OX = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
+const OX = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjE5ODM1LCJyb2xlIjoxLCJpYXQiOjE3MjM0NTQ3NjV9.QlfnsgBGCeUYIAAffujivGxzPgugAeRef-sLDsUSKtE");
 
 const config = {
   mode: OnirixSDK.TrackingMode.Surface,
