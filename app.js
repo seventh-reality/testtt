@@ -26,15 +26,6 @@ function setupRenderer(rendererCanvas) {
 
   // Create an empty scene
   scene = new THREE.Scene();
-function turnOnOff() {
-            let image = document.getElementById('Image');
-            if (image.src.match("ONbulb"))
-                image.src =
-"https://media.geeksforgeeks.org/wp-content/uploads/OFFbulb.jpg";
-            else
-                image.src =
-"https://media.geeksforgeeks.org/wp-content/uploads/ONbulb.jpg";
-        }
   // Add some lights
   const hemisphereLight = new THREE.HemisphereLight(0xbbbbff, 0x444422);
   scene.add(hemisphereLight);
