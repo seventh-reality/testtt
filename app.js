@@ -145,7 +145,7 @@ OX.init(config)
   .then((rendererCanvas) => {
     setupRenderer(rendererCanvas);
 
-    loadNewModel("Steerad.glb");
+    loadNewModel("range_rover.glb");
 
     document.getElementById("tap-to-place").addEventListener("click", () => {
       placeModel();
@@ -163,8 +163,8 @@ OX.init(config)
       rotateModel((rotationSlider.value * Math.PI) / 180);
     });
 
-    document.getElementById("black").addEventListener("click", () => loadNewModel("Steeradtext.glb"));
-    document.getElementById("silver").addEventListener("click", () => loadNewModel("sterrad_anim.glb"));
+    document.getElementById("black").addEventListener("click", () => loadNewModel("C_ARM.glb"));
+    document.getElementById("silver").addEventListener("click", () => loadNewModel("VITAL SIGNS MONITOR.glb"));
     document.getElementById("orange").addEventListener("click", () => loadNewModel("ETHOSs.glb"));
     document.getElementById("blue").addEventListener("click", () => loadNewModel("bloodsny.glb"));
 
@@ -194,4 +194,3 @@ OX.init(config)
     document.getElementById("error-title").innerText = errorMessage;
     document.getElementById("error-screen").style.display = "flex";
   });
-
