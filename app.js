@@ -379,6 +379,19 @@ function createMarker(model, position) {
       });
 	 
  });
+function turnOnOff() {
+            let image = document.getElementById('Image');
+            if (image.src.match("ONbulb"))
+                image.src =
+"https://media.geeksforgeeks.org/wp-content/uploads/OFFbulb.jpg";
+            else
+                image.src =
+"https://media.geeksforgeeks.org/wp-content/uploads/ONbulb.jpg";
+        }
+    </script>
+ 
+    <img id="Image" onclick="turnOnOff()" src=
+"https://media.geeksforgeeks.org/wp-content/uploads/OFFbulb.jpg">	  
  
     // Subscribe to events
     OX.subscribe(OnirixSDK.Events.OnPose, function (pose) {
