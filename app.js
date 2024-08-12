@@ -6,8 +6,8 @@ import { GLTFLoader } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/l
 
 // ====== ThreeJS ======
 
-var renderer, scene, camera, floor, car, envMap;
-var isCarPlaced = false;
+var renderer, scene, camera, floor, car, envMap, model;
+var isModelPlaced = false;
 
 function setupRenderer(rendererCanvas) {
   const width = rendererCanvas.width;
@@ -79,23 +79,23 @@ function render() {
 }
 
 function onHitResult(hitResult) {
-  if (car && !isCarPlaced) {
+  if (model && !isModelPlaced) {
     document.getElementById("transform-controls").style.display = "block";
-    car.position.copy(hitResult.position);
+    model.position.copy(hitResult.position);
   }
 }
 
-function placeCar() {
-  isCarPlaced = true;
+function placeModel() {
+  isModelPlaced = true;
   OX.start();
 }
 
-function scaleCar(value) {
-  car.scale.set(value, value, value);
+function scaleModel(value) {
+  model.scale.set(value, value, value);
 }
 
-function rotateCar(value) {
-  car.rotation.y = value;
+function rotateModel(value) {
+  model.rotation.y = value;
 }
 
 // ====== Change Model ======
