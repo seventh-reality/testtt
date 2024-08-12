@@ -389,9 +389,6 @@ function turnOnOff() {
 "https://media.geeksforgeeks.org/wp-content/uploads/ONbulb.jpg";
         }
  
-    <img id="Image" onclick="turnOnOff()" src=
-"https://media.geeksforgeeks.org/wp-content/uploads/OFFbulb.jpg">	  
- 
     // Subscribe to events
     OX.subscribe(OnirixSDK.Events.OnPose, function (pose) {
       updatePose(pose);
