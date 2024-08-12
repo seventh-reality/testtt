@@ -6,7 +6,7 @@ import { GLTFLoader } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/l
 
 // ====== ThreeJS ======
 
-let renderer, scene, camera, floor, model, envMap, animationMixers = [];
+var renderer, scene, camera, floor, model, envMap;
 let isModelPlaced = false;
 
 function setupRenderer(rendererCanvas) {
