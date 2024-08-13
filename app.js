@@ -6,6 +6,11 @@ import { GLTFLoader } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/l
 // ====== ThreeJS ======
 var renderer, scene, camera, floor, car, envMap;
 var isCarPlaced = false;
+const modelUrls = {
+  black: "Steeradtext.glb",
+  orange: "Steeradtext.glb",
+  blue: "sterrad_anim.glb",
+};
 
 function setupRenderer(rendererCanvas) {
   const width = rendererCanvas.width;
@@ -159,21 +164,21 @@ OX.init(config)
   .then((rendererCanvas) => {
     setupRenderer(rendererCanvas);
 
-    switchCarModel("Steerad.glb");
+    switchCarModel(modelUrls.black); // Initialize with the black model
 
     document.getElementById("black").addEventListener("click", () => {
       document.getElementById("audio").play();
-      switchCarModel("Steeradtext.glb");
+      switchCarModel(modelUrls.black);
     });
 
     document.getElementById("orange").addEventListener("click", () => {
       document.getElementById("audio").play();
-      switchCarModel("Steeradtext.glb");
+      switchCarModel(modelUrls.orange);
     });
 
     document.getElementById("blue").addEventListener("click", () => {
       document.getElementById("audio").play();
-      switchCarModel("sterrad_anim.glb");
+      switchCarModel(modelUrls.blue);
     });
 
     OX.subscribe(OnirixSDK.Events.OnPose, function (pose) {
