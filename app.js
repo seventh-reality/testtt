@@ -165,7 +165,8 @@ OX.init(config)
     setupRenderer(rendererCanvas);
 
     switchCarModel(modelUrls.black); // Initialize with the black model
-
+    switchCarModel(modelUrls.orange);
+    switchCarModel(modelUrls.blue);
     document.getElementById("black").addEventListener("click", () => {
       document.getElementById("audio").play();
       switchCarModel(modelUrls.black);
