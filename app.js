@@ -4,7 +4,7 @@ import * as THREE from "https://cdn.skypack.dev/three@0.127.0";
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/loaders/GLTFLoader.js";
 
 // ====== ThreeJS ======
-var renderer, scene, camera, floor, car, envMap;
+var renderer, scene, camera, floor, envMap;
 var models = {}; // Store references to car models
 var isCarPlaced = false;
 
@@ -69,9 +69,11 @@ function render() {
 }
 
 function onHitResult(hitResult) {
-  if (car && !isCarPlaced) {
+  if (!isCarPlaced) {
     document.getElementById("transform-controls").style.display = "block";
-    car.position.copy(hitResult.position);
+    Object.values(models).forEach(model => {
+      model.position.copy(hitResult.position);
+    });
   }
 }
 
@@ -81,25 +83,15 @@ function placeCar() {
 }
 
 function scaleCar(value) {
-  if (car) {
-    car.scale.set(value, value, value);
-  }
+  Object.values(models).forEach(model => {
+    model.scale.set(value, value, value);
+  });
 }
 
 function rotateCar(value) {
-  if (car) {
-    car.rotation.y = value;
-  }
-}
-
-function changeCarColor(value) {
-  if (car) {
-    car.traverse((child) => {
-      if (child.material && child.material.name === "CarPaint") {
-        child.material.color.setHex(value);
-      }
-    });
-  }
+  Object.values(models).forEach(model => {
+    model.rotation.y = value;
+  });
 }
 
 function loadModel(url) {
@@ -115,7 +107,7 @@ async function loadAllModels() {
   // Define model URLs for different colors
   const modelUrls = {
     black: "Steeradtext.glb",
-    orange: "Steeradtext.glb",
+    orange: "Steerad.glb",
     blue: "sterrad_anim.glb",
   };
 
