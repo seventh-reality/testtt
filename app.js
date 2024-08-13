@@ -74,7 +74,7 @@ function onResize() {
 }
 
 function render() {
-  animationMixers.forEach((mixer) => mixer.update(0.01)); // Update animation mixers
+  // animationMixers.forEach((mixer) => mixer.update(0.01)); // Update animation mixers
   renderer.render(scene, camera);
 }
 
@@ -110,7 +110,7 @@ function loadNewModel(url) {
     if (animations && animations.length) {
       const mixer = new THREE.AnimationMixer(model);
       animations.forEach((clip) => mixer.clipAction(clip).play());
-      animationMixers.push(mixer);
+      // animationMixers.push(mixer);
     }
     model.traverse((child) => {
       if (child.material) {
