@@ -5,12 +5,8 @@ import { GLTFLoader } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/l
 
 // ====== ThreeJS ======
 var renderer, scene, camera, floor, car, envMap;
+var models = {}; // Store references to car models
 var isCarPlaced = false;
-const modelUrls = {
-  black: "Steeradtext.glb",
-  orange: "Steeradtext.glb",
-  blue: "sterrad_anim.glb",
-};
 
 function setupRenderer(rendererCanvas) {
   const width = rendererCanvas.width;
@@ -115,20 +111,30 @@ function loadModel(url) {
   });
 }
 
-async function switchCarModel(modelUrl) {
-  if (car) {
-    scene.remove(car);
-  }
+async function loadAllModels() {
+  // Define model URLs for different colors
+  const modelUrls = {
+    black: "Steeradtext.glb",
+    orange: "Steeradtext.glb",
+    blue: "sterrad_anim.glb",
+  };
 
-  car = await loadModel(modelUrl);
-  car.traverse((child) => {
-    if (child.material) {
-      child.material.envMap = envMap;
-      child.material.needsUpdate = true;
-    }
-  });
-  car.scale.set(0.5, 0.5, 0.5);
-  scene.add(car);
+  // Load all models
+  for (const [color, url] of Object.entries(modelUrls)) {
+    models[color] = await loadModel(url);
+    models[color].traverse((child) => {
+      if (child.material) {
+        child.material.envMap = envMap;
+        child.material.needsUpdate = true;
+      }
+    });
+    models[color].scale.set(0.5, 0.5, 0.5);
+    scene.add(models[color]);
+    models[color].visible = false; // Hide all models initially
+  }
+  
+  // Show the black model by default
+  models.black.visible = true;
 
   document.getElementById("loading-screen").style.display = "none";
   document.getElementById("initializing").style.display = "block";
@@ -150,6 +156,16 @@ async function switchCarModel(modelUrl) {
   });
 }
 
+function showModel(color) {
+  // Hide all models
+  Object.values(models).forEach(model => model.visible = false);
+  
+  // Show the selected model
+  if (models[color]) {
+    models[color].visible = true;
+  }
+}
+
 // ====== Onirix SDK ======
 
 const OX = new OnirixSDK(
@@ -164,22 +180,21 @@ OX.init(config)
   .then((rendererCanvas) => {
     setupRenderer(rendererCanvas);
 
-    switchCarModel(modelUrls.black); // Initialize with the black model
-    switchCarModel(modelUrls.orange);
-    switchCarModel(modelUrls.blue);
+    loadAllModels(); // Load all models initially
+
     document.getElementById("black").addEventListener("click", () => {
       document.getElementById("audio").play();
-      switchCarModel(modelUrls.black);
+      showModel("black");
     });
 
     document.getElementById("orange").addEventListener("click", () => {
       document.getElementById("audio").play();
-      switchCarModel(modelUrls.orange);
+      showModel("orange");
     });
 
     document.getElementById("blue").addEventListener("click", () => {
       document.getElementById("audio").play();
-      switchCarModel(modelUrls.blue);
+      showModel("blue");
     });
 
     OX.subscribe(OnirixSDK.Events.OnPose, function (pose) {
