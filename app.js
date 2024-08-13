@@ -4,7 +4,7 @@ import * as THREE from "https://cdn.skypack.dev/three@0.127.0";
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/loaders/GLTFLoader.js";
 
 // ====== ThreeJS ======
-var renderer, scene, camera, floor, envMap;
+var renderer, scene, camera, car, model, floor, envMap;
 var models = {}; // Store references to car models
 var isCarPlaced = false;
 
