@@ -1,11 +1,9 @@
 // ====== Imports ======
-
 import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.8.1/dist/ox-sdk.esm.js";
 import * as THREE from "https://cdn.skypack.dev/three@0.127.0";
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/loaders/GLTFLoader.js";
 
 // ====== ThreeJS ======
-
 var renderer, scene, camera, floor, car, envMap;
 var isCarPlaced = false;
 
@@ -51,8 +49,9 @@ function setupRenderer(rendererCanvas) {
     })
   );
 
-  // Rotate floor to be horizontal
+  // Rotate floor to be horizontal and add it to the scene
   floor.rotateX(Math.PI / 2);
+  scene.add(floor); // Add floor to the scene
 }
 
 function updatePose(pose) {
@@ -108,7 +107,6 @@ function changeCarColor(value) {
 }
 
 // ====== Onirix SDK ======
-
 const OX = new OnirixSDK(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k"
 );
@@ -132,7 +130,6 @@ OX.init(config)
           child.material.envMap = envMap;
           child.material.needsUpdate = true;
         }
-      
       });
       car.scale.set(0.5, 0.5, 0.5);
       scene.add(car);
@@ -156,5 +153,31 @@ OX.init(config)
       rotationSlider.addEventListener("input", () => {
         rotateCar((rotationSlider.value * Math.PI) / 180);
       });
-    }
-                    }
+    });
+
+    // Subscribe to events
+    OX.subscribe(OnirixSDK.Events.OnPose, function (pose) {
+      updatePose(pose);
+    });
+
+    OX.subscribe(OnirixSDK.Events.OnResize, function () {
+      onResize();
+    });
+
+    OX.subscribe(OnirixSDK.Events.OnTouch, function (touchPos) {
+      // Handle touch events if needed
+    });
+
+    OX.subscribe(OnirixSDK.Events.OnHitTestResult, function (hitResult) {
+      document.getElementById("initializing").style.display = "none";
+      onHitResult(hitResult);
+    });
+
+    OX.subscribe(OnirixSDK.Events.OnFrame, function () {
+      render();
+    });
+  })
+  .catch((error) => {
+    // Error handling...
+    console.error(error);
+  });
