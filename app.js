@@ -157,7 +157,7 @@ OX.init(config)
 
     document.getElementById("tap-to-place").addEventListener("click", () => {
       placeCar();
-      document.getElementById("transform-controls").style.display = "none";
+      document.getElementById("transform-controls").style.display = "block";
       document.getElementById("color-controls").style.display = "block";
     });
 
@@ -174,22 +174,22 @@ OX.init(config)
     // Event listeners for the buttons
     document.getElementById("black").addEventListener("click", () => {
       document.getElementById("audio").play();
-      loadModel("Steerad.glb");
+      loadModel("C_ARM.glb");
     });
 
     document.getElementById("silver").addEventListener("click", () => {
       document.getElementById("audio").play();
-      loadModel("Steerad.glb");
+      loadModel("VITAL SIGNS MONITOR.glb");
     });
 
     document.getElementById("orange").addEventListener("click", () => {
       document.getElementById("audio").play();
-      loadModel("Steeradtext.glb");
+      loadModel("ETHOSs.glb");
     });
 
     document.getElementById("blue").addEventListener("click", () => {
       document.getElementById("audio").play();
-      loadModel("sterrad_anim.glb");
+      loadModel("bloodsny.glb");
     });
 
     // Subscribe to events
