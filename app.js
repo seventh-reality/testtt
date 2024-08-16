@@ -92,7 +92,7 @@ function handleTouchStart(event) {
     initialModelRotation = currentModel ? currentModel.rotation.y : 0;
   } else if (event.touches.length === 1) {
     // Start drag
-    dragging = true;
+    dragging = false;
     const touch = event.touches[0];
     dragStartPosition.set(touch.clientX, touch.clientY);
     if (currentModel) {
