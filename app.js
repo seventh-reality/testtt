@@ -179,17 +179,17 @@ OX.init(config)
 
     document.getElementById("silver").addEventListener("click", () => {
       document.getElementById("audio").play();
-      loadModel("VITAL SIGNS MONITOR.glb");
+      loadModel("Steerad.glb");
     });
 
     document.getElementById("orange").addEventListener("click", () => {
       document.getElementById("audio").play();
-      loadModel("ETHOSs.glb");
+      loadModel("Steeradtext.glb");
     });
 
     document.getElementById("blue").addEventListener("click", () => {
       document.getElementById("audio").play();
-      loadModel("bloodsny.glb");
+      loadModel("sterrad_anim.glb");
     });
 
     // Subscribe to events
