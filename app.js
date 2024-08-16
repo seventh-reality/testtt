@@ -113,7 +113,7 @@ const config = {
 OX.init(config)
   .then((rendererCanvas) => {
     setupRenderer(rendererCanvas);
-  
+  function loadModel(modelPath) {
     const gltfLoader = new GLTFLoader();
     gltfLoader.load("range_rover.glb", (gltf) => {
       car = gltf.scene;
@@ -123,7 +123,10 @@ OX.init(config)
           child.material.envMap = envMap;
           child.material.needsUpdate = true;
         }
+      }
       });
+  }
+  
       car.scale.set(0.5, 0.5, 0.5);
       scene.add(car);
     document.getElementById("loading-screen").style.display = "none";
