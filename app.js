@@ -266,7 +266,7 @@ OX.init(config)
 
     document.getElementById("tap-to-place").addEventListener("click", () => {
       placeCar();
-      document.getElementById("transform-controls").style.display = "none";
+      document.getElementById("transform-controls").style.display = "block";
       document.getElementById("color-controls").style.display = "block";
     });
 
