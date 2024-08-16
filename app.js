@@ -156,4 +156,5 @@ OX.init(config)
       rotationSlider.addEventListener("input", () => {
         rotateCar((rotationSlider.value * Math.PI) / 180);
       });
-    
+    }
+                    }
