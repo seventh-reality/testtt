@@ -114,7 +114,6 @@ OX.init(config)
   .then((rendererCanvas) => {
     setupRenderer(rendererCanvas);
   
-// Load car model
     const gltfLoader = new GLTFLoader();
     gltfLoader.load("range_rover.glb", (gltf) => {
       car = gltf.scene;
