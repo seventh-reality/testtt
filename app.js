@@ -1,9 +1,11 @@
 // ====== Imports ======
+
 import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.8.1/dist/ox-sdk.esm.js";
 import * as THREE from "https://cdn.skypack.dev/three@0.127.0";
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/loaders/GLTFLoader.js";
 
 // ====== ThreeJS ======
+
 var renderer, scene, camera, floor, car, envMap;
 var isCarPlaced = false;
 
@@ -49,9 +51,8 @@ function setupRenderer(rendererCanvas) {
     })
   );
 
-  // Rotate floor to be horizontal and add it to the scene
+  // Rotate floor to be horizontal
   floor.rotateX(Math.PI / 2);
-  scene.add(floor); // Add floor to the scene
 }
 
 function updatePose(pose) {
@@ -107,6 +108,7 @@ function changeCarColor(value) {
 }
 
 // ====== Onirix SDK ======
+
 const OX = new OnirixSDK(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k"
 );
@@ -153,8 +155,231 @@ OX.init(config)
       rotationSlider.addEventListener("input", () => {
         rotateCar((rotationSlider.value * Math.PI) / 180);
       });
-    });
 
+  document.getElementById("black").addEventListener("click", () => {
+       // changeCarColor(0x111111);
+	  
+	 document.getElementById("audio").play()
+	   const gltfLoader = new GLTFLoader();
+    gltfLoader.load("C_ARM.glb", (gltf) => {
+      car = gltf.scene;
+      car.traverse((child) => {
+        if (child.material) {
+          console.log("updating material");
+          child.material.envMap = envMap;
+          child.material.needsUpdate = true;
+        }
+      });
+      car.scale.set(0.5, 0.5, 0.5);
+	  scene.clear()
+      scene.add(car);
+
+      // All loaded, so hide loading screen
+      document.getElementById("loading-screen").style.display = "none";
+
+      document.getElementById("initializing").style.display = "block";
+
+      document.getElementById("tap-to-place").addEventListener("click", () => {
+        placeCar();
+        document.getElementById("transform-controls").style.display = "none";
+        document.getElementById("color-controls").style.display = "block";
+      });
+
+      const scaleSlider = document.getElementById("scale-slider");
+      scaleSlider.addEventListener("input", () => {
+        scaleCar(scaleSlider.value / 100);
+      });
+      const rotationSlider = document.getElementById("rotation-slider");
+      rotationSlider.addEventListener("input", () => {
+        rotateCar((rotationSlider.value * Math.PI) / 180);
+      });
+
+    
+    });
+      });
+
+      document.getElementById("silver").addEventListener("click", () => {
+        //changeCarColor(0xffffff);
+	      
+	 document.getElementById("audio").play()
+ 
+		const gltfLoader = new GLTFLoader();
+    gltfLoader.load("VITAL SIGNS MONITOR.glb", (gltf) => {
+      car = gltf.scene;
+      car.traverse((child) => {
+        if (child.material) {
+          console.log("updating material");
+          child.material.envMap = envMap;
+          child.material.needsUpdate = true;
+        }
+      });
+      car.scale.set(0.5, 0.5, 0.5);
+	  scene.clear()
+      scene.add(car);
+
+      // All loaded, so hide loading screen
+      document.getElementById("loading-screen").style.display = "none";
+
+      document.getElementById("initializing").style.display = "block";
+
+      document.getElementById("tap-to-place").addEventListener("click", () => {
+        placeCar();
+        document.getElementById("transform-controls").style.display = "none";
+        document.getElementById("color-controls").style.display = "block";
+      });
+
+      const scaleSlider = document.getElementById("scale-slider");
+      scaleSlider.addEventListener("input", () => {
+        scaleCar(scaleSlider.value / 100);
+      });
+      const rotationSlider = document.getElementById("rotation-slider");
+      rotationSlider.addEventListener("input", () => {
+        rotateCar((rotationSlider.value * Math.PI) / 180);
+      });
+
+    
+    });
+      });
+
+      document.getElementById("orange").addEventListener("click", () => {
+       // changeCarColor(0xff2600);
+	    
+	 document.getElementById("audio").play()
+	   const gltfLoader = new GLTFLoader();
+    gltfLoader.load("ETHOSs.glb", (gltf) => {
+      car = gltf.scene;
+      car.traverse((child) => {
+        if (child.material) {
+          console.log("updating material");
+          child.material.envMap = envMap;
+          child.material.needsUpdate = true;
+        }
+      });
+      car.scale.set(0.5, 0.5, 0.5);
+	  scene.clear()
+      scene.add(car);
+
+      // All loaded, so hide loading screen
+      document.getElementById("loading-screen").style.display = "none";
+
+      document.getElementById("initializing").style.display = "block";
+
+      document.getElementById("tap-to-place").addEventListener("click", () => {
+        placeCar();
+        document.getElementById("transform-controls").style.display = "none";
+        document.getElementById("color-controls").style.display = "block";
+      });
+
+      const scaleSlider = document.getElementById("scale-slider");
+      scaleSlider.addEventListener("input", () => {
+        scaleCar(scaleSlider.value / 100);
+      });
+      const rotationSlider = document.getElementById("rotation-slider");
+      rotationSlider.addEventListener("input", () => {
+        rotateCar((rotationSlider.value * Math.PI) / 180);
+      });
+
+    
+    });
+      });
+
+      document.getElementById("blue").addEventListener("click", () => {
+        // changeCarColor(0x0011ff);
+	     
+		
+	 document.getElementById("audio").play()
+		const gltfLoader = new GLTFLoader();
+		gltfLoader.load("bloodsny.glb", (gltf) => {
+      car = gltf.scene;
+      const animations = gltf.animations;		
+      car.traverse((child) => {
+        if (child.material) {
+          console.log("updating material");
+          child.material.envMap = envMap;
+          child.material.needsUpdate = true;
+        }
+	const mixer = new THREE.AnimationMixer(model);
+      const action = mixer.clipAction(animations[0]);
+      action.play();
+      animationMixers.push(mixer);      
+      });
+      car.scale.set(0.5, 0.5, 0.5);
+	  scene.clear();
+	  
+      scene.add(car);
+  function loadModel(scene) {
+  const loader = new GLTFLoader();
+  loader.crossOrigin = "anonymous";
+  loader.load('https://rawcdn.githack.com/mrdoob/three.js/76d16bd828c8d3e1870eac45aa466c20313cf944/examples/models/gltf/Nefertiti/Nefertiti.glb',(gltf) => {
+    
+    const model = gltf.scene.children[0]
+    model.scale.multiplyScalar(0.1)
+    model.position.y = - 1.5
+    
+    scene.add(model)
+    
+    createMarker(model, new Vector3(0,17,8))
+    createMarker(model, new Vector3(4,15,1.7))
+    createMarker(model, new Vector3(-6,0,4))
+
+  })
+  
+  
+}
+
+
+function createMarker(model, position) {
+  const loader = new TextureLoader();
+  loader.crossOrigin = "";
+  const map = loader.load("https://i.imgur.com/EZynrrA.png");
+  map.encoding = sRGBEncoding
+  
+  const spriteMaterialFront = new SpriteMaterial( { map } );
+  
+  const spriteFront = new Sprite( spriteMaterialFront );
+  spriteFront.position.copy(position) 
+  
+  const spriteMaterialRear = new SpriteMaterial({ 
+    map,
+    opacity: 0.3, 
+    transparent: true, 
+    depthTest: false
+  });
+  
+  const spriteRear = new Sprite( spriteMaterialRear );
+  spriteRear.position.copy(position) 
+  
+  model.add(spriteFront, spriteRear)
+}
+
+
+      // All loaded, so hide loading screen
+      document.getElementById("loading-screen").style.display = "none";
+
+      document.getElementById("initializing").style.display = "block";
+
+      document.getElementById("tap-to-place").addEventListener("click", () => {
+        placeCar();
+        document.getElementById("transform-controls").style.display = "none";
+        document.getElementById("color-controls").style.display = "block";
+      });
+
+      const scaleSlider = document.getElementById("scale-slider");
+      scaleSlider.addEventListener("input", () => {
+        scaleCar(scaleSlider.value / 100);
+      });
+      const rotationSlider = document.getElementById("rotation-slider");
+      rotationSlider.addEventListener("input", () => {
+        rotateCar((rotationSlider.value * Math.PI) / 180);
+      });
+
+    
+    });
+		
+      });
+	 
+ });
+ 
     // Subscribe to events
     OX.subscribe(OnirixSDK.Events.OnPose, function (pose) {
       updatePose(pose);
@@ -165,7 +390,7 @@ OX.init(config)
     });
 
     OX.subscribe(OnirixSDK.Events.OnTouch, function (touchPos) {
-      // Handle touch events if needed
+      onTouch(touchPos);
     });
 
     OX.subscribe(OnirixSDK.Events.OnHitTestResult, function (hitResult) {
@@ -173,11 +398,38 @@ OX.init(config)
       onHitResult(hitResult);
     });
 
-    OX.subscribe(OnirixSDK.Events.OnFrame, function () {
+    OX.subscribe(OnirixSDK.Events.OnFrame, function() {
       render();
     });
+
   })
   .catch((error) => {
-    // Error handling...
-    console.error(error);
+    // An error ocurred, chech error type and display it
+    document.getElementById("loading-screen").style.display = "none";
+
+    switch (error.name) {
+      case "INTERNAL_ERROR":
+        document.getElementById("error-title").innerText = "Internal Error";
+        document.getElementById("error-message").innerText =
+          "An unespecified error has occurred. Your device might not be compatible with this experience.";
+        break;
+
+      case "CAMERA_ERROR":
+        document.getElementById("error-title").innerText = "Camera Error";
+        document.getElementById("error-message").innerText =
+          "Could not access to your device's camera. Please, ensure you have given required permissions from your browser settings.";
+        break;
+
+      case "SENSORS_ERROR":
+        document.getElementById("error-title").innerText = "Sensors Error";
+        document.getElementById("error-message").innerText =
+          "Could not access to your device's motion sensors. Please, ensure you have given required permissions from your browser settings.";
+        break;
+
+      case "LICENSE_ERROR":
+        document.getElementById("error-title").innerText = "License Error";
+        document.getElementById("error-message").innerText = "This experience does not exist or has been unpublished.";
+        break;
+    }
+    document.getElementById("error-screen").style.display = "flex";
   });
