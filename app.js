@@ -86,7 +86,7 @@ function rotateCar(value) {
   car.rotation.y = value;
 }
 
-
+function loadModel(modelPath) {
   const gltfLoader = new GLTFLoader();
   gltfLoader.load("Steerad.glb", (gltf) => {
     car = gltf.scene;
@@ -100,6 +100,7 @@ function rotateCar(value) {
     car.scale.set(0.5, 0.5, 0.5);
     scene.clear(); // Clear the scene to remove the previous model
     scene.add(car);
+  }
   });
 
 
