@@ -9,14 +9,17 @@ var renderer, scene, camera, floor, envMap;
 var currentModel = null; // Reference to the currently loaded model
 var isCarPlaced = false;
 
-// For pinch-to-zoom
+// For pinch-to-zoom and pinch rotation
 var initialPinchDistance = null;
 var initialPinchScale = 1;
+var initialPinchAngle = null;
+var initialModelRotation = null;
 
 // For single-finger drag
 var dragging = false;
 var dragStartPosition = new THREE.Vector2();
 var dragObjectOffset = new THREE.Vector3();
+var modelWorldMatrix = new THREE.Matrix4();
 
 // Orbit Controls
 var controls;
@@ -74,7 +77,7 @@ function setupRenderer(rendererCanvas) {
   controls.dampingFactor = 0.25;
   controls.enableZoom = true;
 
-  // Add touch event listeners for pinch-to-zoom and drag
+  // Add touch event listeners for pinch-to-zoom, pinch rotation, and drag
   renderer.domElement.addEventListener('touchstart', handleTouchStart, false);
   renderer.domElement.addEventListener('touchmove', handleTouchMove, false);
   renderer.domElement.addEventListener('touchend', handleTouchEnd, false);
@@ -82,8 +85,11 @@ function setupRenderer(rendererCanvas) {
 
 function handleTouchStart(event) {
   if (event.touches.length === 2) {
+    // Pinch-to-zoom and pinch rotation
     initialPinchDistance = calculateDistance(event.touches[0], event.touches[1]);
     initialPinchScale = currentModel ? currentModel.scale.x : 1;
+    initialPinchAngle = calculateAngle(event.touches[0], event.touches[1]);
+    initialModelRotation = currentModel ? currentModel.rotation.y : 0;
   } else if (event.touches.length === 1) {
     // Start drag
     dragging = true;
@@ -91,19 +97,26 @@ function handleTouchStart(event) {
     dragStartPosition.set(touch.clientX, touch.clientY);
     if (currentModel) {
       // Calculate offset
-      const modelPosition = new THREE.Vector3();
-      modelPosition.setFromMatrixPosition(currentModel.matrixWorld);
-      dragObjectOffset.copy(modelPosition);
+      modelWorldMatrix.copy(currentModel.matrixWorld);
+      dragObjectOffset.copy(currentModel.position);
     }
   }
 }
 
 function handleTouchMove(event) {
   if (event.touches.length === 2 && initialPinchDistance !== null) {
+    // Pinch-to-zoom
     const currentPinchDistance = calculateDistance(event.touches[0], event.touches[1]);
     const scaleFactor = currentPinchDistance / initialPinchDistance;
     if (currentModel) {
       currentModel.scale.set(initialPinchScale * scaleFactor, initialPinchScale * scaleFactor, initialPinchScale * scaleFactor);
+    }
+
+    // Pinch rotation
+    const currentPinchAngle = calculateAngle(event.touches[0], event.touches[1]);
+    const angleDifference = currentPinchAngle - initialPinchAngle;
+    if (currentModel) {
+      currentModel.rotation.y = initialModelRotation + angleDifference;
     }
   } else if (event.touches.length === 1 && dragging) {
     const touch = event.touches[0];
@@ -112,7 +125,11 @@ function handleTouchMove(event) {
     
     // Move model based on drag delta
     if (currentModel) {
-      const deltaPosition = new THREE.Vector3(delta.x / window.innerWidth * 2, -delta.y / window.innerHeight * 2, 0);
+      const deltaPosition = new THREE.Vector3(
+        delta.x / window.innerWidth * 2,
+        -delta.y / window.innerHeight * 2,
+        0
+      ).applyMatrix4(modelWorldMatrix);
       currentModel.position.copy(dragObjectOffset).add(deltaPosition);
     }
     
@@ -125,6 +142,8 @@ function handleTouchEnd(event) {
   if (event.touches.length < 2) {
     initialPinchDistance = null;
     initialPinchScale = 1;
+    initialPinchAngle = null;
+    initialModelRotation = null;
     dragging = false;
   }
 }
@@ -133,6 +152,12 @@ function calculateDistance(touch1, touch2) {
   const dx = touch1.pageX - touch2.pageX;
   const dy = touch1.pageY - touch2.pageY;
   return Math.sqrt(dx * dx + dy * dy);
+}
+
+function calculateAngle(touch1, touch2) {
+  const dx = touch2.pageX - touch1.pageX;
+  const dy = touch2.pageY - touch1.pageY;
+  return Math.atan2(dy, dx);
 }
 
 function updatePose(pose) {
