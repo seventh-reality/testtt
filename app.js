@@ -88,7 +88,7 @@ function rotateCar(value) {
 
 function loadModel(modelPath) {
   const gltfLoader = new GLTFLoader();
-  gltfLoader.load(modelPath, (gltf) => {
+  gltfLoader.load("Steerad.glb", (gltf) => {
     car = gltf.scene;
     car.traverse((child) => {
       if (child.material) {
