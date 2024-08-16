@@ -174,7 +174,7 @@ OX.init(config)
     // Event listeners for the buttons
     document.getElementById("black").addEventListener("click", () => {
       document.getElementById("audio").play();
-      loadModel("C_ARM.glb");
+      loadModel("Steerad.glb");
     });
 
     document.getElementById("silver").addEventListener("click", () => {
