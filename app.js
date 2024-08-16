@@ -1,8 +1,7 @@
-
-
 import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.8.1/dist/ox-sdk.esm.js";
 import * as THREE from "https://cdn.skypack.dev/three@0.127.0";
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/loaders/GLTFLoader.js";
+import { OrbitControls } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/controls/OrbitControls.js";
 
 // ====== ThreeJS ======
 
@@ -12,6 +11,9 @@ var isCarPlaced = false;
 
 // For pinch-to-zoom
 var initialPinchDistance = null;
+
+// Orbit Controls
+var controls;
 
 function setupRenderer(rendererCanvas) {
   const width = rendererCanvas.width;
@@ -60,7 +62,13 @@ function setupRenderer(rendererCanvas) {
 
   scene.add(floor); // Make sure the floor is added to the scene
 
-  // Add touch event listeners
+  // Add orbit controls
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.25;
+  controls.enableZoom = true;
+
+  // Add touch event listeners for pinch-to-zoom
   renderer.domElement.addEventListener('touchstart', handleTouchStart, false);
   renderer.domElement.addEventListener('touchmove', handleTouchMove, false);
   renderer.domElement.addEventListener('touchend', handleTouchEnd, false);
@@ -77,7 +85,9 @@ function handleTouchMove(event) {
     const currentPinchDistance = calculateDistance(event.touches[0], event.touches[1]);
     const scaleFactor = currentPinchDistance / initialPinchDistance;
     initialPinchDistance = currentPinchDistance;
+
     if (currentModel) {
+      // Adjust the model scale directly
       currentModel.scale.set(scaleFactor, scaleFactor, scaleFactor);
     }
   }
@@ -110,9 +120,11 @@ function onResize() {
   camera.aspect = cameraParams.aspect;
   camera.updateProjectionMatrix();
   renderer.setSize(width, height);
+  controls.update(); // Update controls on resize
 }
 
 function render() {
+  controls.update(); // Update controls on each frame
   renderer.render(scene, camera);
 }
 
