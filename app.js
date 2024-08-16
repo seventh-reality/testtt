@@ -86,7 +86,7 @@ function rotateCar(value) {
   car.rotation.y = value;
 }
 
-function loadModel(modelPath) {
+
   const gltfLoader = new GLTFLoader();
   gltfLoader.load("Steerad.glb", (gltf) => {
     car = gltf.scene;
@@ -101,7 +101,7 @@ function loadModel(modelPath) {
     scene.clear(); // Clear the scene to remove the previous model
     scene.add(car);
   });
-}
+
 
 // ====== Onirix SDK ======
 const OX = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
