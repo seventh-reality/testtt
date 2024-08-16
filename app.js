@@ -11,6 +11,12 @@ var isCarPlaced = false;
 
 // For pinch-to-zoom
 var initialPinchDistance = null;
+var initialPinchScale = 1;
+
+// For single-finger drag
+var dragging = false;
+var dragStartPosition = new THREE.Vector2();
+var dragObjectOffset = new THREE.Vector3();
 
 // Orbit Controls
 var controls;
@@ -68,7 +74,7 @@ function setupRenderer(rendererCanvas) {
   controls.dampingFactor = 0.25;
   controls.enableZoom = true;
 
-  // Add touch event listeners for pinch-to-zoom
+  // Add touch event listeners for pinch-to-zoom and drag
   renderer.domElement.addEventListener('touchstart', handleTouchStart, false);
   renderer.domElement.addEventListener('touchmove', handleTouchMove, false);
   renderer.domElement.addEventListener('touchend', handleTouchEnd, false);
@@ -77,6 +83,18 @@ function setupRenderer(rendererCanvas) {
 function handleTouchStart(event) {
   if (event.touches.length === 2) {
     initialPinchDistance = calculateDistance(event.touches[0], event.touches[1]);
+    initialPinchScale = currentModel ? currentModel.scale.x : 1;
+  } else if (event.touches.length === 1) {
+    // Start drag
+    dragging = true;
+    const touch = event.touches[0];
+    dragStartPosition.set(touch.clientX, touch.clientY);
+    if (currentModel) {
+      // Calculate offset
+      const modelPosition = new THREE.Vector3();
+      modelPosition.setFromMatrixPosition(currentModel.matrixWorld);
+      dragObjectOffset.copy(modelPosition);
+    }
   }
 }
 
@@ -84,18 +102,30 @@ function handleTouchMove(event) {
   if (event.touches.length === 2 && initialPinchDistance !== null) {
     const currentPinchDistance = calculateDistance(event.touches[0], event.touches[1]);
     const scaleFactor = currentPinchDistance / initialPinchDistance;
-    initialPinchDistance = currentPinchDistance;
-
     if (currentModel) {
-      // Adjust the model scale directly
-      currentModel.scale.set(scaleFactor, scaleFactor, scaleFactor);
+      currentModel.scale.set(initialPinchScale * scaleFactor, initialPinchScale * scaleFactor, initialPinchScale * scaleFactor);
     }
+  } else if (event.touches.length === 1 && dragging) {
+    const touch = event.touches[0];
+    const currentTouchPosition = new THREE.Vector2(touch.clientX, touch.clientY);
+    const delta = new THREE.Vector2().subVectors(currentTouchPosition, dragStartPosition);
+    
+    // Move model based on drag delta
+    if (currentModel) {
+      const deltaPosition = new THREE.Vector3(delta.x / window.innerWidth * 2, -delta.y / window.innerHeight * 2, 0);
+      currentModel.position.copy(dragObjectOffset).add(deltaPosition);
+    }
+    
+    // Update start position
+    dragStartPosition.copy(currentTouchPosition);
   }
 }
 
 function handleTouchEnd(event) {
   if (event.touches.length < 2) {
     initialPinchDistance = null;
+    initialPinchScale = 1;
+    dragging = false;
   }
 }
 
@@ -259,7 +289,7 @@ OX.init(config)
       onHitResult(hitResult);
     });
 
-    OX.subscribe(OnirixSDK.Events.OnFrame, function() {
+    OX.subscribe(OnirixSDK.Events.OnFrame, function () {
       render();
     });
   })
