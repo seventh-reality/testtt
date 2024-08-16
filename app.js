@@ -10,6 +10,9 @@ var renderer, scene, camera, floor, envMap;
 var currentModel = null; // Reference to the currently loaded model
 var isCarPlaced = false;
 
+// For pinch-to-zoom
+var initialPinchDistance = null;
+
 function setupRenderer(rendererCanvas) {
   const width = rendererCanvas.width;
   const height = rendererCanvas.height;
@@ -56,6 +59,40 @@ function setupRenderer(rendererCanvas) {
   floor.rotateX(Math.PI / 2);
 
   scene.add(floor); // Make sure the floor is added to the scene
+
+  // Add touch event listeners
+  renderer.domElement.addEventListener('touchstart', handleTouchStart, false);
+  renderer.domElement.addEventListener('touchmove', handleTouchMove, false);
+  renderer.domElement.addEventListener('touchend', handleTouchEnd, false);
+}
+
+function handleTouchStart(event) {
+  if (event.touches.length === 2) {
+    initialPinchDistance = calculateDistance(event.touches[0], event.touches[1]);
+  }
+}
+
+function handleTouchMove(event) {
+  if (event.touches.length === 2 && initialPinchDistance !== null) {
+    const currentPinchDistance = calculateDistance(event.touches[0], event.touches[1]);
+    const scaleFactor = currentPinchDistance / initialPinchDistance;
+    initialPinchDistance = currentPinchDistance;
+    if (currentModel) {
+      currentModel.scale.set(scaleFactor, scaleFactor, scaleFactor);
+    }
+  }
+}
+
+function handleTouchEnd(event) {
+  if (event.touches.length < 2) {
+    initialPinchDistance = null;
+  }
+}
+
+function calculateDistance(touch1, touch2) {
+  const dx = touch1.pageX - touch2.pageX;
+  const dy = touch1.pageY - touch2.pageY;
+  return Math.sqrt(dx * dx + dy * dy);
 }
 
 function updatePose(pose) {
