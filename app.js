@@ -433,3 +433,56 @@ function createMarker(model, position) {
     }
     document.getElementById("error-screen").style.display = "flex";
   });
+function loadModel(modelPath, scene) {
+  // Clear the scene before loading the new model
+  while (scene.children.length > 0) { 
+    scene.remove(scene.children[0]); 
+  }
+
+  const gltfLoader = new GLTFLoader();
+  gltfLoader.load(modelPath, (gltf) => {
+    const newModel = gltf.scene;
+    const animations = gltf.animations;
+
+    // If there are animations, set them up
+    if (animations && animations.length > 0) {
+      const mixer = new THREE.AnimationMixer(newModel);
+      const action = mixer.clipAction(animations[0]);
+      action.play();
+      animationMixers.push(mixer);
+    }
+
+    newModel.traverse((child) => {
+      if (child.material) {
+        console.log("updating material");
+        child.material.envMap = envMap;
+        child.material.needsUpdate = true;
+      }
+    });
+
+    newModel.scale.set(0.5, 0.5, 0.5);
+    scene.add(newModel);
+  });
+}
+
+// Event listeners for the buttons
+document.getElementById("black").addEventListener("click", () => {
+  document.getElementById("audio").play();
+  loadModel("C_ARM.glb", scene);
+});
+
+document.getElementById("silver").addEventListener("click", () => {
+  document.getElementById("audio").play();
+  loadModel("VITAL SIGNS MONITOR.glb", scene);
+});
+
+document.getElementById("orange").addEventListener("click", () => {
+  document.getElementById("audio").play();
+  loadModel("ETHOSs.glb", scene);
+});
+
+document.getElementById("blue").addEventListener("click", () => {
+  document.getElementById("audio").play();
+  loadModel("bloodsny.glb", scene);
+});
+
