@@ -230,9 +230,14 @@ function loadModel(modelPath) {
 
     newModel.scale.set(0.5, 0.5, 0.5);
 
+    // Remove the current model if it exists
     if (currentModel) {
       scene.remove(currentModel);
     }
+
+    // Reset dragging state
+    dragging = false;
+
     currentModel = newModel;
     scene.add(currentModel);
   });
