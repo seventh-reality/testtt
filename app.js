@@ -123,7 +123,7 @@ OX.init(config)
           child.material.envMap = envMap;
           child.material.needsUpdate = true;
         }
-      }
+      
       });
   }
   
