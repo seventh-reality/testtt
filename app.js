@@ -85,10 +85,17 @@ function scaleCar(value) {
 function rotateCar(value) {
   car.rotation.y = value;
 }
+function changeCarColor(value) {
+  car.traverse((child) => {
+    if (child.material && child.material.name === "CarPaint") {
+      child.material.color.setHex(value);
+    }
+  });
+}
 
 function loadModel(modelPath) {
   const gltfLoader = new GLTFLoader();
-  gltfLoader.load("Steerad.glb", (gltf) => {
+  gltfLoader.load(modelPath, (gltf) => {
     car = gltf.scene;
     car.traverse((child) => {
       if (child.material) {
@@ -100,9 +107,8 @@ function loadModel(modelPath) {
     car.scale.set(0.5, 0.5, 0.5);
     scene.clear(); // Clear the scene to remove the previous model
     scene.add(car);
-  }
   });
-
+}
 
 // ====== Onirix SDK ======
 const OX = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
@@ -115,6 +121,21 @@ OX.init(config)
   .then((rendererCanvas) => {
     setupRenderer(rendererCanvas);
 
+// Load car model
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.load("range_rover.glb", (gltf) => {
+      car = gltf.scene;
+      car.traverse((child) => {
+        if (child.material) {
+          console.log("updating material");
+          child.material.envMap = envMap;
+          child.material.needsUpdate = true;
+        }
+      });
+      car.scale.set(0.5, 0.5, 0.5);
+      scene.add(car);
+    document.getElementById("loading-screen").style.display = "none";
+    document.getElementById("initializing").style.display = "block";  
     document.getElementById("tap-to-place").addEventListener("click", () => {
       placeCar();
       document.getElementById("transform-controls").style.display = "none";
