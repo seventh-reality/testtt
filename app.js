@@ -85,13 +85,6 @@ function scaleCar(value) {
 function rotateCar(value) {
   car.rotation.y = value;
 }
-function changeCarColor(value) {
-  car.traverse((child) => {
-    if (child.material && child.material.name === "CarPaint") {
-      child.material.color.setHex(value);
-    }
-  });
-}
 
 function loadModel(modelPath) {
   const gltfLoader = new GLTFLoader();
@@ -198,3 +191,4 @@ OX.init(config)
   .catch((error) => {
     // Error handling...
   });
+    
