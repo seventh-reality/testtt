@@ -270,7 +270,7 @@ OX.init(config)
       document.getElementById("color-controls").style.display = "block";
     });
 
-    const scaleSlider = document.getElementById("scale-slider");
+   /* const scaleSlider = document.getElementById("scale-slider");
     scaleSlider.addEventListener("input", () => {
       scaleCar(scaleSlider.value / 100);
     });
@@ -278,7 +278,7 @@ OX.init(config)
     const rotationSlider = document.getElementById("rotation-slider");
     rotationSlider.addEventListener("input", () => {
       rotateCar((rotationSlider.value * Math.PI) / 180);
-    });
+    }); */
 
     // Event listeners for the buttons
     document.getElementById("black").addEventListener("click", () => {
