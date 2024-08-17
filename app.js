@@ -8,7 +8,6 @@ import { OrbitControls } from "https://cdn.skypack.dev/three@0.127.0/examples/js
 var renderer, scene, camera, floor, envMap;
 var currentModel = null; // Reference to the currently loaded model
 var isCarPlaced = false;
-var isModelVisible = true;
 
 // For pinch-to-zoom and pinch rotation
 var initialPinchDistance = null;
@@ -243,12 +242,6 @@ function loadModel(modelPath) {
     scene.add(currentModel);
   });
 }
-function toggleModelVisibility() {
-  if (currentModel) {
-    isModelVisible = !isModelVisible;
-    currentModel.visible = isModelVisible;
-  }
-}
 
 // ====== Onirix SDK ======
 
@@ -275,7 +268,6 @@ OX.init(config)
       placeCar();
       document.getElementById("transform-controls").style.display = "block";
       document.getElementById("color-controls").style.display = "block";
-      document.getElementById("tap-to-place").style.display = "block";
     });
 
    /* const scaleSlider = document.getElementById("scale-slider");
@@ -308,25 +300,6 @@ OX.init(config)
       document.getElementById("audio").play();
       loadModel("sterrad_anim.glb");
     });
-document.getElementById("black").addEventListener("click", () => {
-  document.getElementById("audio").play();
-  toggleModelVisibility(); // Toggle visibility instead of loading a new model
-});
-
-document.getElementById("silver").addEventListener("click", () => {
-  document.getElementById("audio").play();
-  toggleModelVisibility(); // Toggle visibility instead of loading a new model
-});
-
-document.getElementById("orange").addEventListener("click", () => {
-  document.getElementById("audio").play();
-  toggleModelVisibility(); // Toggle visibility instead of loading a new model
-});
-
-document.getElementById("blue").addEventListener("click", () => {
-  document.getElementById("audio").play();
-  toggleModelVisibility(); // Toggle visibility instead of loading a new model
-});
 
     // Subscribe to events
     OX.subscribe(OnirixSDK.Events.OnPose, function (pose) {
