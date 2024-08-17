@@ -307,6 +307,25 @@ OX.init(config)
       document.getElementById("audio").play();
       loadModel("sterrad_anim.glb");
     });
+document.getElementById("black").addEventListener("click", () => {
+  document.getElementById("audio").play();
+  toggleModelVisibility(); // Toggle visibility instead of loading a new model
+});
+
+document.getElementById("silver").addEventListener("click", () => {
+  document.getElementById("audio").play();
+  toggleModelVisibility(); // Toggle visibility instead of loading a new model
+});
+
+document.getElementById("orange").addEventListener("click", () => {
+  document.getElementById("audio").play();
+  toggleModelVisibility(); // Toggle visibility instead of loading a new model
+});
+
+document.getElementById("blue").addEventListener("click", () => {
+  document.getElementById("audio").play();
+  toggleModelVisibility(); // Toggle visibility instead of loading a new model
+});
 
     // Subscribe to events
     OX.subscribe(OnirixSDK.Events.OnPose, function (pose) {
