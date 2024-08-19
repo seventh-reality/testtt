@@ -45,11 +45,36 @@ function setupRenderer(rendererCanvas) {
   scene = new THREE.Scene();
 
   // Add some lights
-  const hemisphereLight = new THREE.HemisphereLight(0xbbbbff, 0x444422);
-  scene.add(hemisphereLight);
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-  directionalLight.position.set(0, 10, 0);
-  scene.add(directionalLight);
+  // Add lights to the scene
+const ambientLight = new THREE.AmbientLight(0x404040, 1); // Soft white light
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Main light source
+directionalLight.position.set(5, 10, 7.5); // Position the light
+directionalLight.castShadow = true; // Enable shadows
+scene.add(directionalLight);
+
+// Configure shadow properties
+renderer.shadowMap.enabled = true; // Enable shadow mapping
+renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadows
+
+// Set up the floor to receive shadows
+floor.receiveShadow = true;
+
+// Set up the model to cast shadows
+if (currentModel) {
+    currentModel.traverse((child) => {
+        if (child.isMesh) {
+            child.castShadow = true; // Enable shadow casting for the model
+        }
+    });
+}
+
+// Add a point light for additional realism
+const pointLight = new THREE.PointLight(0xff0000, 1, 100); // Red point light
+pointLight.position.set(10, 10, 10);
+pointLight.castShadow = true; // Enable shadows for the point light
+scene.add(pointLight);
 
   // Load env map
   const textureLoader = new THREE.TextureLoader();
