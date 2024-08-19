@@ -5,7 +5,6 @@ import { OrbitControls } from "https://cdn.skypack.dev/three@0.127.0/examples/js
 
 // ====== ThreeJS ======
 var renderer, scene, camera, floor, envMap;
-
 var currentModel = null; // Reference to the currently loaded model 
 var isCarPlaced = false;
 
@@ -242,18 +241,7 @@ function loadModel(modelPath) {
    scene.add(currentModel);
   });
 }
-function toggleModel() {
-    if (models.length > 0) {
-        // Remove the current model from the scene
-        if (models[currentModelIndex]) {
-            scene.remove(models[currentModelIndex]);
-        }
-        // Update the index to the next model
-        currentModelIndex = (currentModelIndex + 1) % models.length;
-        // Add the new current model to the scene
-        scene.add(models[currentModelIndex]);
-    }
-}
+
 
 
 // ====== Onirix SDK ======
@@ -273,8 +261,7 @@ OX.init(config)
  
 
 // Example usage
-const modelPaths = ["Steerad.glb", "Steeradtext.glb", "sterrad_anim.glb"]; // Add paths to your models
-loadModels(modelPaths);
+  loadModel("Steerad.glb");
    
    
 
