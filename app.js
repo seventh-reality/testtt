@@ -244,16 +244,6 @@ function loadModel(modelPath) {
     scene.add(currentModel);
   });
 }
-function toggleModel(index) {
-    if (models.length > 0) {
-        if (currentModel) {
-            scene.remove(currentModel); // Remove current model
-        }
-        currentModelIndex = index;
-        currentModel = models[currentModelIndex];
-        scene.add(currentModel); // Add the selected model
-    }
-}
 
 // ====== Onirix SDK ======
 
