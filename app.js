@@ -120,7 +120,7 @@ OX.init(config)
     loadModels(modelPaths);
 
     document.getElementById("loading-screen").style.display = "none";
-    document.getElementById("initializing").style.display = "block";
+    document.getElementById("initializing").style.display = "none";
 
     document.getElementById("tap-to-place").addEventListener("click", () => {
       placeCar();
