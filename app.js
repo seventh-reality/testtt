@@ -7,6 +7,8 @@ import { OrbitControls } from "https://cdn.skypack.dev/three@0.127.0/examples/js
 
 var renderer, scene, camera, floor, envMap;
 var currentModel = null; // Reference to the currently loaded model
+var models = []; // Array to hold all loaded models
+var currentModelIndex = 0;
 var isCarPlaced = false;
 
 // For pinch-to-zoom and pinch rotation
@@ -242,6 +244,16 @@ function loadModel(modelPath) {
     scene.add(currentModel);
   });
 }
+function toggleModel(index) {
+    if (models.length > 0) {
+        if (currentModel) {
+            scene.remove(currentModel); // Remove current model
+        }
+        currentModelIndex = index;
+        currentModel = models[currentModelIndex];
+        scene.add(currentModel); // Add the selected model
+    }
+}
 
 // ====== Onirix SDK ======
 
@@ -258,7 +270,11 @@ OX.init(config)
     setupRenderer(rendererCanvas);
 
     // Initial model load
-    loadModel("Steerad.glb");
+    loadModel([
+        "Steerad.glb",
+        "Steeradtext.glb",
+        "sterrad_anim.glb",
+    ]);
 
     // Hide loading screen once the model is loaded
     document.getElementById("loading-screen").style.display = "none";
