@@ -256,7 +256,8 @@ OX.init(config)
 
     // Initial model load
   loadModel("Steerad.glb");
-  loadModel("Steeradtext.glb");  
+  loadModel("Steeradtext.glb");
+  loadModel("sterrad_anim.glb");   
    
 
     // Hide loading screen once the model is loaded
