@@ -8,6 +8,7 @@ import { OrbitControls } from "https://cdn.skypack.dev/three@0.127.0/examples/js
 var renderer, scene, camera, floor, envMap;
 var currentModel = null; // Reference to the currently loaded model
 var isCarPlaced = false;
+const models = [];
 
 // For pinch-to-zoom and pinch rotation
 var initialPinchDistance = null;
@@ -216,7 +217,38 @@ function changeCarColor(value) {
     });
   }
 }
+function loadModel(modelPath) {
+  const gltfLoader = new GLTFLoader();
+  gltfLoader.load(modelPath, (gltf) => {
+    const newModel = gltf.scene;
+    newModel.traverse((child) => {
+      if (child.material) {
+        child.material.envMap = envMap;
+        child.material.needsUpdate = true;
+      }
+    });
+    newModel.scale.set(0.5, 0.5, 0.5);
+    
+    // Add the model to the scene and the models array
+    scene.add(newModel);
+    models.push(newModel);
+  });
+}
+function toggleModelVisibility(index) {
+  if (models[index]) {
+    models[index].visible = !models[index].visible;
+  }
+}
 
+// Example of setting up buttons to toggle models
+document.getElementById("model1-button").addEventListener("click", () => toggleModelVisibility(0));
+document.getElementById("model2-button").addEventListener("click", () => toggleModelVisibility(1));
+document.getElementById("model3-button").addEventListener("click", () => toggleModelVisibility(2));
+
+// Load models
+loadModel("Steerad.glb");
+loadModel("Steeradtext.glb");
+loadModel("sterrad_anim.glb");
 function loadModel(modelPath) {
   const gltfLoader = new GLTFLoader();
   gltfLoader.load(modelPath, (gltf) => {
