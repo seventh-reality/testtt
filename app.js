@@ -222,31 +222,44 @@ function changeCarColor(value) {
   }
 }
 
-function loadModel(modelPath) {
-  const gltfLoader = new GLTFLoader();
-  gltfLoader.load(modelPath, (gltf) => {
-    const newModel = gltf.scene;
-    newModel.traverse((child) => {
-      if (child.material) {
-        child.material.envMap = envMap;
-        child.material.needsUpdate = true;
-      }
+function loadModels(modelPaths) {
+    const gltfLoader = new GLTFLoader();
+    modelPaths.forEach((modelPath, index) => {
+        gltfLoader.load(modelPath, (gltf) => {
+            const newModel = gltf.scene;
+            newModel.traverse((child) => {
+                if (child.material) {
+                    child.material.envMap = envMap;
+                    child.material.needsUpdate = true;
+                }
+            });
+            newModel.scale.set(0.5, 0.5, 0.5);
+            models.push(newModel); // Add loaded model to the array
+            if (index === 0) {
+                scene.add(newModel); // Add the first model to the scene
+            }
+        });
     });
-    newModel.scale.set(0.5, 0.5, 0.5);
-
-    // Remove the current model if it exists
-  if (currentModel) {
-     scene.remove(currentModel);
-      // Reset dragging state
-      dragging = false;
-    }
-   currentModel = newModel;
-   scene.add(currentModel);
-  });
 }
 
+function toggleModel() {
+    if (models.length > 0) {
+        // Remove the current model from the scene
+        if (models[currentModelIndex]) {
+            scene.remove(models[currentModelIndex]);
+        }
+        // Update the index to the next model
+        currentModelIndex = (currentModelIndex + 1) % models.length;
+        // Add the new current model to the scene
+        scene.add(models[currentModelIndex]);
+    }
+}
+// Example usage
+const modelPaths = ["Steerad.glb", "Steeradtext.glb", "sterrad_anim.glb"]; // Add paths to your models
+loadModels(modelPaths);
 
-
+// Add event listener for toggling models
+document.getElementById("toggle-button").addEventListener("click", toggleModel);
 // ====== Onirix SDK ======
 const OX = new OnirixSDK(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k"
@@ -264,7 +277,7 @@ OX.init(config)
  
 
 // Example usage
-  loadModel("Steerad.glb");
+  loadModels("Steerad.glb");
    
    
 
