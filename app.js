@@ -7,6 +7,8 @@ import { OrbitControls } from "https://cdn.skypack.dev/three@0.127.0/examples/js
 
 var renderer, scene, camera, floor, envMap;
 var currentModel = null; // Reference to the currently loaded model
+var models = []; // Array to hold all loaded models
+var currentModelIndex = 0;
 var isCarPlaced = false;
 
 // For pinch-to-zoom and pinch rotation
@@ -236,8 +238,11 @@ function loadModel(modelPath) {
     }
 
     // Reset dragging state
+    currentModelIndex = index;
+    currentModel = models[currentModelIndex];
+    scene.add(currentModel); // Add the selected model
     dragging = false;
-
+    models.push(newModel);
     currentModel = newModel;
     scene.add(currentModel);
   });
@@ -258,7 +263,10 @@ OX.init(config)
     setupRenderer(rendererCanvas);
 
     // Initial model load
-    loadModel("Steerad.glb");
+    loadModel([
+        "https://storage.googleapis.com/arjs-cors-bypass.appspot.com/cors-bypass/cors-bypass?url=https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/DamagedHelmet/glTF/DamagedHelmet.gltf",
+        "https://example.com/model2.gltf",
+        "https://example.com/model3.gltf",
 
     // Hide loading screen once the model is loaded
     document.getElementById("loading-screen").style.display = "none";
