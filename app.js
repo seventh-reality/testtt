@@ -221,7 +221,7 @@ function changeCarColor(value) {
 
 function loadModel(modelPaths) {
   const gltfLoader = new GLTFLoader();
-  modelPaths.forEach((modelPath, index) => {
+  modelPaths.forEach((modelPath) => {
     gltfLoader.load(modelPath, (gltf) => {
       const newModel = gltf.scene;
       newModel.traverse((child) => {
@@ -230,39 +230,45 @@ function loadModel(modelPaths) {
           child.material.needsUpdate = true;
         }
       });
-
       newModel.scale.set(0.5, 0.5, 0.5);
-      models.push(newModel); 
-      if (index === 0) {
-        currentModel = newModel;
-        scene.add(currentModel); // Add the first model to the scene
-      }
+      models.push(newModel); // Add each model to the models array
     });
   });
 }
 
+// Toggle between different models
+function toggleModel(index) {
+  if (models.length > 0) {
+    if (currentModel) {
+      scene.remove(currentModel); // Remove current model
+    }
+    currentModelIndex = index;
+    currentModel = models[currentModelIndex];
+    scene.add(currentModel); // Add the selected model
+  }
+}
+
 // ====== Onirix SDK ======
 
-const OX = new OnirixSDK(
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MjkzMiwiaWF0IjoxNjc2OTc0MTU0fQ.-tAVH_hQ9auG8j4y8uIb2N87x2X-uAAyaWJg96s2N_Q"
-);
-
-OX.initWorldTracking({
-  onResize: onResize,
-  onRender: render,
-  onPose: updatePose,
-  onHitTestResult: onHitResult,
-}).then(setupRenderer);
-
-document.getElementById("place-button").addEventListener("click", placeCar);
-document.getElementById("scale-slider").addEventListener("input", (event) => {
-  scaleCar(event.target.value);
-});
-document.getElementById("rotate-slider").addEventListener("input", (event) => {
-  rotateCar(event.target.value);
-});
-document.getElementById("color-picker").addEventListener("input", (event) => {
-  changeCarColor(event.target.value);
+const OX = new OnirixSDK({
+  apiKey: "e6e4e77cb94029ef449baf3ca4883655",
+  experienceId: "646bedea3da6650e678515a1",
 });
 
-OX.resume();
+OX.initWorldTracking({ features: ["hit-test"] }).then(() => {
+  const rendererCanvas = OX.getRendererCanvas();
+  setupRenderer(rendererCanvas);
+
+  OX.subscribe(OnirixSDK.Events.OnPose, updatePose);
+  OX.subscribe(OnirixSDK.Events.OnResize, onResize);
+  OX.subscribe(OnirixSDK.Events.OnRender, render);
+  OX.subscribe(OnirixSDK.Events.OnHitTestResult, onHitResult);
+  
+  loadModel([
+    "Steerad.glb",
+    "Steeradtext.glb",
+    "sterrad_anim.glb",
+  ]);
+
+  OX.start();
+});
