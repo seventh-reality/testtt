@@ -318,7 +318,7 @@ OX.init(config)
     // Event listeners for the buttons
     document.getElementById("black").addEventListener("click", () => {
       document.getElementById("audio").play();
-      loadModel("Steerad.glb");
+      loadModel1("Steerad.glb");
     });
 
     document.getElementById("silver").addEventListener("click", () => {
@@ -328,7 +328,7 @@ OX.init(config)
 
     document.getElementById("orange").addEventListener("click", () => {
       document.getElementById("audio").play();
-      loadModel("Steeradtext.glb");
+      loadModel2("Steeradtext.glb");
     });
 
     document.getElementById("blue").addEventListener("click", () => {
