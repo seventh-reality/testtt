@@ -219,142 +219,50 @@ function changeCarColor(value) {
   }
 }
 
-function loadModel(modelPath) {
+function loadModel(modelPaths) {
   const gltfLoader = new GLTFLoader();
-  gltfLoader.load(modelPath, (gltf) => {
-    const newModel = gltf.scene;
-    newModel.traverse((child) => {
-      if (child.material) {
-        child.material.envMap = envMap;
-        child.material.needsUpdate = true;
+  modelPaths.forEach((modelPath, index) => {
+    gltfLoader.load(modelPath, (gltf) => {
+      const newModel = gltf.scene;
+      newModel.traverse((child) => {
+        if (child.material) {
+          child.material.envMap = envMap;
+          child.material.needsUpdate = true;
+        }
+      });
+
+      newModel.scale.set(0.5, 0.5, 0.5);
+      models.push(newModel); 
+      if (index === 0) {
+        currentModel = newModel;
+        scene.add(currentModel); // Add the first model to the scene
       }
     });
-
-    newModel.scale.set(0.5, 0.5, 0.5);
-    models.push(newModel); 
-    scene.add(newModel); // Add all models to the scene  
   });
-
-  // Remove the current model if it exists
-  function toggleModel(index) { 
-    if (models.length > 0) { 
-      if (currentModel) { 
-        scene.remove(currentModel); 
-      } 
-      currentModelIndex = index; 
-      currentModel = models[currentModelIndex]; 
-      scene.add(currentModel); 
-    } 
-  }
 }
 
 // ====== Onirix SDK ======
 
 const OX = new OnirixSDK(
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MjkzMiwiaWF0IjoxNjc2OTc0MTU0fQ.-tAVH_hQ9auG8j4y8uIb2N87x2X-uAAyaWJg96s2N_Q"
 );
 
-const config = {
-  mode: OnirixSDK.TrackingMode.Surface,
-};
+OX.initWorldTracking({
+  onResize: onResize,
+  onRender: render,
+  onPose: updatePose,
+  onHitTestResult: onHitResult,
+}).then(setupRenderer);
 
-OX.init(config)
-  .then((rendererCanvas) => {
-    setupRenderer(rendererCanvas);
+document.getElementById("place-button").addEventListener("click", placeCar);
+document.getElementById("scale-slider").addEventListener("input", (event) => {
+  scaleCar(event.target.value);
+});
+document.getElementById("rotate-slider").addEventListener("input", (event) => {
+  rotateCar(event.target.value);
+});
+document.getElementById("color-picker").addEventListener("input", (event) => {
+  changeCarColor(event.target.value);
+});
 
-    // Initial model load
-   const modelPaths = ["Steerad.glb", "Steeradtext.glb", "sterrad_anim.glb"]; 
-        loadModel(modelPaths); 
-
-    // Hide loading screen once the model is loaded
-    document.getElementById("loading-screen").style.display = "none";
-    document.getElementById("initializing").style.display = "block";
-
-    document.getElementById("tap-to-place").addEventListener("click", () => {
-      placeCar();
-      document.getElementById("transform-controls").style.display = "block";
-      document.getElementById("color-controls").style.display = "block";
-    });
-
-   /* const scaleSlider = document.getElementById("scale-slider");
-    scaleSlider.addEventListener("input", () => {
-      scaleCar(scaleSlider.value / 100);
-    });
-
-    const rotationSlider = document.getElementById("rotation-slider");
-    rotationSlider.addEventListener("input", () => {
-      rotateCar((rotationSlider.value * Math.PI) / 180);
-    }); */
-
-    // Event listeners for the buttons
-    document.getElementById("black").addEventListener("click", () => {
-      document.getElementById("audio").play();
-      loadModel("Steerad.glb");
-    });
-
-    document.getElementById("silver").addEventListener("click", () => {
-      document.getElementById("audio").play();
-      loadModel("Steerad.glb");
-    });
-
-    document.getElementById("orange").addEventListener("click", () => {
-      document.getElementById("audio").play();
-      loadModel("Steeradtext.glb");
-    });
-
-    document.getElementById("blue").addEventListener("click", () => {
-      document.getElementById("audio").play();
-      loadModel("sterrad_anim.glb");
-    });
-
-    // Subscribe to events
-    OX.subscribe(OnirixSDK.Events.OnPose, function (pose) {
-      updatePose(pose);
-    });
-
-    OX.subscribe(OnirixSDK.Events.OnResize, function () {
-      onResize();
-    });
-
-    OX.subscribe(OnirixSDK.Events.OnTouch, function (touchPos) {
-      onTouch(touchPos);
-    });
-
-    OX.subscribe(OnirixSDK.Events.OnHitTestResult, function (hitResult) {
-      document.getElementById("initializing").style.display = "none";
-      onHitResult(hitResult);
-    });
-
-    OX.subscribe(OnirixSDK.Events.OnFrame, function () {
-      render();
-    });
-  })
-  .catch((error) => {
-    document.getElementById("loading-screen").style.display = "none";
-
-    switch (error.name) {
-      case "INTERNAL_ERROR":
-        document.getElementById("error-title").innerText = "Internal Error";
-        document.getElementById("error-message").innerText =
-          "An unspecified error has occurred. Your device might not be compatible with this experience.";
-        break;
-
-      case "CAMERA_ERROR":
-        document.getElementById("error-title").innerText = "Camera Error";
-        document.getElementById("error-message").innerText =
-          "Could not access your device's camera. Please ensure you have given required permissions from your browser settings.";
-        break;
-
-      case "SENSORS_ERROR":
-        document.getElementById("error-title").innerText = "Sensors Error";
-        document.getElementById("error-message").innerText =
-          "Could not access your device's motion sensors. Please ensure you have given required permissions from your browser settings.";
-        break;
-
-      case "LICENSE_ERROR":
-        document.getElementById("error-title").innerText = "License Error";
-        document.getElementById("error-message").innerText = "This experience does not exist or has been unpublished.";
-        break;
-    }
-    document.getElementById("error-screen").style.display = "flex";
-  });
+OX.resume();
