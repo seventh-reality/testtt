@@ -260,11 +260,7 @@ OX.init(config)
     setupRenderer(rendererCanvas);
 
     // Initial model load
-        loadModel([
-        "Steerad.glb",
-        "Steeradtext.glb",
-        "sterrad_anim.glb",
-    ]);
+        loadModel(["Steerad.glb"]);
 
     // Hide loading screen once the model is loaded
     document.getElementById("loading-screen").style.display = "none";
