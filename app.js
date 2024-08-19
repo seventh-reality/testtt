@@ -240,6 +240,50 @@ function loadModel(modelPath) {
    scene.add(currentModel);
   });
 }
+function loadModel1(modelPath) {
+  const gltfLoader = new GLTFLoader();
+  gltfLoader.load(modelPath, (gltf) => {
+    const newModel = gltf.scene;
+    newModel.traverse((child) => {
+      if (child.material) {
+        child.material.envMap = envMap;
+        child.material.needsUpdate = true;
+      }
+    });
+    newModel.scale.set(0.5, 0.5, 0.5);
+
+    // Remove the current model if it exists
+  if (currentModel) {
+     scene.remove(currentModel);
+      // Reset dragging state
+      dragging = false;
+    }
+   currentModel = newModel;
+   scene.add(currentModel);
+  });
+}
+function loadModel2(modelPath) {
+  const gltfLoader = new GLTFLoader();
+  gltfLoader.load(modelPath, (gltf) => {
+    const newModel = gltf.scene;
+    newModel.traverse((child) => {
+      if (child.material) {
+        child.material.envMap = envMap;
+        child.material.needsUpdate = true;
+      }
+    });
+    newModel.scale.set(0.5, 0.5, 0.5);
+
+    // Remove the current model if it exists
+  if (currentModel) {
+     scene.remove(currentModel);
+      // Reset dragging state
+      dragging = false;
+    }
+   currentModel = newModel;
+   scene.add(currentModel);
+  });
+}
 
 // ====== Onirix SDK ======
 const OX = new OnirixSDK(
@@ -256,8 +300,8 @@ OX.init(config)
 
     // Initial model load
   loadModel("Steerad.glb");
-  loadModel("Steeradtext.glb");
-  loadModel("sterrad_anim.glb");   
+  loadModel1("Steeradtext.glb");
+  loadModel2("sterrad_anim.glb");   
    
 
     // Hide loading screen once the model is loaded
