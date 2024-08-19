@@ -280,6 +280,7 @@ OX.init(config)
       placeCar();
       document.getElementById("transform-controls").style.display = "block";
       document.getElementById("color-controls").style.display = "block";
+      document.getElementById("tap-to-place").style.display = "none";
     });
 
    /* const scaleSlider = document.getElementById("scale-slider");
