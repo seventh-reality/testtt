@@ -233,18 +233,21 @@ function loadModel(modelPath) {
     newModel.scale.set(0.5, 0.5, 0.5);
     models.push(newModel); 
     scene.add(newModel); // Add all models to the scene  
+  });
 
-    // Remove the current model if it exists
-    function toggleModel(index) { 
+  // Remove the current model if it exists
+  function toggleModel(index) { 
     if (models.length > 0) { 
-        if (currentModel) { 
-            scene.remove(currentModel); 
-        } 
-        currentModelIndex = index; 
-        currentModel = models[currentModelIndex]; 
-        scene.add(currentModel); 
+      if (currentModel) { 
+        scene.remove(currentModel); 
+      } 
+      currentModelIndex = index; 
+      currentModel = models[currentModelIndex]; 
+      scene.add(currentModel); 
     } 
+  }
 }
+
 // ====== Onirix SDK ======
 
 const OX = new OnirixSDK(
