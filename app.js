@@ -250,14 +250,17 @@ function toggleModel(index) {
 
 // ====== Onirix SDK ======
 
-const OX = new OnirixSDK({
-  apiKey: "e6e4e77cb94029ef449baf3ca4883655",
-  experienceId: "646bedea3da6650e678515a1",
-});
+const OX = new OnirixSDK(
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k"
+);
 
-OX.initWorldTracking({ features: ["hit-test"] }).then(() => {
-  const rendererCanvas = OX.getRendererCanvas();
-  setupRenderer(rendererCanvas);
+const config = {
+  mode: OnirixSDK.TrackingMode.Surface,
+};
+
+OX.init(config)
+  .then((rendererCanvas) => {
+    setupRenderer(rendererCanvas);
 
   OX.subscribe(OnirixSDK.Events.OnPose, updatePose);
   OX.subscribe(OnirixSDK.Events.OnResize, onResize);
