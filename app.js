@@ -217,23 +217,7 @@ function changeCarColor(value) {
     });
   }
 }
-function loadModel(modelPath) {
-  const gltfLoader = new GLTFLoader();
-  gltfLoader.load(modelPath, (gltf) => {
-    const newModel = gltf.scene;
-    newModel.traverse((child) => {
-      if (child.material) {
-        child.material.envMap = envMap;
-        child.material.needsUpdate = true;
-      }
-    });
-    newModel.scale.set(0.5, 0.5, 0.5);
-    
-    // Add the model to the scene and the models array
-    scene.add(newModel);
-    models.push(newModel);
-  });
-}
+
 function toggleModelVisibility(index) {
   if (models[index]) {
     models[index].visible = !models[index].visible;
