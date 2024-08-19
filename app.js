@@ -266,7 +266,7 @@ OX.init(config)
     loadModel([
         "https://storage.googleapis.com/arjs-cors-bypass.appspot.com/cors-bypass/cors-bypass?url=https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/DamagedHelmet/glTF/DamagedHelmet.gltf",
         "https://example.com/model2.gltf",
-        "https://example.com/model3.gltf",
+        "https://example.com/model3.gltf",)]
 
     // Hide loading screen once the model is loaded
     document.getElementById("loading-screen").style.display = "none";
