@@ -255,7 +255,8 @@ OX.init(config)
     setupRenderer(rendererCanvas);
 
     // Initial model load
-    loadModel['Steerad.glb', 'Steeradtext.glb', 'sterrad_anim.glb'];
+   const loadModel['Steerad.glb', 'Steeradtext.glb', 'sterrad_anim.glb'];
+   const toggleModel = document.querySelector('#toggle-model'); 
 
     // Hide loading screen once the model is loaded
     document.getElementById("loading-screen").style.display = "none";
