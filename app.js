@@ -70,8 +70,6 @@ function setupRenderer(rendererCanvas) {
   floor.rotateX(Math.PI / 2);
   scene.add(floor);
 
-  // Make sure the floor is added to the scene
-
   // Add orbit controls
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
@@ -193,6 +191,7 @@ function onHitResult(hitResult) {
 
 function placeCar() {
   isCarPlaced = true;
+  document.getElementById("tap-to-place").disabled = true; // Disable the button after placing
   OX.start();
 }
 
@@ -267,16 +266,6 @@ OX.init(config)
       document.getElementById("color-controls").style.display = "block";
     });
 
-    /* const scaleSlider = document.getElementById("scale-slider");
-    scaleSlider.addEventListener("input", () => {
-      scaleCar(scaleSlider.value / 100);
-    });
-
-    const rotationSlider = document.getElementById("rotation-slider");
-    rotationSlider.addEventListener("input", () => {
-      rotateCar((rotationSlider.value * Math.PI) / 180);
-    }); */
-
     // Event listeners for the buttons
     document.getElementById("black").addEventListener("click", () => {
       document.getElementById("audio").play();
@@ -343,6 +332,6 @@ OX.init(config)
         document.getElementById("error-message").innerText =
           "This experience does not exist or has been unpublished.";
         break;
-      document.getElementById("error-screen").style.display = "flex";
     }
+    document.getElementById("error-screen").style.display = "flex";
   });
