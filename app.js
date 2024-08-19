@@ -19,56 +19,56 @@ var dragging = false;
 var dragStartPosition = new THREE.Vector2();
 var dragObjectOffset = new THREE.Vector3();
 var modelWorldMatrix = new THREE.Matrix4();
-
 var controls;
 
 function setupRenderer(rendererCanvas) {
-  const width = rendererCanvas.width;
-  const height = rendererCanvas.height;
+    const width = rendererCanvas.width;
+    const height = rendererCanvas.height;
 
-  renderer = new THREE.WebGLRenderer({ canvas: rendererCanvas, alpha: true });
-  renderer.setClearColor(0x000000, 0);
-  renderer.setSize(width, height);
-  renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer = new THREE.WebGLRenderer({ canvas: rendererCanvas, alpha: true });
+    renderer.setClearColor(0x000000, 0);
+    renderer.setSize(width, height);
+    renderer.outputEncoding = THREE.sRGBEncoding;
 
-  const cameraParams = OX.getCameraParameters();
-  camera = new THREE.PerspectiveCamera(cameraParams.fov, cameraParams.aspect, 0.1, 1000);
-  camera.matrixAutoUpdate = false;
+    const cameraParams = OX.getCameraParameters();
+    camera = new THREE.PerspectiveCamera(cameraParams.fov, cameraParams.aspect, 0.1, 1000);
+    camera.matrixAutoUpdate = false;
 
-  scene = new THREE.Scene();
+    scene = new THREE.Scene();
 
-  const hemisphereLight = new THREE.HemisphereLight(0xbbbbff, 0x444422);
-  scene.add(hemisphereLight);
+    const hemisphereLight = new THREE.HemisphereLight(0xbbbbff, 0x444422);
+    scene.add(hemisphereLight);
 
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-  directionalLight.position.set(0, 10, 0);
-  scene.add(directionalLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(0, 10, 0);
+    scene.add(directionalLight);
 
-  const textureLoader = new THREE.TextureLoader();
-  envMap = textureLoader.load("envmap.jpg");
-  envMap.mapping = THREE.EquirectangularReflectionMapping;
-  envMap.encoding = THREE.sRGBEncoding;
+    const textureLoader = new THREE.TextureLoader();
+    envMap = textureLoader.load("envmap.jpg");
+    envMap.mapping = THREE.EquirectangularReflectionMapping;
+    envMap.encoding = THREE.sRGBEncoding;
 
-  floor = new THREE.Mesh(
-    new THREE.PlaneGeometry(100, 100),
-    new THREE.MeshBasicMaterial({
-      color: 0xff00ff,
-      transparent: true,
-      opacity: 0.0,
-      side: THREE.DoubleSide,
-    })
-  );
-  floor.rotateX(Math.PI / 2);
-  scene.add(floor);
+    floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(100, 100),
+        new THREE.MeshBasicMaterial({
+            color: 0xff00ff,
+            transparent: true,
+            opacity: 0.0,
+            side: THREE.DoubleSide,
+        })
+    );
 
-  controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.25;
-  controls.enableZoom = true;
+    floor.rotateX(Math.PI / 2);
+    scene.add(floor);
 
-  renderer.domElement.addEventListener('touchstart', handleTouchStart, false);
-  renderer.domElement.addEventListener('touchmove', handleTouchMove, false);
-  renderer.domElement.addEventListener('touchend', handleTouchEnd, false);
+    controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.25;
+    controls.enableZoom = true;
+
+    renderer.domElement.addEventListener('touchstart', handleTouchStart, false);
+    renderer.domElement.addEventListener('touchmove', handleTouchMove, false);
+    renderer.domElement.addEventListener('touchend', handleTouchEnd, false);
 }
 
 function loadModels(modelPaths) {
@@ -104,78 +104,78 @@ function toggleModel() {
 }
 
 const OX = new OnirixSDK(
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k"
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k"
 );
 
 const config = {
-  mode: OnirixSDK.TrackingMode.Surface,
+    mode: OnirixSDK.TrackingMode.Surface,
 };
 
 OX.init(config)
-  .then((rendererCanvas) => {
-    setupRenderer(rendererCanvas);
-    const modelPaths = ["Steerad.glb", "Steeradtext.glb", "sterrad_anim.glb"];
-    loadModels(modelPaths);
+    .then((rendererCanvas) => {
+        setupRenderer(rendererCanvas);
+        const modelPaths = ["Steerad.glb", "Steeradtext.glb", "sterrad_anim.glb"];
+        loadModels(modelPaths);
 
-    document.getElementById("loading-screen").style.display = "none";
-    document.getElementById("initializing").style.display = "block";
+        document.getElementById("loading-screen").style.display = "none";
+        document.getElementById("initializing").style.display = "block";
 
-    document.getElementById("tap-to-place").addEventListener("click", () => {
-      placeCar();
-      document.getElementById("transform-controls").style.display = "block";
-      document.getElementById("color-controls").style.display = "block";
-      document.getElementById("tap-to-place").style.display = "none";
+        document.getElementById("tap-to-place").addEventListener("click", () => {
+            placeCar();
+            document.getElementById("transform-controls").style.display = "block";
+            document.getElementById("color-controls").style.display = "block";
+            document.getElementById("tap-to-place").style.display = "none";
+        });
+
+        document.getElementById("black").addEventListener("click", () => {
+            document.getElementById("audio").play();
+            changeCarColor(0x000000);
+        });
+
+        document.getElementById("silver").addEventListener("click", () => {
+            document.getElementById("audio").play();
+            changeCarColor(0xc0c0c0);
+        });
+
+        document.getElementById("orange").addEventListener("click", () => {
+            document.getElementById("audio").play();
+            changeCarColor(0xffa500);
+        });
+
+        document.getElementById("blue").addEventListener("click", () => {
+            document.getElementById("audio").play();
+            changeCarColor(0x0000ff);
+        });
+
+        OX.subscribe(OnirixSDK.Events.OnPose, updatePose);
+        OX.subscribe(OnirixSDK.Events.OnResize, onResize);
+        OX.subscribe(OnirixSDK.Events.OnTouch, onTouch);
+        OX.subscribe(OnirixSDK.Events.OnHitTestResult, onHitResult);
+        OX.subscribe(OnirixSDK.Events.OnFrame, render);
+    })
+    .catch((error) => {
+        document.getElementById("loading-screen").style.display = "none";
+        switch (error.name) {
+            case "INTERNAL_ERROR":
+                document.getElementById("error-title").innerText = "Internal Error";
+                document.getElementById("error-message").innerText =
+                    "An unspecified error has occurred. Your device might not be compatible with this experience.";
+                break;
+            case "CAMERA_ERROR":
+                document.getElementById("error-title").innerText = "Camera Error";
+                document.getElementById("error-message").innerText =
+                    "Could not access your device's camera. Please ensure you have given required permissions from your browser settings.";
+                break;
+            case "SENSORS_ERROR":
+                document.getElementById("error-title").innerText = "Sensors Error";
+                document.getElementById("error-message").innerText =
+                    "Could not access your device's motion sensors. Please ensure you have given required permissions from your browser settings.";
+                break;
+            case "LICENSE_ERROR":
+                document.getElementById("error-title").innerText = "License Error";
+                document.getElementById("error-message").innerText =
+                    "This experience does not exist or has been unpublished.";
+                break;
+        }
+        document.getElementById("error-screen").style.display = "flex";
     });
-
-    document.getElementById("black").addEventListener("click", () => {
-      document.getElementById("audio").play();
-      changeCarColor(0x000000);
-    });
-
-    document.getElementById("silver").addEventListener("click", () => {
-      document.getElementById("audio").play();
-      changeCarColor(0xc0c0c0);
-    });
-
-    document.getElementById("orange").addEventListener("click", () => {
-      document.getElementById("audio").play();
-      changeCarColor(0xffa500);
-    });
-
-    document.getElementById("blue").addEventListener("click", () => {
-      document.getElementById("audio").play();
-      changeCarColor(0x0000ff);
-    });
-
-    OX.subscribe(OnirixSDK.Events.OnPose, updatePose);
-    OX.subscribe(OnirixSDK.Events.OnResize, onResize);
-    OX.subscribe(OnirixSDK.Events.OnTouch, onTouch);
-    OX.subscribe(OnirixSDK.Events.OnHitTestResult, onHitResult);
-    OX.subscribe(OnirixSDK.Events.OnFrame, render);
-  })
-  .catch((error) => {
-    document.getElementById("loading-screen").style.display = "none";
-    switch (error.name) {
-      case "INTERNAL_ERROR":
-        document.getElementById("error-title").innerText = "Internal Error";
-        document.getElementById("error-message").innerText =
-          "An unspecified error has occurred. Your device might not be compatible with this experience.";
-        break;
-      case "CAMERA_ERROR":
-        document.getElementById("error-title").innerText = "Camera Error";
-        document.getElementById("error-message").innerText =
-          "Could not access your device's camera. Please ensure you have given required permissions from your browser settings.";
-        break;
-      case "SENSORS_ERROR":
-        document.getElementById("error-title").innerText = "Sensors Error";
-        document.getElementById("error-message").innerText =
-          "Could not access your device's motion sensors. Please ensure you have given required permissions from your browser settings.";
-        break;
-      case "LICENSE_ERROR":
-        document.getElementById("error-title").innerText = "License Error";
-        document.getElementById("error-message").innerText =
-          "This experience does not exist or has been unpublished.";
-        break;
-    }
-    document.getElementById("error-screen").style.display = "flex";
-  });
