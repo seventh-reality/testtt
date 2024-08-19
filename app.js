@@ -5,7 +5,9 @@ import { OrbitControls } from "https://cdn.skypack.dev/three@0.127.0/examples/js
 
 // ====== ThreeJS ======
 var renderer, scene, camera, floor, envMap;
+var models = []; // Array to hold multiple models
 var currentModel = null; // Reference to the currently loaded model
+var currentModelIndex = 0; 
 var isCarPlaced = false;
 
 
@@ -240,50 +242,19 @@ function loadModel(modelPath) {
    scene.add(currentModel);
   });
 }
-function loadModel1(modelPath) {
-  const gltfLoader = new GLTFLoader();
-  gltfLoader.load(modelPath, (gltf) => {
-    const newModel = gltf.scene;
-    newModel.traverse((child) => {
-      if (child.material) {
-        child.material.envMap = envMap;
-        child.material.needsUpdate = true;
-      }
-    });
-    newModel.scale.set(0.5, 0.5, 0.5);
-
-    // Remove the current model if it exists
-  if (currentModel) {
-     scene.remove(currentModel);
-      // Reset dragging state
-      dragging = false;
+function toggleModel() {
+    if (models.length > 0) {
+        // Remove the current model from the scene
+        if (models[currentModelIndex]) {
+            scene.remove(models[currentModelIndex]);
+        }
+        // Update the index to the next model
+        currentModelIndex = (currentModelIndex + 1) % models.length;
+        // Add the new current model to the scene
+        scene.add(models[currentModelIndex]);
     }
-   currentModel = newModel;
-   scene.add(currentModel);
-  });
 }
-function loadModel2(modelPath) {
-  const gltfLoader = new GLTFLoader();
-  gltfLoader.load(modelPath, (gltf) => {
-    const newModel = gltf.scene;
-    newModel.traverse((child) => {
-      if (child.material) {
-        child.material.envMap = envMap;
-        child.material.needsUpdate = true;
-      }
-    });
-    newModel.scale.set(0.5, 0.5, 0.5);
 
-    // Remove the current model if it exists
-  if (currentModel) {
-     scene.remove(currentModel);
-      // Reset dragging state
-      dragging = false;
-    }
-   currentModel = newModel;
-   scene.add(currentModel);
-  });
-}
 
 // ====== Onirix SDK ======
 const OX = new OnirixSDK(
@@ -299,9 +270,12 @@ OX.init(config)
     setupRenderer(rendererCanvas);
 
     // Initial model load
-  loadModel("Steerad.glb");
-  loadModel1("Steeradtext.glb");
-  loadModel2("sterrad_anim.glb");   
+ 
+
+// Example usage
+const modelPaths = ["Steerad.glb", "Steeradtext.glb", "sterrad_anim.glb"]; // Add paths to your models
+loadModels(modelPaths);
+   
    
 
     // Hide loading screen once the model is loaded
