@@ -5,9 +5,10 @@ import { OrbitControls } from "https://cdn.skypack.dev/three@0.127.0/examples/js
 
 // ====== ThreeJS ======
 var renderer, scene, camera, floor, envMap;
-var models = []; // Array to hold multiple models
+
 var currentModel = null; // Reference to the currently loaded model 
 var isCarPlaced = false;
+
 
 
 // For pinch-to-zoom and pinch rotation
