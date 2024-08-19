@@ -231,13 +231,13 @@ function loadModel(modelPath) {
     newModel.scale.set(0.5, 0.5, 0.5);
 
     // Remove the current model if it exists
-    if (currentModel) {
-      scene.remove(currentModel);
+  //  if (currentModel) {
+  //    scene.remove(currentModel);
       // Reset dragging state
-      dragging = false;
-    }
-    currentModel = newModel;
-    scene.add(currentModel);
+ //     dragging = false;
+ //   }
+ //   currentModel = newModel;
+//    scene.add(currentModel);
   });
 }
 
@@ -255,8 +255,8 @@ OX.init(config)
     setupRenderer(rendererCanvas);
 
     // Initial model load
-   const loadModel['Steerad.glb', 'Steeradtext.glb', 'sterrad_anim.glb'];
-   const toggleModel = document.querySelector('#toggle-model'); 
+  loadModel("Steerad.glb");
+   
 
     // Hide loading screen once the model is loaded
     document.getElementById("loading-screen").style.display = "none";
