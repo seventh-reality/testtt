@@ -234,13 +234,7 @@ function loadModel(modelPath) {
 
     // Remove the current model if it exists
     
-
-    // Reset dragging state
-    dragging = false;
-
-     });
-}
-function toggleModel(index) {
+   toggleModel(index) {
     if (models.length > 0) {
         if (currentModel) {
             scene.remove(currentModel); // Remove current model
@@ -250,6 +244,12 @@ function toggleModel(index) {
         scene.add(currentModel); // Add the selected model
     }
 }
+    // Reset dragging state
+    dragging = false;
+
+     });
+}
+
 
 // ====== Onirix SDK ======
 
