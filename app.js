@@ -7,6 +7,7 @@ import { OrbitControls } from "https://cdn.skypack.dev/three@0.127.0/examples/js
 var renderer, scene, camera, floor, envMap;
 var currentModel = null; // Reference to the currently loaded model
 var isCarPlaced = false;
+var loadModel=[];
 
 // For pinch-to-zoom and pinch rotation
 var initialPinchDistance = null;
