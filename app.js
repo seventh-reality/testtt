@@ -4,11 +4,9 @@ import { GLTFLoader } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/l
 import { OrbitControls } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/controls/OrbitControls.js";
 
 // ====== ThreeJS ======
-
 var renderer, scene, camera, floor, envMap;
 var currentModel = null; // Reference to the currently loaded model
 var isCarPlaced = false;
-const models = [];
 
 // For pinch-to-zoom and pinch rotation
 var initialPinchDistance = null;
@@ -46,6 +44,7 @@ function setupRenderer(rendererCanvas) {
   // Add some lights
   const hemisphereLight = new THREE.HemisphereLight(0xbbbbff, 0x444422);
   scene.add(hemisphereLight);
+
   const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
   directionalLight.position.set(0, 10, 0);
   scene.add(directionalLight);
@@ -69,8 +68,9 @@ function setupRenderer(rendererCanvas) {
 
   // Rotate floor to be horizontal
   floor.rotateX(Math.PI / 2);
+  scene.add(floor);
 
-  scene.add(floor); // Make sure the floor is added to the scene
+  // Make sure the floor is added to the scene
 
   // Add orbit controls
   controls = new OrbitControls(camera, renderer.domElement);
@@ -123,7 +123,7 @@ function handleTouchMove(event) {
     const touch = event.touches[0];
     const currentTouchPosition = new THREE.Vector2(touch.clientX, touch.clientY);
     const delta = new THREE.Vector2().subVectors(currentTouchPosition, dragStartPosition);
-    
+
     // Move model based on drag delta
     if (currentModel) {
       const deltaPosition = new THREE.Vector3(
@@ -132,10 +132,10 @@ function handleTouchMove(event) {
         0
       ).applyMatrix4(modelWorldMatrix);
       currentModel.position.copy(dragObjectOffset).add(deltaPosition);
+
+      // Update start position
+      dragStartPosition.copy(currentTouchPosition);
     }
-    
-    // Update start position
-    dragStartPosition.copy(currentTouchPosition);
   }
 }
 
@@ -218,21 +218,6 @@ function changeCarColor(value) {
   }
 }
 
-function toggleModelVisibility(index) {
-  if (models[index]) {
-    models[index].visible = !models[index].visible;
-  }
-}
-
-// Example of setting up buttons to toggle models
-document.getElementById("model1-button").addEventListener("click", () => toggleModelVisibility(0));
-document.getElementById("model2-button").addEventListener("click", () => toggleModelVisibility(1));
-document.getElementById("model3-button").addEventListener("click", () => toggleModelVisibility(2));
-
-// Load models
-loadModel("Steerad.glb");
-loadModel("Steeradtext.glb");
-loadModel("sterrad_anim.glb");
 function loadModel(modelPath) {
   const gltfLoader = new GLTFLoader();
   gltfLoader.load(modelPath, (gltf) => {
@@ -243,24 +228,20 @@ function loadModel(modelPath) {
         child.material.needsUpdate = true;
       }
     });
-
     newModel.scale.set(0.5, 0.5, 0.5);
 
     // Remove the current model if it exists
     if (currentModel) {
       scene.remove(currentModel);
+      // Reset dragging state
+      dragging = false;
     }
-
-    // Reset dragging state
-    dragging = false;
-
     currentModel = newModel;
     scene.add(currentModel);
   });
 }
 
 // ====== Onirix SDK ======
-
 const OX = new OnirixSDK(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k"
 );
@@ -286,7 +267,7 @@ OX.init(config)
       document.getElementById("color-controls").style.display = "block";
     });
 
-   /* const scaleSlider = document.getElementById("scale-slider");
+    /* const scaleSlider = document.getElementById("scale-slider");
     scaleSlider.addEventListener("input", () => {
       scaleCar(scaleSlider.value / 100);
     });
@@ -341,30 +322,27 @@ OX.init(config)
   })
   .catch((error) => {
     document.getElementById("loading-screen").style.display = "none";
-
     switch (error.name) {
       case "INTERNAL_ERROR":
         document.getElementById("error-title").innerText = "Internal Error";
         document.getElementById("error-message").innerText =
           "An unspecified error has occurred. Your device might not be compatible with this experience.";
         break;
-
       case "CAMERA_ERROR":
         document.getElementById("error-title").innerText = "Camera Error";
         document.getElementById("error-message").innerText =
           "Could not access your device's camera. Please ensure you have given required permissions from your browser settings.";
         break;
-
       case "SENSORS_ERROR":
         document.getElementById("error-title").innerText = "Sensors Error";
         document.getElementById("error-message").innerText =
           "Could not access your device's motion sensors. Please ensure you have given required permissions from your browser settings.";
         break;
-
       case "LICENSE_ERROR":
         document.getElementById("error-title").innerText = "License Error";
-        document.getElementById("error-message").innerText = "This experience does not exist or has been unpublished.";
+        document.getElementById("error-message").innerText =
+          "This experience does not exist or has been unpublished.";
         break;
+      document.getElementById("error-screen").style.display = "flex";
     }
-    document.getElementById("error-screen").style.display = "flex";
   });
