@@ -132,9 +132,9 @@ body {
 
 #color-controls {
     position: fixed;
-    bottom: 150px;
+    bottom: 2000px;
     left: 0;
-    width: 100%;
+    width: 0%;
     text-align: center;
     display: none;
     z-index: 2;
