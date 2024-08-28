@@ -100,12 +100,12 @@
             oxSDK;
             _controls = null;
             _transformControls = null;
+            _animationMixers = [];
+            _clock = new THREE.Clock(true);
+            _carPlaced = false;
 
             async init() {
                 this._raycaster = new THREE.Raycaster();
-                this._animationMixers = [];
-                this._clock = new THREE.Clock(true);
-                this._carPlaced = false;
 
                 const renderCanvas = await this.initSDK();
                 this.setupRenderer(renderCanvas);
@@ -165,6 +165,12 @@
                                 child.material.needsUpdate = true;
                             }
                         });
+
+                        // Set up animation mixer for the loaded model
+                        const mixer = new THREE.AnimationMixer(model);
+                        gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
+                        this._animationMixers.push(mixer);
+
                         model.scale.set(0.5, 0.5, 0.5);
                         this._models[i] = model;
                         if (i === 0) {
@@ -271,6 +277,12 @@
                 this._scene.add(this._model);
                 this._transformControls.attach(this._model); // Reattach transform controls to the new model
                 this._modelPlaced = true;
+
+                // Set up animation mixer for the new model
+                const mixer = new THREE.AnimationMixer(this._model);
+                this._animationMixers.forEach(mixer => mixer.stopAllAction()); // Stop all previous animations
+                this._animationMixers = [mixer];
+                this._model.animations.forEach((clip) => mixer.clipAction(clip).play());
             }
         }
 
