@@ -21,6 +21,7 @@
     <script type="module">
         import * as THREE from 'https://cdn.skypack.dev/three@0.127.0';
         import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/loaders/GLTFLoader.js';
+        import { OrbitControls } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/controls/OrbitControls.js';
         import OnirixSDK from 'https://unpkg.com/@onirix/ar-engine-sdk@1.8.1/dist/ox-sdk.esm.js';
 
         // Initialize Onirix SDK
@@ -41,6 +42,13 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.outputEncoding = THREE.sRGBEncoding;
             document.body.appendChild(renderer.domElement);
+
+            // Initialize OrbitControls
+            const controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+            controls.dampingFactor = 0.25;
+            controls.enableZoom = true; // Enable zooming with pinch or scroll
+            controls.enablePan = false; // Disable panning if you only want to rotate and zoom
 
             // Initialize audio components
             audioListener = new THREE.AudioListener();
@@ -123,6 +131,7 @@
             function animate() {
                 requestAnimationFrame(animate);
                 if (mixer) mixer.update(0.01); // Update the animation mixer
+                controls.update(); // Update the controls
                 render();
             }
 
