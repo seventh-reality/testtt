@@ -56,6 +56,11 @@
         #error-screen {
             display: none;
         }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 
@@ -73,10 +78,10 @@
         <button id="tap-to-place">Place Model</button>
     </div>
     <div id="color-controls">
-        <button id="black">Black</button>
-        <button id="blue">Blue</button>
-        <button id="orange">Orange</button>
-        <button id="silver">Silver</button>
+        <button id="black" disabled>Black</button>
+        <button id="blue" disabled>Blue</button>
+        <button id="orange" disabled>Orange</button>
+        <button id="silver" disabled>Silver</button>
     </div>
     <div id="buttons">
         <button onclick="loadModel('Steeradtext.glb')">Load Model 1</button>
@@ -135,21 +140,8 @@
                     if (this._model && !this.isCarPlaced()) {
                         this._model.position.copy(hitResult.position);
                         document.getElementById("transform-controls").style.display = "block";
+                        document.getElementById("color-controls").style.display = "block";
                     }
-                });
-
-                const gltfLoader = new GLTFLoader();
-                gltfLoader.load('Steerad.glb', (gltf) => {
-                    this._model = gltf.scene;
-                    this._model.traverse((child) => {
-                        if (child.material) {
-                            child.material.envMap = this._envMap;
-                            child.material.needsUpdate = true;
-                        }
-                    });
-                    this._model.scale.set(0.5, 0.5, 0.5);
-                    this._scene.add(this._model);
-                    this._modelPlaced = true;
                 });
             }
 
@@ -227,6 +219,26 @@
                     });
                 }
             }
+
+            loadModel(modelUrl) {
+                if (this._model) {
+                    this._scene.remove(this._model);
+                }
+
+                const loader = new GLTFLoader();
+                loader.load(modelUrl, (gltf) => {
+                    this._model = gltf.scene;
+                    this._model.traverse((child) => {
+                        if (child.material) {
+                            child.material.envMap = this._envMap;
+                            child.material.needsUpdate = true;
+                        }
+                    });
+                    this._model.scale.set(0.5, 0.5, 0.5);
+                    this._scene.add(this._model);
+                    this._carPlaced = false; // Reset car placement status
+                });
+            }
         }
 
         class OxExperienceUI {
@@ -254,10 +266,12 @@
                 this._orange = document.querySelector('#orange');
                 this._blue = document.querySelector('#blue');
                 this._silver = document.querySelector('#silver');
+                this._colorControls.querySelectorAll('button').forEach(button => button.disabled = true);
             }
 
             showControls() {
                 this._transformControls.style.display = 'block';
+                this._colorControls.querySelectorAll('button').forEach(button => button.disabled = false);
             }
 
             showColors() {
@@ -354,23 +368,7 @@
         }
 
         function loadModel(modelUrl) {
-            if (oxExp._model) {
-                oxExp._scene.remove(oxExp._model);
-            }
-
-            const loader = new GLTFLoader();
-            loader.load(modelUrl, (gltf) => {
-                oxExp._model = gltf.scene;
-                oxExp._model.traverse((child) => {
-                    if (child.material) {
-                        child.material.envMap = oxExp._envMap;
-                        child.material.needsUpdate = true;
-                    }
-                });
-                oxExp._model.scale.set(0.5, 0.5, 0.5);
-                oxExp._scene.add(oxExp._model);
-                oxExp._modelPlaced = true;
-            });
+            oxExp.loadModel(modelUrl);
         }
 
         function enterARView() {
