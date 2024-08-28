@@ -17,6 +17,7 @@
         <button onclick="loadModel('sterrad_anim.glb')">Load Model 2</button>
         <button onclick="loadModel('Steerad.glb')">Load Model 3</button>
         <button onclick="toggleAudio()">Play/Pause Audio</button>
+        <button onclick="enterARView()">AR View</button>
     </div>
     <script type="module">
         import * as THREE from 'https://cdn.skypack.dev/three@0.127.0';
@@ -161,6 +162,31 @@
                 } else {
                     backgroundSound.play();
                     audioPlaying = true;
+                }
+            };
+
+            // Enter AR view mode
+            window.enterARView = async () => {
+                try {
+                    // Request permission and start AR session
+                    await onirix.startARSession({
+                        mode: 'surface', // Enable surface tracking
+                        onSurfaceDetected: (surface) => {
+                            console.log('Surface detected:', surface);
+                        },
+                        onError: (error) => {
+                            console.error('AR error:', error);
+                        }
+                    });
+
+                    // Hide the Three.js scene
+                    document.querySelector('canvas').style.display = 'none';
+
+                    // Show AR view (depends on SDK implementation)
+                    onirix.showARView(); // This method might vary depending on the SDK
+
+                } catch (error) {
+                    console.error('Failed to enter AR view:', error);
                 }
             };
 
