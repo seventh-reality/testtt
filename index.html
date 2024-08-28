@@ -16,6 +16,7 @@
         <button onclick="loadModel('Steeradtext.glb')">Load Model 1</button>
         <button onclick="loadModel('sterrad_anim.glb')">Load Model 2</button>
         <button onclick="loadModel('Steerad.glb')">Load Model 3</button>
+        <button onclick="toggleAudio()">Play/Pause Audio</button>
     </div>
     <script type="module">
         import * as THREE from 'https://cdn.skypack.dev/three@0.127.0';
@@ -28,6 +29,9 @@
             container: document.body
         });
 
+        // Audio variables
+        let audioLoader, audioListener, backgroundSound, audioPlaying = false;
+
         // Assuming Onirix SDK uses a different initialization method, e.g., `start`
         onirix.start().then(() => {
             // Initialize Three.js scene
@@ -37,6 +41,18 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.outputEncoding = THREE.sRGBEncoding;
             document.body.appendChild(renderer.domElement);
+
+            // Initialize audio components
+            audioListener = new THREE.AudioListener();
+            camera.add(audioListener);
+
+            audioLoader = new THREE.AudioLoader();
+            backgroundSound = new THREE.Audio(audioListener);
+            audioLoader.load('path/to/your/audio/file.mp3', (buffer) => {
+                backgroundSound.setBuffer(buffer);
+                backgroundSound.setLoop(true); // Set to loop if desired
+                backgroundSound.setVolume(0.5); // Set volume (0.0 to 1.0)
+            });
 
             // Load environment map
             const loader = new THREE.CubeTextureLoader();
@@ -127,6 +143,17 @@
 
             // Start animation
             animate();
+
+            // Toggle audio playback
+            window.toggleAudio = () => {
+                if (backgroundSound.isPlaying) {
+                    backgroundSound.pause();
+                    audioPlaying = false;
+                } else {
+                    backgroundSound.play();
+                    audioPlaying = true;
+                }
+            };
 
             // Expose loadModel function to the global scope for button clicks
             window.loadModel = loadModel;
