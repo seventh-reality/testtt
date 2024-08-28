@@ -68,6 +68,7 @@
 
             // Load the first model
             let currentModel = null;
+            let mixer = null;  // AnimationMixer for handling animations
             const gltfLoader = new GLTFLoader();
             const defaultModelUrl = 'Steerad.glb'; // Replace with your default model URL
             loadModel(defaultModelUrl);
@@ -85,6 +86,15 @@
                             child.material.needsUpdate = true;
                         }
                     });
+
+                    // Setup animation mixer
+                    if (gltf.animations && gltf.animations.length) {
+                        mixer = new THREE.AnimationMixer(currentModel);
+                        gltf.animations.forEach((clip) => {
+                            mixer.clipAction(clip).play();
+                        });
+                    }
+
                     scene.add(currentModel);
                     currentModel.position.set(0, 0, 0); // Adjust as needed
                     render();
@@ -96,6 +106,7 @@
             // Animation loop
             function animate() {
                 requestAnimationFrame(animate);
+                if (mixer) mixer.update(0.01); // Update the animation mixer
                 render();
             }
 
