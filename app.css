@@ -17,7 +17,7 @@ body {
     right: 0;
     top: 0;
     bottom: 0;
-    background-color: #92f0eb;
+    background-color: #231532;
 }
   
 #loading-screen > div {
@@ -67,7 +67,7 @@ body {
     right: 0;
     top: 0;
     bottom: 0;
-    background-color: #92f0eb;
+    background-color: #231532;
     display: none;
 }
 
@@ -164,5 +164,3 @@ body {
 #blue {
     background-color: #0011ff;
 }
-
-
