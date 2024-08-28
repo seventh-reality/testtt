@@ -98,8 +98,6 @@
             _carPlaced = false;
             _clock = new THREE.Clock(true);
             _animationDuration = 5; // Duration in seconds
-            _initialDistance = null;
-            _initialZoom = null;
 
             oxSDK;
 
@@ -161,9 +159,6 @@
                         }
                     });
                 }
-
-                // Initialize touch events for pinch-to-zoom
-                this.initTouchEvents();
             }
 
             async initSDK() {
@@ -282,35 +277,6 @@
                         mixer.stopAllAction();
                     });
                 }, this._animationDuration * 1000); // Stop animations after specified duration
-            }
-
-            initTouchEvents() {
-                const handlePinch = (event) => {
-                    if (event.touches.length === 2) {
-                        const [touch1, touch2] = event.touches;
-                        const distance = Math.sqrt(
-                            Math.pow(touch2.clientX - touch1.clientX, 2) +
-                            Math.pow(touch2.clientY - touch1.clientY, 2)
-                        );
-
-                        if (this._initialDistance === null) {
-                            this._initialDistance = distance;
-                            this._initialZoom = this._camera.zoom;
-                        } else {
-                            const scale = distance / this._initialDistance;
-                            this._camera.zoom = this._initialZoom * scale;
-                            this._camera.updateProjectionMatrix();
-                        }
-                    }
-                };
-
-                const endPinch = () => {
-                    this._initialDistance = null;
-                    this._initialZoom = null;
-                };
-
-                document.addEventListener('touchmove', handlePinch, { passive: true });
-                document.addEventListener('touchend', endPinch);
             }
         }
 
