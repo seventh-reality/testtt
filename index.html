@@ -98,6 +98,7 @@
             _models = [];
             _modelIndex = 0;
             _scale = 1;
+            _currentModel = null;
 
             oxSDK;
 
@@ -110,7 +111,6 @@
                 const renderCanvas = await this.initSDK();
                 this.setupRenderer(renderCanvas);
 
-                // Load env map
                 const textureLoader = new THREE.TextureLoader();
                 this._envMap = textureLoader.load("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAA...");
                 this._envMap.mapping = THREE.EquirectangularReflectionMapping;
@@ -118,11 +118,9 @@
 
                 this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
                     const delta = this._clock.getDelta();
-
                     this._animationMixers.forEach((mixer) => {
                         mixer.update(delta);
                     });
-
                     this.render();
                 });
 
@@ -142,7 +140,6 @@
                     }
                 });
 
-                // Load multiple models
                 const modelsToLoad = ["Steerad.glb", "Steeradtext.glb", "sterrad_anim.glb"];
                 const gltfLoader = new GLTFLoader();
                 modelsToLoad.forEach((modelUrl, index) => {
@@ -156,10 +153,10 @@
                         });
                         model.scale.set(this._scale, this._scale, this._scale);
                         this._models[index] = model;
-                        this._scene.add(model);
                         if (index === 0) {
-                            this._modelIndex = 0;
+                            this._currentModel = model;
                             this._modelPlaced = true;
+                            this._scene.add(model);
                         }
                     });
                 });
@@ -230,31 +227,35 @@
 
             scaleModels(value) {
                 this._scale = value;
-                this._models.forEach((model) => {
-                    if (model) {
-                        model.scale.set(value, value, value);
-                    }
-                });
+                if (this._currentModel) {
+                    this._currentModel.scale.set(value, value, value);
+                }
             }
 
             rotateModels(value) {
-                this._models.forEach((model) => {
-                    if (model) {
-                        model.rotation.y = value;
-                    }
-                });
+                if (this._currentModel) {
+                    this._currentModel.rotation.y = value;
+                }
             }
 
             changeModelsColor(value) {
-                this._models.forEach((model) => {
-                    if (model) {
-                        model.traverse((child) => {
-                            if (child.material) {
-                                child.material.color.setHex(value);
-                            }
-                        });
-                    }
-                });
+                if (this._currentModel) {
+                    this._currentModel.traverse((child) => {
+                        if (child.material) {
+                            child.material.color.setHex(value);
+                        }
+                    });
+                }
+            }
+
+            switchModel(index) {
+                if (this._currentModel) {
+                    this._scene.remove(this._currentModel);
+                }
+                this._currentModel = this._models[index];
+                if (this._currentModel) {
+                    this._scene.add(this._currentModel);
+                }
             }
         }
 
@@ -372,8 +373,7 @@
             oxUI.onSilver(() => oxExp.changeModelsColor(0xffffff));
 
             oxUI.onModelChange((index) => {
-                // Only update the current model index if you want to handle model-specific logic
-                oxExp._modelIndex = index;
+                oxExp.switchModel(index);
                 oxUI.showControls();
             });
 
