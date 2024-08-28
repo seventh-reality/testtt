@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Three.js and OnirixSDK Example</title>
-    <link rel="stylesheet" href="app.css" />
     <style>
         body {
             margin: 0;
@@ -87,7 +86,6 @@
         import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.6.5/dist/ox-sdk.esm.js";
         import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
         import { GLTFLoader } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js";
-        import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js";
 
         class OxExperience {
             _renderer = null;
@@ -95,15 +93,16 @@
             _camera = null;
             _model = null;
             _models = [];
-            _animationMixers = [];
-            _carPlaced = false;
-            _clock = new THREE.Clock(true);
-            _animationDuration = 5; // Duration in seconds
+            _modelIndex = 0;
 
             oxSDK;
 
             async init() {
                 this._raycaster = new THREE.Raycaster();
+                this._animationMixers = [];
+                this._clock = new THREE.Clock(true);
+                this._carPlaced = false;
+
                 const renderCanvas = await this.initSDK();
                 this.setupRenderer(renderCanvas);
 
@@ -115,9 +114,11 @@
 
                 this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
                     const delta = this._clock.getDelta();
+
                     this._animationMixers.forEach((mixer) => {
                         mixer.update(delta);
                     });
+
                     this.render();
                 });
 
@@ -137,7 +138,7 @@
 
                 const gltfLoader = new GLTFLoader();
                 const modelUrls = [
-                    "sterrad_anim.glb",
+                    "range_rover.glb",
                     "Steerad.glb",
                     "Steeradtext.glb"
                 ];
@@ -151,7 +152,7 @@
                                 child.material.needsUpdate = true;
                             }
                         });
-                        model.scale.set(0.1, 0.1, 0.1);
+                        model.scale.set(0.5, 0.5, 0.5);
                         this._models[i] = model;
                         if (i === 0) {
                             this._model = model;
@@ -164,7 +165,9 @@
 
             async initSDK() {
                 this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
-                const config = { mode: OnirixSDK.TrackingMode.Surface };
+                const config = {
+                    mode: OnirixSDK.TrackingMode.Surface,
+                };
                 return this.oxSDK.init(config);
             }
 
@@ -195,18 +198,14 @@
                 this._camera.matrixAutoUpdate = false;
 
                 this._scene = new THREE.Scene();
+
                 const ambientLight = new THREE.AmbientLight(0xcccccc, 0.4);
                 this._scene.add(ambientLight);
                 const hemisphereLight = new THREE.HemisphereLight(0xbbbbff, 0x444422);
                 this._scene.add(hemisphereLight);
-
-                // Add OrbitControls
-                this._controls = new OrbitControls(this._camera, this._renderer.domElement);
-                this._controls.enableZoom = true; // Disable mouse zoom to use pinch-to-zoom
             }
 
             render() {
-                this._controls.update(); // Update controls before rendering
                 this._renderer.render(this._scene, this._camera);
             }
 
@@ -229,7 +228,7 @@
 
             scaleCar(value) {
                 if (this._model) {
-                    this._model.scale.set(0.1, 0.1, 0.1);
+                    this._model.scale.set(value, value, value);
                 }
             }
 
@@ -254,35 +253,9 @@
                     this._scene.remove(this._model);
                 }
                 this._model = this._models[index];
-                this._model.scale.set(0.1, 0.1, 0.1);
+                this._model.scale.set(0.5, 0.5, 0.5);
                 this._scene.add(this._model);
                 this._modelPlaced = true;
-
-                // Reset animation mixer for the new model
-                this._animationMixers.forEach(mixer => mixer.stopAllAction());
-                this._animationMixers = [];
-
-                const mixer = new THREE.AnimationMixer(this._model);
-                this._animationMixers.push(mixer);
-
-                this._model.traverse((child) => {
-                    if (child instanceof THREE.SkinnedMesh && child.geometry.animations.length > 0) {
-                        child.geometry.animations.forEach((clip) => {
-                            mixer.clipAction(clip).play().setLoop(THREE.LoopRepeat, Infinity);
-                        });
-                    }
-                });
-
-                this._clock.start();
-                this.startAnimationPlayback();
-            }
-
-            startAnimationPlayback() {
-                setTimeout(() => {
-                    this._animationMixers.forEach((mixer) => {
-                        mixer.stopAllAction();
-                    });
-                }, this._animationDuration * 1000); // Stop animations after specified duration
             }
         }
 
