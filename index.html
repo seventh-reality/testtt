@@ -1,44 +1,269 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Experience</title>
+    <title>Three.js and OnirixSDK Example</title>
     <style>
-        body { margin: 0; overflow: hidden; }
-        #loading-screen, #error-screen { display: flex; justify-content: center; align-items: center; }
-        #error-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); color: white; }
-        #transform-controls, #color-controls { position: fixed; bottom: 20px; left: 20px; }
-        #scene-controls { position: fixed; bottom: 20px; right: 20px; }
-        #scale-slider, #rotation-slider { display: block; margin: 10px 0; }
-        button { margin: 5px; }
+        body {
+            margin: 0;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #buttons {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        button {
+            margin-right: 10px;
+        }
+
+        #transform-controls, #color-controls {
+            display: none;
+        }
     </style>
 </head>
-<body>
-    <canvas id="renderCanvas"></canvas>
 
+<body>
+    <div id="buttons">
+        <button onclick="loadScene(0)">Load Model 1</button>
+        <button onclick="loadScene(1)">Load Model 2</button>
+        <button onclick="loadScene(2)">Load Model 3</button>
+        <button onclick="toggleAudio()">Play/Pause Audio</button>
+        <button onclick="enterARView()">AR View</button>
+    </div>
+    <div id="transform-controls">
+        <label for="scale-slider">Scale:</label>
+        <input id="scale-slider" type="range" min="10" max="200" value="100">
+        <label for="rotation-slider">Rotation:</label>
+        <input id="rotation-slider" type="range" min="0" max="360" value="0">
+        <button id="tap-to-place">Place Model</button>
+    </div>
+    <div id="color-controls">
+        <button id="black">Black</button>
+        <button id="blue">Blue</button>
+        <button id="orange">Orange</button>
+        <button id="silver">Silver</button>
+    </div>
     <div id="loading-screen">Loading...</div>
     <div id="error-screen">
-        <div>
-            <h1 id="error-title">Error</h1>
-            <p id="error-message">An error occurred</p>
-        </div>
+        <div id="error-title"></div>
+        <div id="error-message"></div>
     </div>
+    <script type="module">
+        import * as THREE from 'https://cdn.skypack.dev/three@0.136.0';
+        import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js';
+        import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.6.5/dist/ox-sdk.esm.js";
 
-    <div id="transform-controls">
-        <button id="tap-to-place">Place Car</button>
-        <input id="scale-slider" type="range" min="10" max="200" value="100">
-        <input id="rotation-slider" type="range" min="0" max="360" value="0">
-    </div>
+        let oxSDK, renderer, camera, scene, model, currentScene = 0, modelPlaced = false;
+        const scenes = [], gltfLoader = new GLTFLoader();
+        const colors = {
+            black: 0x111111,
+            blue: 0x0011ff,
+            orange: 0xff2600,
+            silver: 0xffffff
+        };
 
-    <div id="scene-controls">
-        <button id="blue-button">Blue Model</button>
-        <button id="orange-button">Orange Model</button>
-        <button id="black-button">Black Model</button>
-        <button id="silver-button">Silver Model</button>
-    </div>
+        async function init() {
+            try {
+                oxSDK = new OnirixSDK("YOUR_ONIRIX_SDK_TOKEN");
+                const config = { mode: OnirixSDK.TrackingMode.Surface };
+                const renderCanvas = await oxSDK.init(config);
 
-    <!-- Note the type="module" attribute here -->
-    <script type="module" src="app.js"></script>
+                setupRenderer(renderCanvas);
+                setupScenes();
+                setupControls();
+
+                oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
+                    render();
+                });
+
+                oxSDK.subscribe(OnirixSDK.Events.OnPose, (pose) => {
+                    updatePose(pose);
+                });
+
+                oxSDK.subscribe(OnirixSDK.Events.OnResize, () => {
+                    onResize();
+                });
+
+                oxSDK.subscribe(OnirixSDK.Events.OnHitTestResult, (hitResult) => {
+                    if (model && modelPlaced) {
+                        model.position.copy(hitResult.position);
+                    }
+                });
+                
+                document.querySelector("#loading-screen").style.display = 'none';
+
+            } catch (error) {
+                showError(error);
+            }
+        }
+
+        function setupRenderer(canvas) {
+            renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.outputEncoding = THREE.sRGBEncoding;
+
+            const cameraParams = oxSDK.getCameraParameters();
+            camera = new THREE.PerspectiveCamera(cameraParams.fov, cameraParams.aspect, 0.1, 1000);
+            camera.matrixAutoUpdate = false;
+
+            scene = new THREE.Scene();
+            scene.add(new THREE.AmbientLight(0xcccccc, 0.4));
+            scene.add(new THREE.HemisphereLight(0xbbbbff, 0x444422));
+        }
+
+        function setupScenes() {
+            const modelUrls = [
+                'Steeradtext.glb',
+                'sterrad_anim.glb',
+                'Steerad.glb'
+            ];
+
+            modelUrls.forEach((url, index) => {
+                gltfLoader.load(url, (gltf) => {
+                    const newModel = gltf.scene;
+                    newModel.traverse(child => {
+                        if (child.material) {
+                            child.material.envMap = new THREE.TextureLoader().load("envmap.jpg");
+                            child.material.envMap.mapping = THREE.EquirectangularReflectionMapping;
+                            child.material.encoding = THREE.sRGBEncoding;
+                        }
+                    });
+                    newModel.scale.set(0.5, 0.5, 0.5);
+                    scenes[index] = newModel;
+                    if (index === 0) {
+                        scene.add(newModel);
+                        model = newModel;
+                    }
+                });
+            });
+        }
+
+        function setupControls() {
+            document.getElementById("tap-to-place").addEventListener('click', () => {
+                modelPlaced = true;
+                oxSDK.start();
+            });
+
+            document.getElementById("scale-slider").addEventListener('input', (e) => {
+                scaleModel(e.target.value / 100);
+            });
+
+            document.getElementById("rotation-slider").addEventListener('input', (e) => {
+                rotateModel(e.target.value * Math.PI / 180);
+            });
+
+            document.querySelectorAll('#color-controls button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    changeModelColor(colors[e.target.id]);
+                });
+            });
+
+            document.querySelectorAll('#buttons button').forEach((button, index) => {
+                button.addEventListener('click', () => {
+                    loadScene(index);
+                });
+            });
+        }
+
+        function loadScene(index) {
+            if (model) {
+                scene.remove(model);
+            }
+            model = scenes[index];
+            scene.add(model);
+            modelPlaced = false;
+        }
+
+        function scaleModel(value) {
+            if (model) {
+                model.scale.set(value, value, value);
+            }
+        }
+
+        function rotateModel(value) {
+            if (model) {
+                model.rotation.y = value;
+            }
+        }
+
+        function changeModelColor(color) {
+            if (model) {
+                model.traverse(child => {
+                    if (child.material && child.material.name === "CarPaint") {
+                        child.material.color.setHex(color);
+                    }
+                });
+            }
+        }
+
+        function updatePose(pose) {
+            let modelViewMatrix = new THREE.Matrix4();
+            modelViewMatrix = modelViewMatrix.fromArray(pose);
+            camera.matrix = modelViewMatrix;
+            camera.matrixWorldNeedsUpdate = true;
+        }
+
+        function onResize() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const cameraParams = oxSDK.getCameraParameters();
+            camera.fov = cameraParams.fov;
+            camera.aspect = cameraParams.aspect;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        }
+
+        function render() {
+            renderer.render(scene, camera);
+        }
+
+        function showError(error) {
+            const errorScreen = document.querySelector("#error-screen");
+            const errorTitle = document.querySelector("#error-title");
+            const errorMessage = document.querySelector("#error-message");
+
+            switch (error.name) {
+                case 'INTERNAL_ERROR':
+                    errorTitle.innerText = 'Internal Error';
+                    errorMessage.innerText = 'An unspecified error has occurred. Your device might not be compatible with this experience.';
+                    break;
+                case 'CAMERA_ERROR':
+                    errorTitle.innerText = 'Camera Error';
+                    errorMessage.innerText = 'Could not access your device\'s camera. Please ensure you have given the required permissions.';
+                    break;
+                case 'SENSORS_ERROR':
+                    errorTitle.innerText = 'Sensors Error';
+                    errorMessage.innerText = 'Could not access your device\'s motion sensors. Please ensure you have given the required permissions.';
+                    break;
+                case 'LICENSE_ERROR':
+                    errorTitle.innerText = 'License Error';
+                    errorMessage.innerText = 'This experience does not exist or has been unpublished.';
+                    break;
+            }
+            errorScreen.style.display = 'flex';
+        }
+
+        function toggleAudio() {
+            // Implement audio control if needed
+        }
+
+        function enterARView() {
+            // Implement AR view switch if needed
+        }
+
+        window.addEventListener('resize', onResize);
+
+        init();
+    </script>
 </body>
+
 </html>
