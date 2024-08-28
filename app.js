@@ -1,5 +1,5 @@
-/*import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.8.1/dist/ox-sdk.esm.js";
-import * as THREE from "https://cdn.skypack.dev/three@0.127.0";
+import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.8.1/dist/ox-sdk.esm.js";
+/*import * as THREE from "https://cdn.skypack.dev/three@0.127.0";
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/controls/OrbitControls.js";
 
@@ -452,4 +452,3 @@ onirix.initialize().then(() => {
     // Expose loadModel function to the global scope for button clicks
     window.loadModel = loadModel;
 });
-
