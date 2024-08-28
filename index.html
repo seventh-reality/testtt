@@ -151,7 +151,7 @@
                                 child.material.needsUpdate = true;
                             }
                         });
-                        model.scale.set(0.5, 0.5, 0.5);
+                        model.scale.set(0.1, 0.1, 0.1);
                         this._models[i] = model;
                         if (i === 0) {
                             this._model = model;
@@ -202,7 +202,7 @@
 
                 // Add OrbitControls
                 this._controls = new OrbitControls(this._camera, this._renderer.domElement);
-                this._controls.enableZoom = false; // Disable mouse zoom to use pinch-to-zoom
+                this._controls.enableZoom = true; // Disable mouse zoom to use pinch-to-zoom
             }
 
             render() {
@@ -229,7 +229,7 @@
 
             scaleCar(value) {
                 if (this._model) {
-                    this._model.scale.set(value, value, value);
+                    this._model.scale.set(0.1, 0.1, 0.1);
                 }
             }
 
@@ -254,7 +254,7 @@
                     this._scene.remove(this._model);
                 }
                 this._model = this._models[index];
-                this._model.scale.set(0.5, 0.5, 0.5);
+                this._model.scale.set(0.1, 0.1, 0.1);
                 this._scene.add(this._model);
                 this._modelPlaced = true;
 
