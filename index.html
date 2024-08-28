@@ -103,7 +103,6 @@
 
             async init() {
                 this._raycaster = new THREE.Raycaster();
-
                 const renderCanvas = await this.initSDK();
                 this.setupRenderer(renderCanvas);
 
@@ -115,11 +114,9 @@
 
                 this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
                     const delta = this._clock.getDelta();
-
                     this._animationMixers.forEach((mixer) => {
                         mixer.update(delta);
                     });
-
                     this.render();
                 });
 
@@ -166,9 +163,7 @@
 
             async initSDK() {
                 this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
-                const config = {
-                    mode: OnirixSDK.TrackingMode.Surface,
-                };
+                const config = { mode: OnirixSDK.TrackingMode.Surface };
                 return this.oxSDK.init(config);
             }
 
@@ -199,7 +194,6 @@
                 this._camera.matrixAutoUpdate = false;
 
                 this._scene = new THREE.Scene();
-
                 const ambientLight = new THREE.AmbientLight(0xcccccc, 0.4);
                 this._scene.add(ambientLight);
                 const hemisphereLight = new THREE.HemisphereLight(0xbbbbff, 0x444422);
@@ -259,11 +253,12 @@
                 this._modelPlaced = true;
 
                 // Reset animation mixer for the new model
+                this._animationMixers.forEach(mixer => mixer.stopAllAction());
                 this._animationMixers = [];
+
                 const mixer = new THREE.AnimationMixer(this._model);
                 this._animationMixers.push(mixer);
 
-                // Find and play the animations
                 this._model.traverse((child) => {
                     if (child instanceof THREE.SkinnedMesh && child.geometry.animations.length > 0) {
                         child.geometry.animations.forEach((clip) => {
