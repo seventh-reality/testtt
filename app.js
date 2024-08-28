@@ -1,4 +1,4 @@
-import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.8.1/dist/ox-sdk.esm.js";
+/*import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.8.1/dist/ox-sdk.esm.js";
 import * as THREE from "https://cdn.skypack.dev/three@0.127.0";
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/controls/OrbitControls.js";
@@ -309,7 +309,7 @@ OX.init(config)
     }); */
 
     // Event listeners for the buttons
-    document.getElementById("black").addEventListener("click", () => {
+    /*document.getElementById("black").addEventListener("click", () => {
       document.getElementById("audio").play();
       loadModel("Steerad.glb");
     });
@@ -379,4 +379,77 @@ OX.init(config)
         break;
     }
     document.getElementById("error-screen").style.display = "flex";
-  });
+  }); */
+// script.js
+
+// Initialize Onirix SDK
+const onirix = new OnirixSDK({
+    apiKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k',  // Replace with your Onirix API key
+    container: document.body // Use document.body or specify a different container
+});
+
+onirix.initialize().then(() => {
+    // Initialize Three.js scene
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Add ambient and directional lights
+    const light = new THREE.AmbientLight(0x404040);
+    scene.add(light);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(5, 5, 5).normalize();
+    scene.add(directionalLight);
+
+    // Load the first model
+    let currentModel = null;
+    const loader = new THREE.GLTFLoader();
+    const defaultModelUrl = 'model1.glb'; // Replace with your default model URL
+    loadModel(defaultModelUrl);
+
+    // Function to load a model
+    function loadModel(url) {
+        if (currentModel) {
+            scene.remove(currentModel);
+        }
+        loader.load(url, (gltf) => {
+            currentModel = gltf.scene;
+            scene.add(currentModel);
+            currentModel.position.set(0, 0, 0); // Adjust as needed
+            render();
+        }, undefined, (error) => {
+            console.error('An error occurred:', error);
+        });
+    }
+
+    // Animation loop
+    function animate() {
+        requestAnimationFrame(animate);
+        render();
+    }
+
+    // Render the scene
+    function render() {
+        renderer.render(scene, camera);
+    }
+
+    // Set the camera position
+    camera.position.z = 5;
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Start animation
+    animate();
+
+    // Expose loadModel function to the global scope for button clicks
+    window.loadModel = loadModel;
+});
+
