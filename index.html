@@ -8,6 +8,7 @@
     <style>
         body {
             margin: 0;
+            overflow: hidden;
         }
 
         canvas {
@@ -26,6 +27,30 @@
 
         #transform-controls, #color-controls {
             display: none;
+        }
+
+        #loading-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        #error-screen {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
         }
     </style>
 </head>
@@ -72,10 +97,9 @@
 
         async function init() {
             try {
-                oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
+                oxSDK = new OnirixSDK("YOUR_ONIRIX_SDK_KEY_HERE");
                 const config = { mode: OnirixSDK.TrackingMode.Surface };
                 const renderCanvas = await oxSDK.init(config);
-
                 setupRenderer(renderCanvas);
                 setupScenes();
                 setupControls();
@@ -97,7 +121,7 @@
                         model.position.copy(hitResult.position);
                     }
                 });
-                
+
                 document.querySelector("#loading-screen").style.display = 'none';
 
             } catch (error) {
@@ -132,8 +156,9 @@
                     const newModel = gltf.scene;
                     newModel.traverse(child => {
                         if (child.material) {
-                            child.material.envMap = new THREE.TextureLoader().load("envmap.jpg");
-                            child.material.envMap.mapping = THREE.EquirectangularReflectionMapping;
+                            const envMap = new THREE.TextureLoader().load("envmap.jpg");
+                            envMap.mapping = THREE.EquirectangularReflectionMapping;
+                            child.material.envMap = envMap;
                             child.material.encoding = THREE.sRGBEncoding;
                         }
                     });
