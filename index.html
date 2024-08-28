@@ -41,13 +41,13 @@
         import OnirixSDK from 'https://unpkg.com/@onirix/ar-engine-sdk@1.8.1/dist/ox-sdk.esm.js';
 
         // Initialize Onirix SDK
-        async initSDK() {
-        this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
+        const onirix = new OnirixSDK({
+            apiKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k', // Replace with your actual API key
+            container: document.body
+        });
         const config = {
             mode: OnirixSDK.TrackingMode.Surface,
-        }
-        return this.oxSDK.init(config);
-    }
+        };
         // Audio variables
         let audioLoader, audioListener, backgroundSound, audioPlaying = false;
 
