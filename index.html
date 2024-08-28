@@ -77,12 +77,6 @@
         <label>Rotation: <input id="rotation-slider" type="range" min="0" max="360" value="0"></label>
         <button id="tap-to-place">Place Model</button>
     </div>
-    <div id="color-controls">
-        <button id="black" disabled>Black</button>
-        <button id="blue" disabled>Blue</button>
-        <button id="orange" disabled>Orange</button>
-        <button id="silver" disabled>Silver</button>
-    </div>
     <div id="buttons">
         <button onclick="loadModel('Steeradtext.glb')">Load Model 1</button>
         <button onclick="loadModel('sterrad_anim.glb')">Load Model 2</button>
@@ -225,15 +219,16 @@
                     this._scene.remove(this._model);
                 }
 
-                const loader = new GLTFLoader();
-                loader.load(modelUrl, (gltf) => {
-                    this._model = gltf.scene;
-                    this._model.traverse((child) => {
-                        if (child.material) {
-                            child.material.envMap = this._envMap;
-                            child.material.needsUpdate = true;
-                        }
-                    });
+                const gltfLoader = new GLTFLoader();
+        gltfLoader.load("Steerad.glb", (gltf) => {
+            this._model = gltf.scene;
+            this._model.traverse((child) => {
+                if (child.material) {
+                    console.log("updating material");
+                    child.material.envMap = this._envMap;
+                    child.material.needsUpdate = true;
+                }
+            });
                     this._model.scale.set(0.5, 0.5, 0.5);
                     this._scene.add(this._model);
                     this._carPlaced = false; // Reset car placement status
