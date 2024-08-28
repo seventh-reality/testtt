@@ -27,14 +27,13 @@
 
         // Initialize Onirix SDK
         const onirix = new OnirixSDK({
-            apiKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k',
+            apiKey: 'YOUR_API_KEY_HERE', // Replace with your actual API key
             container: document.body
         });
 
         // Audio variables
         let audioLoader, audioListener, backgroundSound, audioPlaying = false;
 
-        // Assuming Onirix SDK uses a different initialization method, e.g., `start`
         onirix.start().then(() => {
             // Initialize Three.js scene
             const scene = new THREE.Scene();
@@ -46,10 +45,10 @@
 
             // Initialize OrbitControls
             const controls = new OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+            controls.enableDamping = true;
             controls.dampingFactor = 0.25;
-            controls.enableZoom = true; // Enable zooming with pinch or scroll
-            controls.enablePan = false; // Disable panning if you only want to rotate and zoom
+            controls.enableZoom = true;
+            controls.enablePan = false;
 
             // Initialize audio components
             audioListener = new THREE.AudioListener();
@@ -59,46 +58,38 @@
             backgroundSound = new THREE.Audio(audioListener);
             audioLoader.load('path/to/your/audio/file.mp3', (buffer) => {
                 backgroundSound.setBuffer(buffer);
-                backgroundSound.setLoop(true); // Set to loop if desired
-                backgroundSound.setVolume(0.5); // Set volume (0.0 to 1.0)
+                backgroundSound.setLoop(true);
+                backgroundSound.setVolume(0.5);
             });
 
             // Load environment map
             const loader = new THREE.CubeTextureLoader();
             const envMap = loader.load([
-                'path/to/px.jpg', 'path/to/nx.jpg', // right and left
-                'path/to/py.jpg', 'path/to/ny.jpg', // top and bottom
-                'path/to/pz.jpg', 'path/to/nz.jpg'  // front and back
+                'path/to/px.jpg', 'path/to/nx.jpg',
+                'path/to/py.jpg', 'path/to/ny.jpg',
+                'path/to/pz.jpg', 'path/to/nz.jpg'
             ]);
             scene.background = envMap;
 
-            // Add ambient light
-            const ambientLight = new THREE.AmbientLight(0x404040, 0.5); // Soft white light
+            // Add lights
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
             scene.add(ambientLight);
-
-            // Add directional light
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
             directionalLight.position.set(5, 10, 7.5).normalize();
             scene.add(directionalLight);
-
-            // Add point light
             const pointLight = new THREE.PointLight(0xff0000, 1, 100);
             pointLight.position.set(10, 10, 10);
             scene.add(pointLight);
-
-            // Add spot light
             const spotLight = new THREE.SpotLight(0x00ff00, 1, 100, Math.PI / 4, 0.1, 1);
             spotLight.position.set(-10, 20, 10);
             scene.add(spotLight);
 
-            // Load the first model
             let currentModel = null;
-            let mixer = null;  // AnimationMixer for handling animations
+            let mixer = null;
             const gltfLoader = new GLTFLoader();
-            const defaultModelUrl = 'Steerad.glb'; // Replace with your default model URL
+            const defaultModelUrl = 'Steerad.glb';
             loadModel(defaultModelUrl);
 
-            // Function to load a model
             function loadModel(url) {
                 if (currentModel) {
                     scene.remove(currentModel);
@@ -107,12 +98,11 @@
                     currentModel = gltf.scene;
                     currentModel.traverse((child) => {
                         if (child.isMesh) {
-                            child.material.envMap = envMap; // Apply environment map to model
+                            child.material.envMap = envMap;
                             child.material.needsUpdate = true;
                         }
                     });
 
-                    // Setup animation mixer
                     if (gltf.animations && gltf.animations.length) {
                         mixer = new THREE.AnimationMixer(currentModel);
                         gltf.animations.forEach((clip) => {
@@ -121,40 +111,34 @@
                     }
 
                     scene.add(currentModel);
-                    currentModel.position.set(0, 0, 0); // Adjust as needed
+                    currentModel.position.set(0, 0, 0);
                     render();
                 }, undefined, (error) => {
                     console.error('An error occurred:', error);
                 });
             }
 
-            // Animation loop
             function animate() {
                 requestAnimationFrame(animate);
-                if (mixer) mixer.update(0.01); // Update the animation mixer
-                controls.update(); // Update the controls
+                if (mixer) mixer.update(0.01);
+                controls.update();
                 render();
             }
 
-            // Render the scene
             function render() {
                 renderer.render(scene, camera);
             }
 
-            // Set the camera position
             camera.position.z = 5;
 
-            // Handle window resize
             window.addEventListener('resize', () => {
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
 
-            // Start animation
             animate();
 
-            // Toggle audio playback
             window.toggleAudio = () => {
                 if (backgroundSound.isPlaying) {
                     backgroundSound.pause();
@@ -165,11 +149,10 @@
                 }
             };
 
-            // Enter AR view mode
             window.enterARView = async () => {
                 try {
                     // Request permission and start AR session
-                    await onirix.startARSession({
+                    const arSession = await onirix.startAR({
                         mode: 'surface', // Enable surface tracking
                         onSurfaceDetected: (surface) => {
                             console.log('Surface detected:', surface);
@@ -182,15 +165,16 @@
                     // Hide the Three.js scene
                     document.querySelector('canvas').style.display = 'none';
 
-                    // Show AR view (depends on SDK implementation)
-                    onirix.showARView(); // This method might vary depending on the SDK
+                    // Ensure AR view is correctly shown
+                    if (arSession && arSession.show) {
+                        arSession.show();
+                    }
 
                 } catch (error) {
                     console.error('Failed to enter AR view:', error);
                 }
             };
 
-            // Expose loadModel function to the global scope for button clicks
             window.loadModel = loadModel;
         }).catch((error) => {
             console.error('Onirix SDK initialization error:', error);
