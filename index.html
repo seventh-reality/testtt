@@ -95,9 +95,9 @@
             _renderer = null;
             _scene = null;
             _camera = null;
-            _model = null;
             _models = [];
             _modelIndex = 0;
+            _scale = 1;
 
             oxSDK;
 
@@ -136,19 +136,17 @@
 
                 this.oxSDK.subscribe(OnirixSDK.Events.OnHitTestResult, (hitResult) => {
                     if (this._modelPlaced && !this.isCarPlaced()) {
-                        this._model.position.copy(hitResult.position);
+                        this._models.forEach((model) => {
+                            model.position.copy(hitResult.position);
+                        });
                     }
                 });
 
+                // Load multiple models
+                const modelsToLoad = ["Steerad.glb", "Steeradtext.glb", "sterrad_anim.glb"];
                 const gltfLoader = new GLTFLoader();
-                const modelUrls = [
-                    "sterrad_anim.glb",
-                    "Steerad.glb",
-                    "Steeradtext.glb"
-                ];
-
-                for (let i = 0; i < modelUrls.length; i++) {
-                    gltfLoader.load(modelUrls[i], (gltf) => {
+                modelsToLoad.forEach((modelUrl, index) => {
+                    gltfLoader.load(modelUrl, (gltf) => {
                         const model = gltf.scene;
                         model.traverse((child) => {
                             if (child.material) {
@@ -156,15 +154,15 @@
                                 child.material.needsUpdate = true;
                             }
                         });
-                        model.scale.set(0.5, 0.5, 0.5);
-                        this._models[i] = model;
-                        if (i === 0) {
-                            this._model = model;
-                            this._scene.add(this._model);
+                        model.scale.set(this._scale, this._scale, this._scale);
+                        this._models[index] = model;
+                        this._scene.add(model);
+                        if (index === 0) {
+                            this._modelIndex = 0;
                             this._modelPlaced = true;
                         }
                     });
-                }
+                });
             }
 
             async initSDK() {
@@ -230,36 +228,33 @@
                 this._renderer.setSize(width, height);
             }
 
-            scaleCar(value) {
-                if (this._model) {
-                    this._model.scale.set(value, value, value);
-                }
+            scaleModels(value) {
+                this._scale = value;
+                this._models.forEach((model) => {
+                    if (model) {
+                        model.scale.set(value, value, value);
+                    }
+                });
             }
 
-            rotateCar(value) {
-                if (this._model) {
-                    this._model.rotation.y = value;
-                }
+            rotateModels(value) {
+                this._models.forEach((model) => {
+                    if (model) {
+                        model.rotation.y = value;
+                    }
+                });
             }
 
-            changeCarColor(value) {
-                if (this._model) {
-                    this._model.traverse((child) => {
-                        if (child.material) {
-                            child.material.color.setHex(value);
-                        }
-                    });
-                }
-            }
-
-            changeModel(index) {
-                if (this._model) {
-                    this._scene.remove(this._model);
-                }
-                this._model = this._models[index];
-                this._model.scale.set(0.5, 0.5, 0.5);
-                this._scene.add(this._model);
-                this._modelPlaced = true;
+            changeModelsColor(value) {
+                this._models.forEach((model) => {
+                    if (model) {
+                        model.traverse((child) => {
+                            if (child.material) {
+                                child.material.color.setHex(value);
+                            }
+                        });
+                    }
+                });
             }
         }
 
@@ -368,16 +363,17 @@
                 }
             });
 
-            oxUI.onRotationChange((value) => { oxExp.rotateCar(value) });
-            oxUI.onScaleChange((value) => { oxExp.scaleCar(value) });
+            oxUI.onRotationChange((value) => { oxExp.rotateModels(value) });
+            oxUI.onScaleChange((value) => { oxExp.scaleModels(value) });
 
-            oxUI.onBlack(() => oxExp.changeCarColor(0x111111));
-            oxUI.onBlue(() => oxExp.changeCarColor(0x0011ff));
-            oxUI.onOrange(() => oxExp.changeCarColor(0xff2600));
-            oxUI.onSilver(() => oxExp.changeCarColor(0xffffff));
+            oxUI.onBlack(() => oxExp.changeModelsColor(0x111111));
+            oxUI.onBlue(() => oxExp.changeModelsColor(0x0011ff));
+            oxUI.onOrange(() => oxExp.changeModelsColor(0xff2600));
+            oxUI.onSilver(() => oxExp.changeModelsColor(0xffffff));
 
             oxUI.onModelChange((index) => {
-                oxExp.changeModel(index);
+                // Only update the current model index if you want to handle model-specific logic
+                oxExp._modelIndex = index;
                 oxUI.showControls();
             });
 
