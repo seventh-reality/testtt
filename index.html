@@ -87,6 +87,7 @@
         import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.6.5/dist/ox-sdk.esm.js";
         import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
         import { GLTFLoader } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js";
+        import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js";
 
         class OxExperience {
             _renderer = null;
@@ -198,9 +199,14 @@
                 this._scene.add(ambientLight);
                 const hemisphereLight = new THREE.HemisphereLight(0xbbbbff, 0x444422);
                 this._scene.add(hemisphereLight);
+
+                // Add OrbitControls
+                this._controls = new OrbitControls(this._camera, this._renderer.domElement);
+                this._controls.enableZoom = false; // Disable mouse zoom to use pinch-to-zoom
             }
 
             render() {
+                this._controls.update(); // Update controls before rendering
                 this._renderer.render(this._scene, this._camera);
             }
 
