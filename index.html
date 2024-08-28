@@ -87,6 +87,7 @@
         import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
         import { GLTFLoader } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js";
         import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js";
+        import { TransformControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/TransformControls.js";
 
         class OxExperience {
             _renderer = null;
@@ -98,6 +99,7 @@
 
             oxSDK;
             _controls = null;
+            _transformControls = null;
 
             async init() {
                 this._raycaster = new THREE.Raycaster();
@@ -110,6 +112,10 @@
                 
                 // Set up OrbitControls
                 this._controls = new OrbitControls(this._camera, this._renderer.domElement);
+
+                // Set up TransformControls
+                this._transformControls = new TransformControls(this._camera, this._renderer.domElement);
+                this._scene.add(this._transformControls);
 
                 // Load env map
                 const textureLoader = new THREE.TextureLoader();
@@ -125,6 +131,7 @@
                     });
 
                     this._controls.update(); // Update controls
+                    this._transformControls.update(); // Update transform controls
                     this.render();
                 });
 
@@ -163,6 +170,7 @@
                         if (i === 0) {
                             this._model = model;
                             this._scene.add(this._model);
+                            this._transformControls.attach(this._model); // Attach transform controls to the model
                             this._modelPlaced = true;
                         }
                     });
@@ -261,6 +269,7 @@
                 this._model = this._models[index];
                 this._model.scale.set(0.5, 0.5, 0.5);
                 this._scene.add(this._model);
+                this._transformControls.attach(this._model); // Reattach transform controls to the new model
                 this._modelPlaced = true;
             }
         }
