@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
@@ -32,5 +32,31 @@
             <span id="blue"></span>
             <span id="silver"></span>
         </div>
-    </body>
+    </body> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js and OnirixSDK Example</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+        #buttons { position: absolute; top: 20px; left: 20px; }
+        button { margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <div id="buttons">
+        <button onclick="loadModel('model1.glb')">Load Model 1</button>
+        <button onclick="loadModel('model2.glb')">Load Model 2</button>
+        <button onclick="loadModel('model3.glb')">Load Model 3</button>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.onirix.com/sdk/onirix-sdk.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+
 </html>
