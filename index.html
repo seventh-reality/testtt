@@ -191,9 +191,6 @@ OX.init(config)
             };
 
             window.loadModel = loadModel;
-        }).catch((error) => {
-            console.error('Onirix SDK initialization error:', error);
-        });
             // Subscribe to events
     OX.subscribe(OnirixSDK.Events.OnPose, function (pose) {
       updatePose(pose);
@@ -244,6 +241,7 @@ OX.init(config)
         break;
     }
     document.getElementById("error-screen").style.display = "flex";
+	});
     </script>
 </body>
 </html>
