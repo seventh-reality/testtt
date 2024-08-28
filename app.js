@@ -396,7 +396,24 @@ onirix.initialize().then(() => {
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
-
+// Assuming onirix is loaded asynchronously
+window.onload = () => {
+  // Wait for onirix to be loaded
+  new Promise((resolve) => {
+    if (typeof onirix !== 'undefined') {
+      resolve();
+    } else {
+      // Handle the case where onirix is not loaded
+      console.error("onirix is not loaded");
+    }
+  })
+  .then(() => {
+    // Now you can safely call onirix.initialize()
+    onirix.initialize().then(() => {
+      // Your code after initialization
+    });
+  });
+};
     // Add ambient and directional lights
     const light = new THREE.AmbientLight(0x404040);
     scene.add(light);
