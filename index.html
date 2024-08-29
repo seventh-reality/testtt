@@ -21,21 +21,23 @@
             top: 20px;
             left: 20px;
         }
-        #model-controls{
-            translate: 55px 600px;  
+
+        #model-controls {
+            translate: 55px 600px;
         }
+
         #tap-to-place {
-           display: block;
-           margin: auto;
-           width: 200px;
-           padding: 25px;
-           background-color: #231532;
-           color: #FFFFFF;
-           border: 0;
-           border-radius: 20px;
-           box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
-           translate: 55px 600px; 
-}
+            display: block;
+            margin: auto;
+            width: 200px;
+            padding: 25px;
+            background-color: #231532;
+            color: #FFFFFF;
+            border: 0;
+            border-radius: 20px;
+            box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
+            translate: 55px 600px;
+        }
 
         button {
             margin-right: 10px;
@@ -113,13 +115,13 @@
             _controls = null;
             _animationMixers = [];
             _clock = null;
+            _carPlaced = false;
 
             oxSDK;
 
             async init() {
                 this._raycaster = new THREE.Raycaster();
                 this._clock = new THREE.Clock(true);
-                this._carPlaced = false;
 
                 const renderCanvas = await this.initSDK();
                 this.setupRenderer(renderCanvas);
@@ -246,134 +248,63 @@
                 this._controls.dampingFactor = 0.25;
                 this._controls.enableZoom = true; // Allows pinch to zoom or mouse wheel zoom
                 this._controls.enableRotate = true; // Allows rotation around the model
-                this._controls.enablePan = true; // Disables panning
-
-                renderCanvas.addEventListener('touchstart', (event) => {
-                    if (event.touches.length === 2) {
-                        this._controls.enablePan = false; // Disable panning during touch
-                    }
-                });
-
-                renderCanvas.addEventListener('touchend', (event) => {
-                    this._controls.enablePan = false; // Disable panning after touch ends
-                });
-            }
-
-            render() {
-                this._controls.update();
-                this._renderer.render(this._scene, this._camera);
+                this._controls.enablePan = false; // Disable panning to keep the model centered
             }
 
             updatePose(pose) {
-                let modelViewMatrix = new THREE.Matrix4();
-                modelViewMatrix = modelViewMatrix.fromArray(pose);
-                this._camera.matrix = modelViewMatrix;
-                this._camera.matrixWorldNeedsUpdate = true;
+                this._camera.matrix.fromArray(pose);
+                this._camera.matrix.decompose(this._camera.position, this._camera.quaternion, this._camera.scale);
             }
 
             onResize() {
-                const width = this._renderer.domElement.width;
-                const height = this._renderer.domElement.height;
-                const cameraParams = this.oxSDK.getCameraParameters();
-                this._camera.fov = cameraParams.fov;
-                this._camera.aspect = cameraParams.aspect;
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+
+                this._camera.aspect = width / height;
                 this._camera.updateProjectionMatrix();
                 this._renderer.setSize(width, height);
             }
 
-            changeModelsColor(value) {
-                if (this._currentModel) {
-                    this._currentModel.traverse((child) => {
-                        if (child.material) {
-                            child.material.color.setHex(value);
-                        }
-                    });
-                }
-            }
-
-            switchModel(index) {
-                if (this._currentModel) {
-                    this._scene.remove(this._currentModel);
-                }
-                this._currentModel = this._models[index];
-                if (this._currentModel) {
-                    this._scene.add(this._currentModel);
-                }
+            render() {
+                this._renderer.render(this._scene, this._camera);
             }
         }
 
-        class OxExperienceUI {
-            _loadingScreen = null;
-            _errorScreen = null;
-            _errorTitle = null;
-            _errorMessage = null;
+        // Initialize the OxExperience
+        const oxExperience = new OxExperience();
+        oxExperience.init();
 
-            init() {
-                this._loadingScreen = document.querySelector("#loading-screen");
-                this._errorScreen = document.querySelector("#error-screen");
-                this._errorTitle = document.querySelector("#error-title");
-                this._errorMessage = document.querySelector("#error-message");
-
-                this._transformControls = document.querySelector("#transform-controls");
-                this._colorControls = document.querySelector("#color-controls");
-                this._modelControls = document.querySelector("#model-controls");
-
-                document.querySelector("#tap-to-place").addEventListener("click", () => {
-                    oxExp.placeCar();
-                    this._transformControls.style.display = "none";
-                    this._colorControls.style.display = "none";
-                    this._modelControls.style.display = "block";
-                });
-
-                document.querySelector("#black").addEventListener("click", () => {
-                    oxExp.changeModelsColor(0x000000);
-                });
-                document.querySelector("#blue").addEventListener("click", () => {
-                    oxExp.changeModelsColor(0x0000ff);
-                });
-                document.querySelector("#orange").addEventListener("click", () => {
-                    oxExp.changeModelsColor(0xffa500);
-                });
-                document.querySelector("#silver").addEventListener("click", () => {
-                    oxExp.changeModelsColor(0xc0c0c0);
-                });
-
-                document.querySelector("#model1").addEventListener("click", () => {
-                    oxExp.switchModel(0);
-                });
-                document.querySelector("#model2").addEventListener("click", () => {
-                    oxExp.switchModel(1);
-                });
-                document.querySelector("#model3").addEventListener("click", () => {
-                    oxExp.switchModel(2);
-                });
+        // Add event listeners for the buttons
+        document.getElementById("tap-to-place").addEventListener("click", () => {
+            if (!oxExperience.isCarPlaced()) {
+                oxExperience.placeCar();
             }
+        });
 
-            hideLoading() {
-                this._loadingScreen.style.display = "none";
-                this._transformControls.style.display = "block";
-            }
+        // Model buttons to switch models
+        document.getElementById("model1").addEventListener("click", () => {
+            oxExperience.switchModel(0);
+            playAudio("v.mp3");
+        });
 
-            showError(title, message) {
-                this._errorTitle.textContent = title;
-                this._errorMessage.textContent = message;
-                this._errorScreen.style.display = "block";
-            }
+        document.getElementById("model2").addEventListener("click", () => {
+            oxExperience.switchModel(1);
+            playAudio("v.mp3");
+        });
+
+        document.getElementById("model3").addEventListener("click", () => {
+            oxExperience.switchModel(2);
+            playAudio("v.mp3");
+        });
+
+        // Function to play audio
+        function playAudio(audioFile) {
+            const audio = new Audio(audioFile);
+            audio.play();
         }
 
-        const oxExp = new OxExperience();
-        const oxUI = new OxExperienceUI();
-
-        oxExp
-            .init()
-            .then(() => {
-                oxUI.init();
-                oxUI.hideLoading();
-            })
-            .catch((error) => {
-                console.error("Error initializing Onirix SDK", error);
-                oxUI.showError("Initialization Error", error.message);
-            });
+        // Set the initial model to be the first one
+        oxExperience.switchModel(0);
     </script>
 </body>
 
