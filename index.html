@@ -63,8 +63,6 @@
 
 <body>
     <div id="transform-controls">
-        <label for="rotation-slider">Rotation:</label>
-        <input id="rotation-slider" type="range" min="0" max="360" value="0">
         <button id="tap-to-place">Place Model</button>
     </div>
     <div id="color-controls">
@@ -240,12 +238,6 @@
                 this._renderer.setSize(width, height);
             }
 
-            rotateModels(value) {
-                if (this._currentModel) {
-                    this._currentModel.rotation.y = value;
-                }
-            }
-
             changeModelsColor(value) {
                 if (this._currentModel) {
                     this._currentModel.traverse((child) => {
@@ -282,17 +274,12 @@
                 this._transformControls = document.querySelector("#transform-controls");
                 this._colorControls = document.querySelector("#color-controls");
                 this._modelControls = document.querySelector("#model-controls");
-                this._rotationSlider = document.querySelector("#rotation-slider");
 
                 document.querySelector("#tap-to-place").addEventListener("click", () => {
                     oxExp.placeCar();
                     this._transformControls.style.display = "none";
                     this._colorControls.style.display = "block";
                     this._modelControls.style.display = "block";
-                });
-
-                document.querySelector("#rotation-slider").addEventListener("input", (event) => {
-                    oxExp.rotateModels(event.target.value * (Math.PI / 180));
                 });
 
                 document.querySelector("#black").addEventListener("click", () => {
