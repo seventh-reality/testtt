@@ -156,10 +156,14 @@
                     }
                 });
 
-                const modelsToLoad = ["Steerad.glb", "Steeradtext.glb", "sterrad_anim.glb"];
+                const modelsToLoad = [
+                    { url: "Steerad.glb", animation: "Steerad.glb" },
+                    { url: "Steeradtext.glb", animation: "Sreeradtext.glb" },
+                    { url: "sterrad_anim.glb", animation: "sterrad_anim.glb" }
+                ];
                 const gltfLoader = new GLTFLoader();
-                modelsToLoad.forEach((modelUrl, index) => {
-                    gltfLoader.load(modelUrl, (gltf) => {
+                modelsToLoad.forEach((modelData, index) => {
+                    gltfLoader.load(modelData.url, (gltf) => {
                         const model = gltf.scene;
                         model.traverse((child) => {
                             if (child.material) {
@@ -168,21 +172,24 @@
                             }
                         });
 
-                        if (gltf.animations && gltf.animations.length) {
-                            const mixer = new THREE.AnimationMixer(model);
-                            gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
-                            this._animationMixers.push(mixer);
+                        this._models[index] = {
+                            model: model,
+                            animationMixer: null,
+                            animationUrl: modelData.animation
+                        };
 
-                            setTimeout(() => {
-                                mixer.stopAllAction();
-                            }, 50000);
-                        }
-
-                        this._models[index] = model;
                         if (index === 0) {
                             this._currentModel = model;
                             this._modelPlaced = true;
                             this._scene.add(model);
+                        }
+
+                        if (modelData.animation) {
+                            gltfLoader.load(modelData.animation, (animationGltf) => {
+                                const mixer = new THREE.AnimationMixer(model);
+                                animationGltf.animations.forEach((clip) => mixer.clipAction(clip).play());
+                                this._models[index].animationMixer = mixer;
+                            });
                         }
                     });
                 });
@@ -292,9 +299,12 @@
                 if (this._currentModel) {
                     this._scene.remove(this._currentModel);
                 }
-                this._currentModel = this._models[index];
+                this._currentModel = this._models[index].model;
                 if (this._currentModel) {
                     this._scene.add(this._currentModel);
+                    if (this._models[index].animationMixer) {
+                        this._models[index].animationMixer.play();
+                    }
                 }
             }
 
@@ -381,4 +391,5 @@
             });
     </script>
 </body>
+
 </html>
