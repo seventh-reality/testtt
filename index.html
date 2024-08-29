@@ -116,7 +116,6 @@
             _animationMixers = [];
             _clock = null;
             _carPlaced = false;
-            _modelPlaced = false;
 
             oxSDK;
 
@@ -160,7 +159,6 @@
                         if (this._modelPlaced && !this.isCarPlaced()) {
                             this._models.forEach((model) => {
                                 model.position.copy(hitResult.position);
-                                console.log("Model position set:", hitResult.position);  // Debugging
                             });
                         }
                     });
@@ -211,7 +209,7 @@
 
             async initSDK() {
                 try {
-                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k"); // Use your actual API key
+                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
                     const config = {
                         mode: OnirixSDK.TrackingMode.Surface,
                     };
@@ -225,7 +223,6 @@
             placeCar() {
                 this._carPlaced = true;
                 this.oxSDK.start();
-                console.log("Car placed:", this._carPlaced); // Debugging
             }
 
             isCarPlaced() {
@@ -280,14 +277,12 @@
                     this._controls.enablePan = false;
 
                     renderCanvas.addEventListener('touchstart', (event) => {
-                        console.log("Touchstart event:", event); // Debugging
                         if (event.touches.length === 2) {
                             this._controls.enablePan = false;
                         }
                     });
 
                     renderCanvas.addEventListener('touchend', () => {
-                        console.log("Touchend event"); // Debugging
                         this._controls.enablePan = false;
                     });
                 } catch (err) {
@@ -377,7 +372,6 @@
                         this._transformControls.style.display = "none";
                         this._colorControls.style.display = "none";
                         this._modelControls.style.display = "block";
-                        console.log("Place Model button clicked"); // Debugging
                     });
 
                     document.querySelector("#black").addEventListener("click", () => {
