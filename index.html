@@ -120,82 +120,104 @@
             oxSDK;
 
             async init() {
-                this._raycaster = new THREE.Raycaster();
-                this._clock = new THREE.Clock(true);
+                try {
+                    this._raycaster = new THREE.Raycaster();
+                    this._clock = new THREE.Clock(true);
 
-                const renderCanvas = await this.initSDK();
-                this.setupRenderer(renderCanvas);
-                this.setupControls(renderCanvas);
+                    const renderCanvas = await this.initSDK();
+                    this.setupRenderer(renderCanvas);
+                    this.setupControls(renderCanvas);
 
-                const textureLoader = new THREE.TextureLoader();
-                this._envMap = textureLoader.load("envmap.jpg");
-                this._envMap.mapping = THREE.EquirectangularReflectionMapping;
-                this._envMap.encoding = THREE.sRGBEncoding;
+                    const textureLoader = new THREE.TextureLoader();
+                    this._envMap = textureLoader.load("envmap.jpg");
+                    this._envMap.mapping = THREE.EquirectangularReflectionMapping;
+                    this._envMap.encoding = THREE.sRGBEncoding;
 
-                this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
-                    const delta = this._clock.getDelta();
-                    this._animationMixers.forEach((mixer) => {
-                        mixer.update(delta);
+                    this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
+                        try {
+                            const delta = this._clock.getDelta();
+                            this._animationMixers.forEach((mixer) => mixer.update(delta));
+                            this.render();
+                        } catch (err) {
+                            console.error("Error during frame update", err);
+                        }
                     });
-                    this.render();
-                });
 
-                this.oxSDK.subscribe(OnirixSDK.Events.OnPose, (pose) => {
-                    this.updatePose(pose);
-                });
+                    this.oxSDK.subscribe(OnirixSDK.Events.OnPose, (pose) => {
+                        try {
+                            this.updatePose(pose);
+                        } catch (err) {
+                            console.error("Error updating pose", err);
+                        }
+                    });
 
-                this.oxSDK.subscribe(OnirixSDK.Events.OnResize, () => {
-                    this.onResize();
-                });
+                    this.oxSDK.subscribe(OnirixSDK.Events.OnResize, () => {
+                        this.onResize();
+                    });
 
-                this.oxSDK.subscribe(OnirixSDK.Events.OnHitTestResult, (hitResult) => {
-                    if (this._modelPlaced && !this.isCarPlaced()) {
-                        this._models.forEach((model) => {
-                            model.position.copy(hitResult.position);
-                        });
-                    }
-                });
+                    this.oxSDK.subscribe(OnirixSDK.Events.OnHitTestResult, (hitResult) => {
+                        if (this._modelPlaced && !this.isCarPlaced()) {
+                            this._models.forEach((model) => {
+                                model.position.copy(hitResult.position);
+                            });
+                        }
+                    });
 
-                const modelsToLoad = ["Steerad.glb", "Steeradtext.glb", "sterrad_anim.glb"];
-                const gltfLoader = new GLTFLoader();
-                modelsToLoad.forEach((modelUrl, index) => {
-                    gltfLoader.load(modelUrl, (gltf) => {
-                        const model = gltf.scene;
-                        model.traverse((child) => {
-                            if (child.material) {
-                                child.material.envMap = this._envMap;
-                                child.material.needsUpdate = true;
+                    const modelsToLoad = ["Steerad.glb", "Steeradtext.glb", "sterrad_anim.glb"];
+                    const gltfLoader = new GLTFLoader();
+                    modelsToLoad.forEach((modelUrl, index) => {
+                        gltfLoader.load(modelUrl, (gltf) => {
+                            try {
+                                const model = gltf.scene;
+                                model.traverse((child) => {
+                                    if (child.material) {
+                                        child.material.envMap = this._envMap;
+                                        child.material.needsUpdate = true;
+                                    }
+                                });
+
+                                if (gltf.animations && gltf.animations.length) {
+                                    const mixer = new THREE.AnimationMixer(model);
+                                    gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
+                                    this._animationMixers.push(mixer);
+
+                                    setTimeout(() => {
+                                        mixer.stopAllAction();
+                                    }, 50000);
+                                }
+
+                                this._models[index] = model;
+                                if (index === 0) {
+                                    this._currentModel = model;
+                                    this._modelPlaced = true;
+                                    this._scene.add(model);
+                                }
+                            } catch (err) {
+                                console.error("Error loading model", err);
                             }
+                        }, undefined, (error) => {
+                            console.error("Model loading error", error);
                         });
-
-                        if (gltf.animations && gltf.animations.length) {
-                            const mixer = new THREE.AnimationMixer(model);
-                            gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
-                            this._animationMixers.push(mixer);
-
-                            setTimeout(() => {
-                                mixer.stopAllAction();
-                            }, 50000);
-                        }
-
-                        this._models[index] = model;
-                        if (index === 0) {
-                            this._currentModel = model;
-                            this._modelPlaced = true;
-                            this._scene.add(model);
-                        }
                     });
-                });
 
-                this.addLights();
+                    this.addLights();
+                } catch (err) {
+                    console.error("Error initializing OxExperience", err);
+                    throw err;
+                }
             }
 
             async initSDK() {
-                this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
-                const config = {
-                    mode: OnirixSDK.TrackingMode.Surface,
-                };
-                return this.oxSDK.init(config);
+                try {
+                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
+                    const config = {
+                        mode: OnirixSDK.TrackingMode.Surface,
+                    };
+                    return this.oxSDK.init(config);
+                } catch (err) {
+                    console.error("Error initializing Onirix SDK", err);
+                    throw err;
+                }
             }
 
             placeCar() {
@@ -208,74 +230,98 @@
             }
 
             setupRenderer(renderCanvas) {
-                const width = renderCanvas.width;
-                const height = renderCanvas.height;
+                try {
+                    const width = renderCanvas.width;
+                    const height = renderCanvas.height;
 
-                this._renderer = new THREE.WebGLRenderer({ canvas: renderCanvas, alpha: true });
-                this._renderer.setClearColor(0x000000, 0);
-                this._renderer.setSize(width, height);
-                this._renderer.outputEncoding = THREE.sRGBEncoding;
+                    this._renderer = new THREE.WebGLRenderer({ canvas: renderCanvas, alpha: true });
+                    this._renderer.setClearColor(0x000000, 0);
+                    this._renderer.setSize(width, height);
+                    this._renderer.outputEncoding = THREE.sRGBEncoding;
 
-                const cameraParams = this.oxSDK.getCameraParameters();
-                this._camera = new THREE.PerspectiveCamera(cameraParams.fov, cameraParams.aspect, 0.1, 1000);
-                this._camera.matrixAutoUpdate = false;
+                    const cameraParams = this.oxSDK.getCameraParameters();
+                    this._camera = new THREE.PerspectiveCamera(cameraParams.fov, cameraParams.aspect, 0.1, 1000);
+                    this._camera.matrixAutoUpdate = false;
 
-                this._scene = new THREE.Scene();
+                    this._scene = new THREE.Scene();
 
-                const ambientLight = new THREE.AmbientLight(0x666666, 0.5);
-                this._scene.add(ambientLight);
+                    const ambientLight = new THREE.AmbientLight(0x666666, 0.5);
+                    this._scene.add(ambientLight);
+                } catch (err) {
+                    console.error("Error setting up renderer", err);
+                }
             }
 
             addLights() {
-                const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-                directionalLight.position.set(5, 10, 7.5);
-                directionalLight.castShadow = true;
-                this._scene.add(directionalLight);
+                try {
+                    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+                    directionalLight.position.set(5, 10, 7.5);
+                    directionalLight.castShadow = true;
+                    this._scene.add(directionalLight);
 
-                const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-                pointLight.position.set(5, 10, 5);
-                this._scene.add(pointLight);
+                    const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+                    pointLight.position.set(5, 10, 5);
+                    this._scene.add(pointLight);
+                } catch (err) {
+                    console.error("Error adding lights", err);
+                }
             }
 
             setupControls(renderCanvas) {
-                this._controls = new OrbitControls(this._camera, renderCanvas);
-                this._controls.enableDamping = true;
-                this._controls.dampingFactor = 0.25;
-                this._controls.enableZoom = true;
-                this._controls.enableRotate = true;
-                this._controls.enablePan = false;
-
-                renderCanvas.addEventListener('touchstart', (event) => {
-                    if (event.touches.length === 2) {
-                        this._controls.enablePan = false;
-                    }
-                });
-
-                renderCanvas.addEventListener('touchend', (event) => {
+                try {
+                    this._controls = new OrbitControls(this._camera, renderCanvas);
+                    this._controls.enableDamping = true;
+                    this._controls.dampingFactor = 0.25;
+                    this._controls.enableZoom = true;
+                    this._controls.enableRotate = true;
                     this._controls.enablePan = false;
-                });
+
+                    renderCanvas.addEventListener('touchstart', (event) => {
+                        if (event.touches.length === 2) {
+                            this._controls.enablePan = false;
+                        }
+                    });
+
+                    renderCanvas.addEventListener('touchend', () => {
+                        this._controls.enablePan = false;
+                    });
+                } catch (err) {
+                    console.error("Error setting up controls", err);
+                }
             }
 
             render() {
-                this._controls.update();
-                this._renderer.render(this._scene, this._camera);
+                try {
+                    this._controls.update();
+                    this._renderer.render(this._scene, this._camera);
+                } catch (err) {
+                    console.error("Error during rendering", err);
+                }
             }
 
             updatePose(pose) {
-                let modelViewMatrix = new THREE.Matrix4();
-                modelViewMatrix = modelViewMatrix.fromArray(pose);
-                this._camera.matrix = modelViewMatrix;
-                this._camera.matrixWorldNeedsUpdate = true;
+                try {
+                    let modelViewMatrix = new THREE.Matrix4();
+                    modelViewMatrix = modelViewMatrix.fromArray(pose);
+                    this._camera.matrix = modelViewMatrix;
+                    this._camera.matrixWorldNeedsUpdate = true;
+                } catch (err) {
+                    console.error("Error updating pose", err);
+                }
             }
 
             onResize() {
-                const width = this._renderer.domElement.width;
-                const height = this._renderer.domElement.height;
-                const cameraParams = this.oxSDK.getCameraParameters();
-                this._camera.fov = cameraParams.fov;
-                this._camera.aspect = cameraParams.aspect;
-                this._camera.updateProjectionMatrix();
-                this._renderer.setSize(width, height);
+                try {
+                    const width = this._renderer.domElement.width;
+                    const height = this._renderer.domElement.height;
+                    const cameraParams = this.oxSDK.getCameraParameters();
+                    this._camera.fov = cameraParams.fov;
+                    this._camera.aspect = cameraParams.aspect;
+                    this._camera.updateProjectionMatrix();
+                    this._renderer.setSize(width, height);
+                } catch (err) {
+                    console.error("Error handling resize", err);
+                }
             }
 
             changeModelsColor(value) {
@@ -311,47 +357,51 @@
             _errorMessage = null;
 
             init() {
-                this._loadingScreen = document.querySelector("#loading-screen");
-                this._errorScreen = document.querySelector("#error-screen");
-                this._errorTitle = document.querySelector("#error-title");
-                this._errorMessage = document.querySelector("#error-message");
+                try {
+                    this._loadingScreen = document.querySelector("#loading-screen");
+                    this._errorScreen = document.querySelector("#error-screen");
+                    this._errorTitle = document.querySelector("#error-title");
+                    this._errorMessage = document.querySelector("#error-message");
 
-                this._transformControls = document.querySelector("#transform-controls");
-                this._colorControls = document.querySelector("#color-controls");
-                this._modelControls = document.querySelector("#model-controls");
+                    this._transformControls = document.querySelector("#transform-controls");
+                    this._colorControls = document.querySelector("#color-controls");
+                    this._modelControls = document.querySelector("#model-controls");
 
-                document.querySelector("#tap-to-place").addEventListener("click", () => {
-                    oxExp.placeCar();
-                    this._transformControls.style.display = "none";
-                    this._colorControls.style.display = "none";
-                    this._modelControls.style.display = "block";
-                });
+                    document.querySelector("#tap-to-place").addEventListener("click", () => {
+                        oxExp.placeCar();
+                        this._transformControls.style.display = "none";
+                        this._colorControls.style.display = "none";
+                        this._modelControls.style.display = "block";
+                    });
 
-                document.querySelector("#black").addEventListener("click", () => {
-                    oxExp.changeModelsColor(0x000000);
-                });
-                document.querySelector("#blue").addEventListener("click", () => {
-                    oxExp.changeModelsColor(0x0000ff);
-                });
-                document.querySelector("#orange").addEventListener("click", () => {
-                    oxExp.changeModelsColor(0xffa500);
-                });
-                document.querySelector("#silver").addEventListener("click", () => {
-                    oxExp.changeModelsColor(0xc0c0c0);
-                });
+                    document.querySelector("#black").addEventListener("click", () => {
+                        oxExp.changeModelsColor(0x000000);
+                    });
+                    document.querySelector("#blue").addEventListener("click", () => {
+                        oxExp.changeModelsColor(0x0000ff);
+                    });
+                    document.querySelector("#orange").addEventListener("click", () => {
+                        oxExp.changeModelsColor(0xffa500);
+                    });
+                    document.querySelector("#silver").addEventListener("click", () => {
+                        oxExp.changeModelsColor(0xc0c0c0);
+                    });
 
-                document.querySelector("#model1").addEventListener("click", () => {
-                    oxExp.switchModel(0);
-                    oxExp.playAudio("v.mp3");
-                });
-                document.querySelector("#model2").addEventListener("click", () => {
-                    oxExp.switchModel(1);
-                    oxExp.playAudio("v.mp3");
-                });
-                document.querySelector("#model3").addEventListener("click", () => {
-                    oxExp.switchModel(2);
-                    oxExp.playAudio("v.mp3");
-                });
+                    document.querySelector("#model1").addEventListener("click", () => {
+                        oxExp.switchModel(0);
+                        oxExp.playAudio("v.mp3");
+                    });
+                    document.querySelector("#model2").addEventListener("click", () => {
+                        oxExp.switchModel(1);
+                        oxExp.playAudio("v.mp3");
+                    });
+                    document.querySelector("#model3").addEventListener("click", () => {
+                        oxExp.switchModel(2);
+                        oxExp.playAudio("v.mp3");
+                    });
+                } catch (err) {
+                    console.error("Error initializing UI", err);
+                }
             }
 
             hideLoading() {
@@ -381,4 +431,5 @@
             });
     </script>
 </body>
+
 </html>
