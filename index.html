@@ -16,6 +16,16 @@
             display: block;
         }
 
+        #buttons {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        button {
+            margin-right: 10px;
+        }
+
         #transform-controls,
         #color-controls,
         #model-controls {
@@ -89,7 +99,6 @@
             _modelIndex = 0;
             _scale = 1;
             _currentModel = null;
-            _carPlaced = false;
 
             oxSDK;
 
@@ -97,6 +106,7 @@
                 this._raycaster = new THREE.Raycaster();
                 this._animationMixers = [];
                 this._clock = new THREE.Clock(true);
+                this._carPlaced = false;
 
                 const renderCanvas = await this.initSDK();
                 this.setupRenderer(renderCanvas);
@@ -123,7 +133,7 @@
                 });
 
                 this.oxSDK.subscribe(OnirixSDK.Events.OnHitTestResult, (hitResult) => {
-                    if (this._carPlaced && !this.isCarPlaced()) {
+                    if (this._modelPlaced && !this.isCarPlaced()) {
                         this._models.forEach((model) => {
                             model.position.copy(hitResult.position);
                         });
@@ -145,7 +155,7 @@
                         this._models[index] = model;
                         if (index === 0) {
                             this._currentModel = model;
-                            this._carPlaced = true;
+                            this._modelPlaced = true;
                             this._scene.add(model);
                         }
                     });
@@ -217,11 +227,9 @@
 
             scaleModels(value) {
                 this._scale = value;
-                this._models.forEach((model) => {
-                    if (model) {
-                        model.scale.set(value, value, value);
-                    }
-                });
+                if (this._currentModel) {
+                    this._currentModel.scale.set(value, value, value);
+                }
             }
 
             rotateModels(value) {
