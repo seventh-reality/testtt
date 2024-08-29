@@ -110,7 +110,7 @@
                 this.setupControls(renderCanvas);
 
                 const textureLoader = new THREE.TextureLoader();
-                this._envMap = textureLoader.load("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAA...");
+                this._envMap = textureLoader.load("envmap.jpg");
                 this._envMap.mapping = THREE.EquirectangularReflectionMapping;
                 this._envMap.encoding = THREE.sRGBEncoding;
 
