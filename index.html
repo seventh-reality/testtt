@@ -246,7 +246,7 @@
                 this._controls.dampingFactor = 0.25;
                 this._controls.enableZoom = true; // Allows pinch to zoom or mouse wheel zoom
                 this._controls.enableRotate = true; // Allows rotation around the model
-                this._controls.enablePan = false; // Disables panning
+                this._controls.enablePan = true; // Disables panning
 
                 renderCanvas.addEventListener('touchstart', (event) => {
                     if (event.touches.length === 2) {
@@ -321,7 +321,7 @@
                 document.querySelector("#tap-to-place").addEventListener("click", () => {
                     oxExp.placeCar();
                     this._transformControls.style.display = "none";
-                    this._colorControls.style.display = "block";
+                    this._colorControls.style.display = "none";
                     this._modelControls.style.display = "block";
                 });
 
