@@ -116,6 +116,9 @@
             _animationMixers = [];
             _clock = null;
             _carPlaced = false;
+            _sprite = null;
+            _spriteMaterial = null;
+            _spriteTexture = null;
 
             oxSDK;
 
@@ -131,6 +134,12 @@
                 this._envMap = textureLoader.load("envmap.jpg");
                 this._envMap.mapping = THREE.EquirectangularReflectionMapping;
                 this._envMap.encoding = THREE.sRGBEncoding;
+
+                this._spriteTexture = textureLoader.load("sprite.png"); // Load the sprite texture
+                this._spriteMaterial = new THREE.SpriteMaterial({ map: this._spriteTexture });
+                this._sprite = new THREE.Sprite(this._spriteMaterial);
+                this._sprite.position.set(0, 0, -5); // Position the sprite
+                this._scene.add(this._sprite);
 
                 this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
                     const delta = this._clock.getDelta();
@@ -188,6 +197,7 @@
                 });
 
                 this.addLights();
+                this.setupSpriteInteraction(); // Set up sprite interaction
             }
 
             async initSDK() {
@@ -302,6 +312,30 @@
                 const audio = new Audio(audioFile);
                 audio.play();
             }
+
+            setupSpriteInteraction() {
+                this._sprite.on('click', () => {
+                    this.playAudio("v.mp3");
+                    // Play animation or any other action
+                    console.log('Sprite clicked!'); // Placeholder for your animation logic
+                });
+
+                this._renderer.domElement.addEventListener('click', (event) => {
+                    const mouse = new THREE.Vector2();
+                    const raycaster = new THREE.Raycaster();
+
+                    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+                    raycaster.setFromCamera(mouse, this._camera);
+
+                    const intersects = raycaster.intersectObject(this._sprite);
+
+                    if (intersects.length > 0) {
+                        this._sprite.on('click');
+                    }
+                });
+            }
         }
 
         class OxExperienceUI {
@@ -381,4 +415,5 @@
             });
     </script>
 </body>
+
 </html>
