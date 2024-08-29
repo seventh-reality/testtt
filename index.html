@@ -103,7 +103,6 @@
         import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.6.5/dist/ox-sdk.esm.js";
         import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
         import { GLTFLoader } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js";
-        import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js";
 
         class OxExperience {
             _renderer = null;
@@ -112,7 +111,6 @@
             _models = [];
             _modelIndex = 0;
             _currentModel = null;
-            _controls = null;
             _animationMixers = [];
             _clock = null;
             _carPlaced = false;
@@ -127,7 +125,6 @@
 
                 const renderCanvas = await this.initSDK();
                 this.setupRenderer(renderCanvas);
-                this.setupControls(renderCanvas);
 
                 const textureLoader = new THREE.TextureLoader();
                 this._envMap = textureLoader.load("envmap.jpg");
@@ -240,31 +237,8 @@
                 this._scene.add(pointLight);
             }
 
-            setupControls(renderCanvas) {
-                this._controls = new OrbitControls(this._camera, renderCanvas);
-                this._controls.enableDamping = true;
-                this._controls.dampingFactor = 0.25;
-                this._controls.enableZoom = true;
-                this._controls.enableRotate = true;
-                this._controls.enablePan = true;
-
-                renderCanvas.addEventListener('touchstart', (event) => {
-                    if (event.touches.length === 2) {
-                        this._controls.enablePan = true;
-                    }
-                });
-
-                renderCanvas.addEventListener('touchend', (event) => {
-                    this._controls.enablePan = true;
-                });
-
-                renderCanvas.addEventListener('touchstart', (event) => {
-                    this.handleTouch(event);
-                });
-            }
-
             setupSprite() {
-                const spriteMap = new THREE.TextureLoader().load('4 (1).png');
+                const spriteMap = new THREE.TextureLoader().load('logo.png');
                 const spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap });
                 this._sprite = new THREE.Sprite(spriteMaterial);
                 this._sprite.scale.set(5, 5, 1);
@@ -292,7 +266,6 @@
                 this._camera.matrix.fromArray(pose);
                 this._camera.matrix.decompose(this._camera.position, this._camera.quaternion, this._camera.scale);
                 this._camera.updateMatrixWorld(true);
-                this._controls.update();
             }
 
             onResize() {
