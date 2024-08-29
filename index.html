@@ -264,64 +264,153 @@
             }
 
             setupSprite() {
-                const spriteMaterial = new THREE.SpriteMaterial({ color: 0xff0000 });
+                const spriteTexture = new THREE.TextureLoader().load('4 (1).png'); // Load your sprite image here
+                const spriteMaterial = new THREE.SpriteMaterial({ map: spriteTexture });
                 this._sprite = new THREE.Sprite(spriteMaterial);
-                this._sprite.scale.set(0.1, 0.1, 0.1);
-                this._sprite.position.set(0, 0, 0);
-
+                this._sprite.scale.set(1, 1, 1); // Adjust size
+                this._sprite.position.set(0, 0, -5); // Adjust position
                 this._scene.add(this._sprite);
             }
 
             handleTouch(event) {
+                event.preventDefault();
                 const touch = event.touches[0];
-                const touchX = (touch.clientX / window.innerWidth) * 2 - 1;
-                const touchY = -(touch.clientY / window.innerHeight) * 2 + 1;
+                const mouse = new THREE.Vector2();
+                mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
 
-                this._raycaster.setFromCamera({ x: touchX, y: touchY }, this._camera);
+                this._raycaster.setFromCamera(mouse, this._camera);
                 const intersects = this._raycaster.intersectObject(this._sprite);
 
                 if (intersects.length > 0) {
-                    const audio = new Audio('v.mp3');
-                    audio.play();
+                    console.log("Sprite touched!");
+                    // Handle sprite interaction here
                 }
             }
 
-            updatePose(pose) {
-                this._camera.matrix.elements = pose.viewMatrix;
-                this._camera.matrixWorldNeedsUpdate = true;
-            }
-
             render() {
+                this._controls.update();
                 this._renderer.render(this._scene, this._camera);
             }
 
+            updatePose(pose) {
+                let modelViewMatrix = new THREE.Matrix4();
+                modelViewMatrix = modelViewMatrix.fromArray(pose);
+                this._camera.matrix = modelViewMatrix;
+                this._camera.matrixWorldNeedsUpdate = true;
+            }
+
             onResize() {
-                const renderCanvas = this._renderer.domElement;
-                const width = renderCanvas.clientWidth;
-                const height = renderCanvas.clientHeight;
-
-                this._renderer.setSize(width, height);
-
-                this._camera.aspect = width / height;
+                const width = this._renderer.domElement.width;
+                const height = this._renderer.domElement.height;
+                const cameraParams = this.oxSDK.getCameraParameters();
+                this._camera.fov = cameraParams.fov;
+                this._camera.aspect = cameraParams.aspect;
                 this._camera.updateProjectionMatrix();
+                this._renderer.setSize(width, height);
+            }
+
+            changeModelsColor(value) {
+                if (this._currentModel) {
+                    this._currentModel.traverse((child) => {
+                        if (child.material) {
+                            child.material.color.setHex(value);
+                        }
+                    });
+                }
+            }
+
+            switchModel(index) {
+                if (this._currentModel) {
+                    this._scene.remove(this._currentModel);
+                }
+                this._currentModel = this._models[index];
+                if (this._currentModel) {
+                    this._scene.add(this._currentModel);
+                }
+            }
+
+            playAudio(audioFile) {
+                const audio = new Audio(audioFile);
+                audio.play();
             }
         }
 
-        const experience = new OxExperience();
-        experience.init().catch((error) => {
-            const errorScreen = document.getElementById("error-screen");
-            const errorTitle = document.getElementById("error-title");
-            const errorMessage = document.getElementById("error-message");
+        class OxExperienceUI {
+            _loadingScreen = null;
+            _errorScreen = null;
+            _errorTitle = null;
+            _errorMessage = null;
 
-            errorTitle.innerText = "Error";
-            errorMessage.innerText = error.message;
+            init() {
+                this._loadingScreen = document.querySelector("#loading-screen");
+                this._errorScreen = document.querySelector("#error-screen");
+                this._errorTitle = document.querySelector("#error-title");
+                this._errorMessage = document.querySelector("#error-message");
 
-            errorScreen.style.display = "block";
-        });
+                this._transformControls = document.querySelector("#transform-controls");
+                this._colorControls = document.querySelector("#color-controls");
+                this._modelControls = document.querySelector("#model-controls");
 
-        document.getElementById("tap-to-place").addEventListener("click", () => {
-            experience.placeCar();
-        });
+                document.querySelector("#tap-to-place").addEventListener("click", () => {
+                    oxExp.placeCar();
+                    this._transformControls.style.display = "none";
+                    this._colorControls.style.display = "none";
+                    this._modelControls.style.display = "block";
+                });
+
+                document.querySelector("#black").addEventListener("click", () => {
+                    oxExp.changeModelsColor(0x000000);
+                });
+                document.querySelector("#blue").addEventListener("click", () => {
+                    oxExp.changeModelsColor(0x0000ff);
+                });
+                document.querySelector("#orange").addEventListener("click", () => {
+                    oxExp.changeModelsColor(0xffa500);
+                });
+                document.querySelector("#silver").addEventListener("click", () => {
+                    oxExp.changeModelsColor(0xc0c0c0);
+                });
+
+                document.querySelector("#model1").addEventListener("click", () => {
+                    oxExp.switchModel(0);
+                    oxExp.playAudio("v.mp3");
+                });
+                document.querySelector("#model2").addEventListener("click", () => {
+                    oxExp.switchModel(1);
+                    oxExp.playAudio("v.mp3");
+                });
+                document.querySelector("#model3").addEventListener("click", () => {
+                    oxExp.switchModel(2);
+                    oxExp.playAudio("v.mp3");
+                });
+            }
+
+            hideLoading() {
+                this._loadingScreen.style.display = "none";
+                this._transformControls.style.display = "block";
+            }
+
+            showError(title, message) {
+                this._errorTitle.textContent = title;
+                this._errorMessage.textContent = message;
+                this._errorScreen.style.display = "block";
+            }
+        }
+
+        const oxExp = new OxExperience();
+        const oxUI = new OxExperienceUI();
+
+        oxExp
+            .init()
+            .then(() => {
+                oxUI.init();
+                oxUI.hideLoading();
+            })
+            .catch((error) => {
+                console.error("Error initializing Onirix SDK", error);
+                oxUI.showError("Initialization Error", error.message);
+            });
     </script>
 </body>
 
