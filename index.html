@@ -21,21 +21,23 @@
             top: 20px;
             left: 20px;
         }
-        #model-controls{
-            translate: 55px 600px;  
+
+        #model-controls {
+            translate: 55px 600px;
         }
+
         #tap-to-place {
-           display: block;
-           margin: auto;
-           width: 200px;
-           padding: 25px;
-           background-color: #231532;
-           color: #FFFFFF;
-           border: 0;
-           border-radius: 20px;
-           box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
-           translate: 55px 600px; 
-}
+            display: block;
+            margin: auto;
+            width: 200px;
+            padding: 25px;
+            background-color: #231532;
+            color: #FFFFFF;
+            border: 0;
+            border-radius: 20px;
+            box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
+            translate: 55px 600px;
+        }
 
         button {
             margin-right: 10px;
@@ -113,13 +115,13 @@
             _controls = null;
             _animationMixers = [];
             _clock = null;
+            _carPlaced = false;
 
             oxSDK;
 
             async init() {
                 this._raycaster = new THREE.Raycaster();
                 this._clock = new THREE.Clock(true);
-                this._carPlaced = false;
 
                 const renderCanvas = await this.initSDK();
                 this.setupRenderer(renderCanvas);
@@ -166,16 +168,14 @@
                             }
                         });
 
-                        // Check for animations and add mixers
                         if (gltf.animations && gltf.animations.length) {
                             const mixer = new THREE.AnimationMixer(model);
                             gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
                             this._animationMixers.push(mixer);
 
-                            // Automatically stop the animation after 5 seconds
                             setTimeout(() => {
                                 mixer.stopAllAction();
-                            }, 50000); // Adjust the time as needed (in milliseconds)
+                            }, 50000);
                         }
 
                         this._models[index] = model;
@@ -186,7 +186,7 @@
                         }
                     });
                 });
-                
+
                 this.addLights();
             }
 
@@ -221,20 +221,17 @@
                 this._camera.matrixAutoUpdate = false;
 
                 this._scene = new THREE.Scene();
-                
-                // Existing ambient light for soft illumination
+
                 const ambientLight = new THREE.AmbientLight(0x666666, 0.5);
                 this._scene.add(ambientLight);
             }
 
             addLights() {
-                // Directional light to simulate sunlight
                 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
                 directionalLight.position.set(5, 10, 7.5);
                 directionalLight.castShadow = true;
                 this._scene.add(directionalLight);
 
-                // Point light for highlights and additional illumination
                 const pointLight = new THREE.PointLight(0xffffff, 1, 100);
                 pointLight.position.set(5, 10, 5);
                 this._scene.add(pointLight);
@@ -242,20 +239,20 @@
 
             setupControls(renderCanvas) {
                 this._controls = new OrbitControls(this._camera, renderCanvas);
-                this._controls.enableDamping = true; // Adds smooth damping (inertia) to the controls
+                this._controls.enableDamping = true;
                 this._controls.dampingFactor = 0.25;
-                this._controls.enableZoom = true; // Allows pinch to zoom or mouse wheel zoom
-                this._controls.enableRotate = true; // Allows rotation around the model
-                this._controls.enablePan = false; // Disables panning
+                this._controls.enableZoom = true;
+                this._controls.enableRotate = true;
+                this._controls.enablePan = false;
 
                 renderCanvas.addEventListener('touchstart', (event) => {
                     if (event.touches.length === 2) {
-                        this._controls.enablePan = false; // Disable panning during touch
+                        this._controls.enablePan = false;
                     }
                 });
 
                 renderCanvas.addEventListener('touchend', (event) => {
-                    this._controls.enablePan = false; // Disable panning after touch ends
+                    this._controls.enablePan = false;
                 });
             }
 
@@ -300,6 +297,11 @@
                     this._scene.add(this._currentModel);
                 }
             }
+
+            playAudio(audioFile) {
+                const audio = new Audio(audioFile);
+                audio.play();
+            }
         }
 
         class OxExperienceUI {
@@ -340,12 +342,15 @@
 
                 document.querySelector("#model1").addEventListener("click", () => {
                     oxExp.switchModel(0);
+                    oxExp.playAudio("v.mp3");
                 });
                 document.querySelector("#model2").addEventListener("click", () => {
                     oxExp.switchModel(1);
+                    oxExp.playAudio("v.mp3");
                 });
                 document.querySelector("#model3").addEventListener("click", () => {
                     oxExp.switchModel(2);
+                    oxExp.playAudio("v.mp3");
                 });
             }
 
