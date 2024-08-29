@@ -96,12 +96,13 @@
             _modelIndex = 0;
             _currentModel = null;
             _controls = null;
+            _animationMixers = [];
+            _clock = null;
 
             oxSDK;
 
             async init() {
                 this._raycaster = new THREE.Raycaster();
-                this._animationMixers = [];
                 this._clock = new THREE.Clock(true);
                 this._carPlaced = false;
 
@@ -149,6 +150,19 @@
                                 child.material.needsUpdate = true;
                             }
                         });
+
+                        // Check for animations and add mixers
+                        if (gltf.animations && gltf.animations.length) {
+                            const mixer = new THREE.AnimationMixer(model);
+                            gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
+                            this._animationMixers.push(mixer);
+
+                            // Automatically stop the animation after 5 seconds
+                            setTimeout(() => {
+                                mixer.stopAllAction();
+                            }, 5000); // Adjust the time as needed (in milliseconds)
+                        }
+
                         this._models[index] = model;
                         if (index === 0) {
                             this._currentModel = model;
