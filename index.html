@@ -22,8 +22,13 @@
             left: 20px;
         }
 
+        #transform-controls,
+        #color-controls,
         #model-controls {
-            translate: 55px 600px;
+            display: none;
+            position: absolute;
+            top: 20px;
+            left: 20px;
         }
 
         #tap-to-place {
@@ -36,20 +41,10 @@
             border: 0;
             border-radius: 20px;
             box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
-            translate: 55px 600px;
         }
 
         button {
             margin-right: 10px;
-        }
-
-        #transform-controls,
-        #color-controls,
-        #model-controls {
-            display: none;
-            position: absolute;
-            top: 20px;
-            left: 20px;
         }
 
         #loading-screen {
@@ -135,10 +130,11 @@
                 this._envMap.mapping = THREE.EquirectangularReflectionMapping;
                 this._envMap.encoding = THREE.sRGBEncoding;
 
-                this._spriteTexture = textureLoader.load("4 (1).png"); // Load the sprite texture
+                this._spriteTexture = textureLoader.load("sprite.png"); // Ensure the sprite image is named correctly
                 this._spriteMaterial = new THREE.SpriteMaterial({ map: this._spriteTexture });
                 this._sprite = new THREE.Sprite(this._spriteMaterial);
-                this._sprite.position.set(0, 0, -5); // Position the sprite
+                this._sprite.position.set(0, 0, -5); // Set the sprite's position
+                this._sprite.scale.set(1, 1, 1); // Set the sprite's scale
                 this._scene.add(this._sprite);
 
                 this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
@@ -201,7 +197,7 @@
             }
 
             async initSDK() {
-                this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
+                this.oxSDK = new OnirixSDK("your_access_token_here");
                 const config = {
                     mode: OnirixSDK.TrackingMode.Surface,
                 };
@@ -314,12 +310,6 @@
             }
 
             setupSpriteInteraction() {
-                this._sprite.on('click', () => {
-                    this.playAudio("v.mp3");
-                    // Play animation or any other action
-                    console.log('Sprite clicked!'); // Placeholder for your animation logic
-                });
-
                 this._renderer.domElement.addEventListener('click', (event) => {
                     const mouse = new THREE.Vector2();
                     const raycaster = new THREE.Raycaster();
@@ -332,7 +322,8 @@
                     const intersects = raycaster.intersectObject(this._sprite);
 
                     if (intersects.length > 0) {
-                        this._sprite.on('click');
+                        this.playAudio("v.mp3");
+                        console.log('Sprite clicked!');
                     }
                 });
             }
