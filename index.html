@@ -88,6 +88,7 @@
         import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.6.5/dist/ox-sdk.esm.js";
         import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
         import { GLTFLoader } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js";
+        import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js";
 
         class OxExperience {
             _renderer = null;
@@ -96,6 +97,7 @@
             _models = [];
             _modelIndex = 0;
             _currentModel = null;
+            _controls = null;
 
             oxSDK;
 
@@ -107,6 +109,7 @@
 
                 const renderCanvas = await this.initSDK();
                 this.setupRenderer(renderCanvas);
+                this.setupControls(renderCanvas);
 
                 const textureLoader = new THREE.TextureLoader();
                 this._envMap = textureLoader.load("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAA...");
@@ -175,10 +178,6 @@
                 return this._carPlaced;
             }
 
-            onHitTest(listener) {
-                this.oxSDK.subscribe(OnirixSDK.Events.OnHitTestResult, listener);
-            }
-
             setupRenderer(renderCanvas) {
                 const width = renderCanvas.width;
                 const height = renderCanvas.height;
@@ -200,7 +199,27 @@
                 this._scene.add(hemisphereLight);
             }
 
+            setupControls(renderCanvas) {
+                this._controls = new OrbitControls(this._camera, renderCanvas);
+                this._controls.enableDamping = true; // Adds smooth damping (inertia) to the controls
+                this._controls.dampingFactor = 0.25;
+                this._controls.enableZoom = true; // Allows pinch to zoom or mouse wheel zoom
+                this._controls.enableRotate = true; // Allows rotation around the model
+                this._controls.enablePan = false; // Disables panning
+
+                renderCanvas.addEventListener('touchstart', (event) => {
+                    if (event.touches.length === 2) {
+                        this._controls.enablePan = false; // Disable panning during touch
+                    }
+                });
+
+                renderCanvas.addEventListener('touchend', (event) => {
+                    this._controls.enablePan = false; // Disable panning after touch ends
+                });
+            }
+
             render() {
+                this._controls.update();
                 this._renderer.render(this._scene, this._camera);
             }
 
