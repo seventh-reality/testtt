@@ -63,8 +63,6 @@
 
 <body>
     <div id="transform-controls">
-        <label for="scale-slider">Scale:</label>
-        <input id="scale-slider" type="range" min="10" max="200" value="100">
         <label for="rotation-slider">Rotation:</label>
         <input id="rotation-slider" type="range" min="0" max="360" value="0">
         <button id="tap-to-place">Place Model</button>
@@ -97,7 +95,6 @@
             _camera = null;
             _models = [];
             _modelIndex = 0;
-            _scale = 1;
             _currentModel = null;
 
             oxSDK;
@@ -151,7 +148,6 @@
                                 child.material.needsUpdate = true;
                             }
                         });
-                        model.scale.set(this._scale, this._scale, this._scale);
                         this._models[index] = model;
                         if (index === 0) {
                             this._currentModel = model;
@@ -225,13 +221,6 @@
                 this._renderer.setSize(width, height);
             }
 
-            scaleModels(value) {
-                this._scale = value;
-                if (this._currentModel) {
-                    this._currentModel.scale.set(value, value, value);
-                }
-            }
-
             rotateModels(value) {
                 if (this._currentModel) {
                     this._currentModel.rotation.y = value;
@@ -274,126 +263,68 @@
                 this._transformControls = document.querySelector("#transform-controls");
                 this._colorControls = document.querySelector("#color-controls");
                 this._modelControls = document.querySelector("#model-controls");
-                this._placeButton = document.querySelector("#tap-to-place");
-                this._scaleSlider = document.querySelector("#scale-slider");
                 this._rotationSlider = document.querySelector("#rotation-slider");
-                this._black = document.querySelector("#black");
-                this._orange = document.querySelector("#orange");
-                this._blue = document.querySelector("#blue");
-                this._silver = document.querySelector("#silver");
-                this._model1 = document.querySelector("#model1");
-                this._model2 = document.querySelector("#model2");
-                this._model3 = document.querySelector("#model3");
+
+                document.querySelector("#tap-to-place").addEventListener("click", () => {
+                    oxExp.placeCar();
+                    this._transformControls.style.display = "none";
+                    this._colorControls.style.display = "block";
+                    this._modelControls.style.display = "block";
+                });
+
+                document.querySelector("#rotation-slider").addEventListener("input", (event) => {
+                    oxExp.rotateModels(event.target.value * (Math.PI / 180));
+                });
+
+                document.querySelector("#black").addEventListener("click", () => {
+                    oxExp.changeModelsColor(0x000000);
+                });
+                document.querySelector("#blue").addEventListener("click", () => {
+                    oxExp.changeModelsColor(0x0000ff);
+                });
+                document.querySelector("#orange").addEventListener("click", () => {
+                    oxExp.changeModelsColor(0xffa500);
+                });
+                document.querySelector("#silver").addEventListener("click", () => {
+                    oxExp.changeModelsColor(0xc0c0c0);
+                });
+
+                document.querySelector("#model1").addEventListener("click", () => {
+                    oxExp.switchModel(0);
+                });
+                document.querySelector("#model2").addEventListener("click", () => {
+                    oxExp.switchModel(1);
+                });
+                document.querySelector("#model3").addEventListener("click", () => {
+                    oxExp.switchModel(2);
+                });
             }
 
-            showControls() {
+            hideLoading() {
+                this._loadingScreen.style.display = "none";
                 this._transformControls.style.display = "block";
             }
 
-            showColors() {
-                this._transformControls.style.display = "none";
-                this._colorControls.style.display = "block";
-                this._modelControls.style.display = "block";
-            }
-
-            showModels() {
-                this._colorControls.style.display = "none";
-                this._modelControls.style.display = "block";
-            }
-
-            onPlace(listener) {
-                this._placeButton.addEventListener('click', listener);
-            }
-
-            onScaleChange(listener) {
-                this._scaleSlider.addEventListener('input', () => { listener(this._scaleSlider.value / 100) });
-            }
-
-            onRotationChange(listener) {
-                this._rotationSlider.addEventListener('input', () => { listener(this._rotationSlider.value * Math.PI / 180) });
-            }
-
-            onBlack(listener) {
-                this._black.addEventListener('click', listener);
-            }
-
-            onOrange(listener) {
-                this._orange.addEventListener('click', listener);
-            }
-
-            onBlue(listener) {
-                this._blue.addEventListener('click', listener);
-            }
-
-            onSilver(listener) {
-                this._silver.addEventListener('click', listener);
-            }
-
-            onModelChange(listener) {
-                this._model1.addEventListener('click', () => { listener(0) });
-                this._model2.addEventListener('click', () => { listener(1) });
-                this._model3.addEventListener('click', () => { listener(2) });
-            }
-
-            hideLoadingScreen() {
-                this._loadingScreen.style.display = 'none';
-            }
-
-            showError(errorTitle, errorMessage) {
-                this._errorTitle.innerText = errorTitle;
-                this._errorMessage.innerText = errorMessage;
-                this._errorScreen.style.display = 'flex';
+            showError(title, message) {
+                this._errorTitle.textContent = title;
+                this._errorMessage.textContent = message;
+                this._errorScreen.style.display = "block";
             }
         }
 
         const oxExp = new OxExperience();
         const oxUI = new OxExperienceUI();
 
-        oxUI.init();
-        try {
-            await oxExp.init();
-
-            oxUI.onPlace(() => {
-                oxExp.placeCar();
-                oxUI.showColors();
+        oxExp
+            .init()
+            .then(() => {
+                oxUI.init();
+                oxUI.hideLoading();
+            })
+            .catch((error) => {
+                console.error("Error initializing Onirix SDK", error);
+                oxUI.showError("Initialization Error", error.message);
             });
-
-            oxExp.onHitTest(() => {
-                if (!oxExp.isCarPlaced()) {
-                    oxUI.showControls();
-                }
-            });
-
-            oxUI.onRotationChange((value) => { oxExp.rotateModels(value) });
-            oxUI.onScaleChange((value) => { oxExp.scaleModels(value) });
-
-            oxUI.onBlack(() => oxExp.changeModelsColor(0x111111));
-            oxUI.onBlue(() => oxExp.changeModelsColor(0x0011ff));
-            oxUI.onOrange(() => oxExp.changeModelsColor(0xff2600));
-            oxUI.onSilver(() => oxExp.changeModelsColor(0xffffff));
-
-            oxUI.onModelChange((index) => {
-                oxExp.switchModel(index);
-                oxUI.showControls();
-            });
-
-            oxUI.hideLoadingScreen();
-        } catch (error) {
-            switch (error.name) {
-                case 'INTERNAL_ERROR':
-                    oxUI.showError('Internal Error', 'An unspecified error has occurred. Your device might not be compatible with this experience.');
-                    break;
-                case 'CAMERA_ERROR':
-                    oxUI.showError('Camera Error', 'Could not access your device\'s camera. Please ensure you have given the required permissions.');
-                    break;
-                case 'SENSORS_ERROR':
-                    oxUI.showError('Sensors Error', 'Could not access your device\'s motion sensors. Please ensure you have given the required permissions.');
-                    break;
-                case 'LICENSE_ERROR':
-                    oxUI.showError('License Error', 'This experience does not exist or has been unpublished.');
-                    break;
-            }
-        }
     </script>
 </body>
 
