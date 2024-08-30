@@ -426,6 +426,8 @@
             document.getElementById("two").style.display = "none";
             document.getElementById("three").style.display = "none";            
             experience._currentModel = experience._models[0];
+            experience._currentModel = experience._models[1];
+            experience._currentModel = experience._models[2];            
         });
 
         document.getElementById("model2").addEventListener("click", () => {
@@ -434,7 +436,9 @@
             document.getElementById("two").style.display = "block";
             document.getElementById("one").style.display = "none";
             document.getElementById("three").style.display = "none";       
+            experience._currentModel = experience._models[0];
             experience._currentModel = experience._models[1];
+            experience._currentModel = experience._models[2];   
         });
 
         document.getElementById("model3").addEventListener("click", () => {
@@ -443,7 +447,9 @@
             document.getElementById("three").style.display = "block";
             document.getElementById("two").style.display = "none";
             document.getElementById("one").style.display = "none";       
-            experience._currentModel = experience._models[2];
+            experience._currentModel = experience._models[0];
+            experience._currentModel = experience._models[1];
+            experience._currentModel = experience._models[2];   
         });
                 } catch (err) {
                     console.error("Error initializing UI", err);
