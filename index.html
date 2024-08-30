@@ -16,23 +16,14 @@
             display: block;
         }
 
-        #model-controls {
-            display: none;
+        #buttons {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-40%, 200%);
-            padding: 20px;
-            margin: auto;
-            width: 240px;
-            padding: 25px;
+            top: 20px;
+            left: 20px;
         }
 
-        #model1,
-        #model2,
-        #model3 {
-            background-color: #FFFFFF00;
-            border: 0;
+        #model-controls {
+            translate: 55px 300px;
         }
 
         #tap-to-place {
@@ -45,11 +36,7 @@
             border: 0;
             border-radius: 20px;
             box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 20px;
+            translate: 55px 300px;
         }
 
         button {
@@ -57,13 +44,19 @@
         }
 
         #transform-controls,
-        #color-controls {
+        #color-controls,
+        #model-controls {
             display: none;
-            position: static;
+            position: absolute;
             top: 20px;
             left: 20px;
-            margin-left: auto;
-            margin-right: auto;
+        }
+
+        #scale-controls {
+            position: absolute;
+            top: 100px;
+            left: 20px;
+            display: none;
         }
 
         #loading-screen {
@@ -89,40 +82,10 @@
             border-radius: 10px;
             text-align: center;
         }
-
-        #UItext {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, 150%);
-            padding: 20px;
-            border-radius: 10px;
-        }
-
-        #one,
-        #two,
-        #three {
-            display: none;
-            scale: .7;
-        }
-
-        #scale-controls {
-            display: none;
-            position: static;
-            top: 20px;
-            left: 20px;
-            margin-left: auto;
-            margin-right: auto;
-        }
     </style>
 </head>
 
 <body>
-    <div id="UItext">
-        <img id="one" src="one.png"></img>
-        <img id="two" src="two.png"></img>
-        <img id="three" src="three.png"></img>
-    </div>
     <div id="transform-controls">
         <button id="tap-to-place">Place Model</button>
     </div>
@@ -133,13 +96,13 @@
         <button id="silver">Silver</button>
     </div>
     <div id="model-controls">
-        <button id="model1"><img src="Icon.png" style="width:40px;height:40px;"></button>
-        <button id="model2"><img src="Icon_1.png" style="width:40px;height:40px;"></button>
-        <button id="model3"><img src="Icon_2.png" style="width:40px;height:40px;"></button>
+        <button id="model1">Model 1</button>
+        <button id="model2">Model 2</button>
+        <button id="model3">Model 3</button>
     </div>
     <div id="scale-controls">
         <label for="scale-slider">Scale:</label>
-        <input type="range" id="scale-slider" min="0.1" max="3" step="0.1" value="1">
+        <input type="range" id="scale-slider" min="0.5" max="3" value="1" step="0.1">
     </div>
     <div id="loading-screen">Loading...</div>
     <div id="error-screen">
@@ -263,46 +226,124 @@
                     };
                     return this.oxSDK.init(config);
                 } catch (err) {
-                    console.error("Error initializing OnirixSDK", err);
+                    console.error("Error initializing Onirix SDK", err);
                     throw err;
                 }
             }
 
+            placeCar() {
+                this._carPlaced = true;
+                this.oxSDK.start();
+            }
+
+            isCarPlaced() {
+                return this._carPlaced;
+            }
+
             setupRenderer(renderCanvas) {
                 try {
-                    this._renderer = new THREE.WebGLRenderer({
-                        canvas: renderCanvas,
-                        alpha: true,
-                    });
+                    const width = renderCanvas.width;
+                    const height = renderCanvas.height;
+
+                    this._renderer = new THREE.WebGLRenderer({ canvas: renderCanvas, alpha: true });
+                    this._renderer.setClearColor(0x000000, 0);
+                    this._renderer.setSize(width, height);
                     this._renderer.outputEncoding = THREE.sRGBEncoding;
-                    this._renderer.setSize(window.innerWidth, window.innerHeight);
+
+                    const cameraParams = this.oxSDK.getCameraParameters();
+                    this._camera = new THREE.PerspectiveCamera(cameraParams.fov, cameraParams.aspect, 0.1, 1000);
+                    this._camera.matrixAutoUpdate = false;
+
                     this._scene = new THREE.Scene();
-                    this._camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 100);
-                    this._camera.position.set(0, 1.6, 2.5);
+
+                    const ambientLight = new THREE.AmbientLight(0x666666, 0.5);
+                    this._scene.add(ambientLight);
                 } catch (err) {
                     console.error("Error setting up renderer", err);
+                }
+            }
+
+            addLights() {
+                try {
+                    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+                    directionalLight.position.set(0, 0.5, 0);
+                    this._scene.add(directionalLight);
+
+                    const hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
+                    hemiLight.position.set(0, 20, 0);
+                    this._scene.add(hemiLight);
+                } catch (err) {
+                    console.error("Error adding lights", err);
                 }
             }
 
             setupControls(renderCanvas) {
                 try {
                     this._controls = new OrbitControls(this._camera, renderCanvas);
-                    this._controls.enableDamping = true;
+                    this._controls.update();
+
+                    const tapToPlaceButton = document.getElementById("tap-to-place");
+                    tapToPlaceButton.addEventListener("click", () => {
+                        this.placeCar();
+                    });
+
+                    const modelButtons = document.querySelectorAll("#model-controls button");
+                    modelButtons.forEach((button, index) => {
+                        button.addEventListener("click", () => {
+                            this.switchModel(index);
+                        });
+                    });
+
+                    const colorButtons = document.querySelectorAll("#color-controls button");
+                    colorButtons.forEach((button) => {
+                        button.addEventListener("click", () => {
+                            this.changeColor(button.id);
+                        });
+                    });
+
+                    const scaleSlider = document.getElementById("scale-slider");
+                    scaleSlider.addEventListener("input", () => {
+                        this.scaleModel(scaleSlider.value);
+                    });
                 } catch (err) {
                     console.error("Error setting up controls", err);
                 }
             }
 
-            addLights() {
-                try {
-                    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-                    this._scene.add(ambientLight);
+            switchModel(index) {
+                if (this._currentModel) {
+                    this._scene.remove(this._currentModel);
+                }
+                this._currentModel = this._models[index];
+                this._scene.add(this._currentModel);
+            }
 
-                    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-                    directionalLight.position.set(1, 1, 1).normalize();
-                    this._scene.add(directionalLight);
-                } catch (err) {
-                    console.error("Error adding lights", err);
+            changeColor(color) {
+                if (this._currentModel) {
+                    this._currentModel.traverse((child) => {
+                        if (child.isMesh) {
+                            switch (color) {
+                                case "black":
+                                    child.material.color.set(0x000000);
+                                    break;
+                                case "blue":
+                                    child.material.color.set(0x0000ff);
+                                    break;
+                                case "orange":
+                                    child.material.color.set(0xffa500);
+                                    break;
+                                case "silver":
+                                    child.material.color.set(0xc0c0c0);
+                                    break;
+                            }
+                        }
+                    });
+                }
+            }
+
+            scaleModel(scale) {
+                if (this._currentModel) {
+                    this._currentModel.scale.set(scale, scale, scale);
                 }
             }
 
@@ -317,86 +358,24 @@
 
             onResize() {
                 try {
-                    this._camera.aspect = window.innerWidth / window.innerHeight;
+                    const { width, height } = this.oxSDK.getCanvasSize();
+                    this._camera.aspect = width / height;
                     this._camera.updateProjectionMatrix();
-                    this._renderer.setSize(window.innerWidth, window.innerHeight);
+                    this._renderer.setSize(width, height);
                 } catch (err) {
-                    console.error("Error on resize", err);
+                    console.error("Error handling resize", err);
                 }
             }
 
             render() {
-                try {
+                if (this._renderer && this._scene && this._camera) {
                     this._renderer.render(this._scene, this._camera);
-                } catch (err) {
-                    console.error("Error during rendering", err);
-                }
-            }
-
-            isCarPlaced() {
-                return this._modelPlaced;
-            }
-
-            changeModel(index) {
-                if (index < 0 || index >= this._models.length) return;
-
-                const previousModel = this._currentModel;
-                this._currentModel = this._models[index];
-                this._currentModel.position.copy(previousModel.position);
-
-                this._scene.remove(previousModel);
-                this._scene.add(this._currentModel);
-            }
-
-            scaleModel(scale) {
-                if (this._currentModel) {
-                    this._currentModel.scale.set(scale, scale, scale);
                 }
             }
         }
 
         const experience = new OxExperience();
         experience.init();
-
-        document.getElementById('tap-to-place').addEventListener('click', () => {
-            document.getElementById('tap-to-place').style.display = 'none';
-            document.getElementById('model-controls').style.display = 'block';
-            document.getElementById('color-controls').style.display = 'block';
-            document.getElementById('scale-controls').style.display = 'block';
-        });
-
-        document.getElementById('model1').addEventListener('click', () => {
-            experience.changeModel(0);
-        });
-
-        document.getElementById('model2').addEventListener('click', () => {
-            experience.changeModel(1);
-        });
-
-        document.getElementById('model3').addEventListener('click', () => {
-            experience.changeModel(2);
-        });
-
-        document.getElementById('black').addEventListener('click', () => {
-            experience.setColor('black');
-        });
-
-        document.getElementById('blue').addEventListener('click', () => {
-            experience.setColor('blue');
-        });
-
-        document.getElementById('orange').addEventListener('click', () => {
-            experience.setColor('orange');
-        });
-
-        document.getElementById('silver').addEventListener('click', () => {
-            experience.setColor('silver');
-        });
-
-        document.getElementById('scale-slider').addEventListener('input', (event) => {
-            const scale = parseFloat(event.target.value);
-            experience.scaleModel(scale);
-        });
     </script>
 </body>
 
