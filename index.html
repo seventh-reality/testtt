@@ -423,6 +423,8 @@
             document.getElementById("UItext").style.display = "block";
             document.querySelectorAll(".model-image").forEach(img => img.style.display = "none");
             document.getElementById("one").style.display = "block";
+            document.getElementById("two").style.display = "none";
+            document.getElementById("three").style.display = "none";            
             experience._currentModel = experience._models[0];
         });
 
@@ -430,6 +432,8 @@
             document.getElementById("UItext").style.display = "block";
             document.querySelectorAll(".model-image").forEach(img => img.style.display = "none");
             document.getElementById("two").style.display = "block";
+            document.getElementById("one").style.display = "none";
+            document.getElementById("three").style.display = "none";       
             experience._currentModel = experience._models[1];
         });
 
@@ -437,6 +441,8 @@
             document.getElementById("UItext").style.display = "block";
             document.querySelectorAll(".model-image").forEach(img => img.style.display = "none");
             document.getElementById("three").style.display = "block";
+            document.getElementById("two").style.display = "none";
+            document.getElementById("one").style.display = "none";       
             experience._currentModel = experience._models[2];
         });
                 } catch (err) {
