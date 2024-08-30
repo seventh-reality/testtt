@@ -404,25 +404,20 @@
                     document.querySelector("#model1").addEventListener("click", () => {
                         oxExp.switchModel(0);
                         oxExp.playAudio("v.mp3");
-                        showImage('one');
+                     document.getElementById('one').style.display = 'block';
                     });
                     document.querySelector("#model2").addEventListener("click", () => {
                         oxExp.switchModel(1);
                         oxExp.playAudio("v.mp3");
-                        showImage('two');
+                         document.getElementById('two').style.display = 'block';
                         
                     });
                     document.querySelector("#model3").addEventListener("click", () => {
                         oxExp.switchModel(2);
                         oxExp.playAudio("v.mp3");
-                        showImage('three');
+                    document.getElementById('three').style.display = 'block';
                     });
-                function showImage(id) {
-            const images = ['one', 'two', 'three'];
-            images.forEach(imgId => {
-                document.getElementById(imgId).style.display = (imgId === id) ? 'block' : 'none';
-            });
-        }    
+               
                 } catch (err) {
                     console.error("Error initializing UI", err);
                 }
