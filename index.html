@@ -408,21 +408,37 @@
                     document.querySelector("#model1").addEventListener("click", () => {
                         oxExp.switchModel(0);
                         oxExp.playAudio("v.mp3");
-                        oxExp.UItext(one.png);
-                        oxExp.one(one.png);
                     });
                     document.querySelector("#model2").addEventListener("click", () => {
                         oxExp.switchModel(1);
                         oxExp.playAudio("v.mp3");
-                        oxExp.UItext(two.png);
-                        oxExp.two(two.png);
+                        
                     });
                     document.querySelector("#model3").addEventListener("click", () => {
                         oxExp.switchModel(2);
                         oxExp.playAudio("v.mp3");
-                        oxExp.UItext(three.png);
-                        oxExp.three(three.png);
+                        
                     });
+                    document.getElementById("model1").addEventListener("click", () => {
+            document.getElementById("UItext").style.display = "block";
+            document.querySelectorAll(".model-image").forEach(img => img.style.display = "none");
+            document.getElementById("one").style.display = "block";
+            experience._currentModel = experience._models[0];
+        });
+
+        document.getElementById("model2").addEventListener("click", () => {
+            document.getElementById("UItext").style.display = "block";
+            document.querySelectorAll(".model-image").forEach(img => img.style.display = "none");
+            document.getElementById("two").style.display = "block";
+            experience._currentModel = experience._models[1];
+        });
+
+        document.getElementById("model3").addEventListener("click", () => {
+            document.getElementById("UItext").style.display = "block";
+            document.querySelectorAll(".model-image").forEach(img => img.style.display = "none");
+            document.getElementById("three").style.display = "block";
+            experience._currentModel = experience._models[2];
+        });
                 } catch (err) {
                     console.error("Error initializing UI", err);
                 }
