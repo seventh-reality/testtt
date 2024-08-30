@@ -45,7 +45,8 @@
 
         #transform-controls,
         #color-controls,
-        #model-controls {
+        #model-controls,
+        #scale-controls {
             display: none;
             position: absolute;
             top: 20px;
@@ -92,6 +93,11 @@
         <button id="model1">Model 1</button>
         <button id="model2">Model 2</button>
         <button id="model3">Model 3</button>
+    </div>
+    <div id="scale-controls">
+        <button id="scale1">Scale 1x</button>
+        <button id="scale2">Scale 2x</button>
+        <button id="scale3">Scale 3x</button>
     </div>
     <div id="loading-screen">Loading...</div>
     <div id="error-screen">
@@ -260,7 +266,7 @@
                     this._scene.add(directionalLight);
 
                     const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-                    pointLight.position.set(5, 10, 5);
+                    pointLight.position.set(0, 2, 2);
                     this._scene.add(pointLight);
                 } catch (err) {
                     console.error("Error adding lights", err);
@@ -271,166 +277,122 @@
                 try {
                     this._controls = new OrbitControls(this._camera, renderCanvas);
                     this._controls.enableDamping = true;
-                    this._controls.dampingFactor = 0.25;
-                    this._controls.enableZoom = true;
-                    this._controls.enableRotate = true;
-                    this._controls.enablePan = false;
-
-                    renderCanvas.addEventListener('touchstart', (event) => {
-                        if (event.touches.length === 2) {
-                            this._controls.enablePan = false;
-                        }
-                    });
-
-                    renderCanvas.addEventListener('touchend', () => {
-                        this._controls.enablePan = false;
-                    });
+                    this._controls.dampingFactor = 0.05;
+                    this._controls.screenSpacePanning = false;
+                    this._controls.minDistance = 0.1;
+                    this._controls.maxDistance = 500;
+                    this._controls.maxPolarAngle = Math.PI / 2;
                 } catch (err) {
                     console.error("Error setting up controls", err);
                 }
             }
 
-            render() {
-                try {
-                    this._controls.update();
-                    this._renderer.render(this._scene, this._camera);
-                } catch (err) {
-                    console.error("Error during rendering", err);
-                }
-            }
-
             updatePose(pose) {
                 try {
-                    let modelViewMatrix = new THREE.Matrix4();
-                    modelViewMatrix = modelViewMatrix.fromArray(pose);
-                    this._camera.matrix = modelViewMatrix;
-                    this._camera.matrixWorldNeedsUpdate = true;
+                    const { position, rotation, projection } = pose;
+
+                    if (this._camera) {
+                        this._camera.position.copy(position);
+                        this._camera.rotation.set(rotation.x, rotation.y, rotation.z, rotation.order);
+                        this._camera.updateMatrixWorld(true);
+                        this._camera.projectionMatrix.fromArray(projection);
+                    }
                 } catch (err) {
                     console.error("Error updating pose", err);
                 }
             }
 
+            render() {
+                try {
+                    this._renderer.render(this._scene, this._camera);
+                } catch (err) {
+                    console.error("Error rendering scene", err);
+                }
+            }
+
             onResize() {
                 try {
-                    const width = this._renderer.domElement.width;
-                    const height = this._renderer.domElement.height;
-                    const cameraParams = this.oxSDK.getCameraParameters();
-                    this._camera.fov = cameraParams.fov;
-                    this._camera.aspect = cameraParams.aspect;
+                    const width = window.innerWidth;
+                    const height = window.innerHeight;
+
+                    this._camera.aspect = width / height;
                     this._camera.updateProjectionMatrix();
+
                     this._renderer.setSize(width, height);
                 } catch (err) {
-                    console.error("Error handling resize", err);
+                    console.error("Error on resize", err);
                 }
             }
 
-            changeModelsColor(value) {
-                if (this._currentModel) {
-                    this._currentModel.traverse((child) => {
-                        if (child.material) {
-                            child.material.color.setHex(value);
-                        }
-                    });
-                }
-            }
-
-            switchModel(index) {
-                if (this._currentModel) {
-                    this._scene.remove(this._currentModel);
-                }
-                this._currentModel = this._models[index];
-                if (this._currentModel) {
-                    this._scene.add(this._currentModel);
-                }
-            }
-
-            playAudio(audioFile) {
-                const audio = new Audio(audioFile);
-                audio.play();
-            }
-        }
-
-        class OxExperienceUI {
-            _loadingScreen = null;
-            _errorScreen = null;
-            _errorTitle = null;
-            _errorMessage = null;
-
-            init() {
+            setScale(factor) {
                 try {
-                    this._loadingScreen = document.querySelector("#loading-screen");
-                    this._errorScreen = document.querySelector("#error-screen");
-                    this._errorTitle = document.querySelector("#error-title");
-                    this._errorMessage = document.querySelector("#error-message");
-
-                    this._transformControls = document.querySelector("#transform-controls");
-                    this._colorControls = document.querySelector("#color-controls");
-                    this._modelControls = document.querySelector("#model-controls");
-
-                    document.querySelector("#tap-to-place").addEventListener("click", () => {
-                        oxExp.placeCar();
-                        this._transformControls.style.display = "none";
-                        this._colorControls.style.display = "none";
-                        this._modelControls.style.display = "block";
-                    });
-
-                    document.querySelector("#black").addEventListener("click", () => {
-                        oxExp.changeModelsColor(0x000000);
-                    });
-                    document.querySelector("#blue").addEventListener("click", () => {
-                        oxExp.changeModelsColor(0x0000ff);
-                    });
-                    document.querySelector("#orange").addEventListener("click", () => {
-                        oxExp.changeModelsColor(0xffa500);
-                    });
-                    document.querySelector("#silver").addEventListener("click", () => {
-                        oxExp.changeModelsColor(0xc0c0c0);
-                    });
-
-                    document.querySelector("#model1").addEventListener("click", () => {
-                        oxExp.switchModel(0);
-                        oxExp.playAudio("v.mp3");
-                    });
-                    document.querySelector("#model2").addEventListener("click", () => {
-                        oxExp.switchModel(1);
-                        oxExp.playAudio("v.mp3");
-                    });
-                    document.querySelector("#model3").addEventListener("click", () => {
-                        oxExp.switchModel(2);
-                        oxExp.playAudio("v.mp3");
-                    });
+                    this._currentModel.scale.set(factor, factor, factor);
                 } catch (err) {
-                    console.error("Error initializing UI", err);
+                    console.error("Error setting scale", err);
                 }
-            }
-
-            hideLoading() {
-                this._loadingScreen.style.display = "none";
-                this._transformControls.style.display = "block";
-            }
-
-            showError(title, message) {
-                this._errorTitle.textContent = title;
-                this._errorMessage.textContent = message;
-                this._errorScreen.style.display = "block";
             }
         }
 
-        const oxExp = new OxExperience();
-        const oxUI = new OxExperienceUI();
+        const oxExperience = new OxExperience();
 
-        oxExp
-            .init()
-            .then(() => {
-                oxUI.init();
-                oxUI.hideLoading();
-            })
-            .catch((error) => {
-                console.error("Error initializing Onirix SDK", error);
-                oxUI.showError("Initialization Error", error.message);
+        oxExperience.init().then(() => {
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('transform-controls').style.display = 'block';
+            document.getElementById('color-controls').style.display = 'block';
+            document.getElementById('model-controls').style.display = 'block';
+            document.getElementById('scale-controls').style.display = 'block';
+
+            document.getElementById('tap-to-place').addEventListener('click', () => {
+                oxExperience.placeCar();
             });
+
+            document.getElementById('black').addEventListener('click', () => {
+                oxExperience.setCarColor('black');
+            });
+
+            document.getElementById('blue').addEventListener('click', () => {
+                oxExperience.setCarColor('blue');
+            });
+
+            document.getElementById('orange').addEventListener('click', () => {
+                oxExperience.setCarColor('orange');
+            });
+
+            document.getElementById('silver').addEventListener('click', () => {
+                oxExperience.setCarColor('silver');
+            });
+
+            document.getElementById('model1').addEventListener('click', () => {
+                oxExperience.switchModel(0);
+            });
+
+            document.getElementById('model2').addEventListener('click', () => {
+                oxExperience.switchModel(1);
+            });
+
+            document.getElementById('model3').addEventListener('click', () => {
+                oxExperience.switchModel(2);
+            });
+
+            document.getElementById('scale1').addEventListener('click', () => {
+                oxExperience.setScale(1);
+            });
+
+            document.getElementById('scale2').addEventListener('click', () => {
+                oxExperience.setScale(2);
+            });
+
+            document.getElementById('scale3').addEventListener('click', () => {
+                oxExperience.setScale(3);
+            });
+
+        }).catch((err) => {
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('error-screen').style.display = 'block';
+            document.getElementById('error-title').innerText = 'Error';
+            document.getElementById('error-message').innerText = err.message;
+        });
     </script>
 </body>
 
 </html>
-
