@@ -33,24 +33,27 @@
 
             async init() {
                 try {
-                    // Initialize Onirix SDK with correct mode
-                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
-                    const { canvas } = await this.oxSDK.init({ mode: OnirixSDK.TrackingMode.World });
+                    // Check for camera permissions
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    if (stream) {
+                        // Initialize Onirix SDK with correct mode
+                        this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
+                        const { canvas } = await this.oxSDK.init({ mode: OnirixSDK.TrackingMode.World });
 
-                    this.setupRenderer(canvas);
-                    this.setupScene();
-                    this.setupControls();
-                    this.addEventListeners();
+                        this.setupRenderer(canvas);
+                        this.setupScene();
+                        this.setupControls();
+                        this.addEventListeners();
 
-                    // Subscribe to Onirix SDK events
-                    this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
-                        this.render();
-                    });
+                        // Subscribe to Onirix SDK events
+                        this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
+                            this.render();
+                        });
 
-                    this.oxSDK.subscribe(OnirixSDK.Events.OnPose, (pose) => {
-                        this.updatePose(pose);
-                    });
-
+                        this.oxSDK.subscribe(OnirixSDK.Events.OnPose, (pose) => {
+                            this.updatePose(pose);
+                        });
+                    }
                 } catch (err) {
                     console.error("Error initializing ARScene", err);
                     alert("Failed to initialize AR. Please check your camera permissions and SDK configuration.");
