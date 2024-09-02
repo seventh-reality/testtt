@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Onirix SDK with Scene Rotation and Pinch-to-Zoom</title>
+    <title>Onirix SDK with Camera Permission</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
             background: #000;
         }
+
         canvas {
             display: block;
         }
     </style>
 </head>
+
 <body>
     <script type="module">
         import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.6.5/dist/ox-sdk.esm.js";
@@ -32,14 +35,12 @@
 
             async init() {
                 try {
-                    // Ensure camera permissions
-                    await navigator.mediaDevices.getUserMedia({ video: true });
+                    // Check for camera access
+                    await this.requestCameraAccess();
 
-                    // Initialize Onirix SDK with the correct mode
+                    // Initialize Onirix SDK
                     this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
-                    const { canvas } = await this.oxSDK.init({
-                        mode: OnirixSDK.TrackingMode.World // Ensure the mode is correctly specified
-                    });
+                    const { canvas } = await this.oxSDK.init({ mode: OnirixSDK.Mode.World });
 
                     this.setupRenderer(canvas);
                     this.setupScene();
@@ -54,10 +55,19 @@
                     this.oxSDK.subscribe(OnirixSDK.Events.OnPose, (pose) => {
                         this.updatePose(pose);
                     });
+                } catch (error) {
+                    console.error("Failed to initialize AR experience:", error);
+                    alert("Could not access the camera. Please enable camera permissions.");
+                }
+            }
 
-                } catch (err) {
-                    console.error("Error initializing ARScene", err);
-                    alert("Failed to initialize AR. Please check your camera permissions and SDK configuration. Error: " + err.message);
+            async requestCameraAccess() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    // Stop all video tracks after obtaining permission, Onirix SDK will use the camera
+                    stream.getTracks().forEach(track => track.stop());
+                } catch (error) {
+                    throw new Error("Camera access denied.");
                 }
             }
 
@@ -113,4 +123,5 @@
         });
     </script>
 </body>
+
 </html>
