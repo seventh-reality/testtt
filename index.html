@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Onirix SDK with Camera Permission</title>
+    <title>Onirix SDK with Surface Tracking</title>
     <style>
         body {
             margin: 0;
@@ -31,6 +31,7 @@
                 this.camera = null;
                 this.controls = null;
                 this.oxSDK = null;
+                this.surfaceDetected = false;
             }
 
             async init() {
@@ -38,10 +39,10 @@
                     // Check for camera access
                     await this.requestCameraAccess();
 
-                    // Initialize Onirix SDK
+                    // Initialize Onirix SDK with Surface Tracking mode
                     this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
                     const { canvas } = await this.oxSDK.init({
-                        mode: OnirixSDK.TrackingMode.World // Make sure this is the correct mode parameter
+                        mode: OnirixSDK.TrackingMode.Surface // Use Surface Tracking mode
                     });
 
                     this.setupRenderer(canvas);
@@ -52,6 +53,10 @@
                     // Subscribe to Onirix SDK events
                     this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
                         this.render();
+                    });
+
+                    this.oxSDK.subscribe(OnirixSDK.Events.OnSurfaceDetected, (surface) => {
+                        this.handleSurfaceDetected(surface);
                     });
 
                     this.oxSDK.subscribe(OnirixSDK.Events.OnPose, (pose) => {
@@ -108,10 +113,19 @@
                 });
             }
 
+            handleSurfaceDetected(surface) {
+                // Handle surface detection event here
+                console.log("Surface detected:", surface);
+                this.surfaceDetected = true;
+            }
+
             updatePose(pose) {
-                this.camera.matrix.fromArray(pose);
-                this.camera.matrixWorldNeedsUpdate = true;
-                this.controls.update();
+                if (this.surfaceDetected) {
+                    // Update camera pose based on surface tracking
+                    this.camera.matrix.fromArray(pose);
+                    this.camera.matrixWorldNeedsUpdate = true;
+                    this.controls.update();
+                }
             }
 
             render() {
