@@ -35,6 +35,7 @@
                 this.surfaceDetected = false;
                 this.model = null; // To store the loaded model
                 this.modelVisible = false; // To control the visibility of the model
+                this.surfacePosition = null; // To store the position of the detected surface
             }
 
             async init() {
@@ -122,6 +123,13 @@
                     this.camera.updateProjectionMatrix();
                     this.renderer.setSize(window.innerWidth, window.innerHeight);
                 });
+
+                // Add event listener for surface click
+                window.addEventListener('click', () => {
+                    if (this.surfaceDetected && this.model) {
+                        this.toggleModelVisibility();
+                    }
+                });
             }
 
             async loadModel(url) {
@@ -142,12 +150,22 @@
                 // Handle surface detection event here
                 console.log("Surface detected:", surface);
                 this.surfaceDetected = true;
+                this.surfacePosition = surface.position; // Store the position of the detected surface
 
-                // Show the model when the surface is detected and touched
+                // Optionally, place the model at the detected surface position
                 if (this.model && !this.modelVisible) {
-                    this.modelVisible = true;
+                    this.model.position.set(this.surfacePosition.x, this.surfacePosition.y, this.surfacePosition.z);
+                }
+            }
+
+            toggleModelVisibility() {
+                if (this.modelVisible) {
+                    this.model.visible = false;
+                    this.modelVisible = false;
+                } else {
                     this.model.visible = true;
-                    this.scene.add(this.model);
+                    this.modelVisible = true;
+                    this.scene.add(this.model); // Ensure the model is added to the scene
                 }
             }
 
