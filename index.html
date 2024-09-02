@@ -32,8 +32,9 @@
                 this.camera = null;
                 this.controls = null;
                 this.oxSDK = null;
-                this.surfaceDetected = true;
+                this.surfaceDetected = false;
                 this.model = null; // To store the loaded model
+                this.modelVisible = false; // To control the visibility of the model
             }
 
             async init() {
@@ -52,6 +53,14 @@
                     this.setupControls();
                     this.addEventListeners();
 
+                    // Load and add GLB model to the scene
+                    await this.loadModel('Steerad.glb');
+
+                    // Initially, hide the model
+                    if (this.model) {
+                        this.model.visible = false;
+                    }
+
                     // Subscribe to Onirix SDK events
                     this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
                         this.render();
@@ -64,9 +73,6 @@
                     this.oxSDK.subscribe(OnirixSDK.Events.OnPose, (pose) => {
                         this.updatePose(pose);
                     });
-
-                    // Load and add GLB model to the scene
-                    await this.loadModel('Steerad.glb');
                 } catch (error) {
                     console.error("Failed to initialize AR experience:", error);
                     alert("Could not access the camera. Please enable camera permissions.");
@@ -123,7 +129,7 @@
                 return new Promise((resolve, reject) => {
                     loader.load(url, (gltf) => {
                         this.model = gltf.scene;
-                        this.scene.add(this.model);
+                        // Do not add the model to the scene yet
                         resolve();
                     }, undefined, (error) => {
                         console.error('Error loading model:', error);
@@ -136,6 +142,13 @@
                 // Handle surface detection event here
                 console.log("Surface detected:", surface);
                 this.surfaceDetected = true;
+
+                // Show the model when the surface is detected and touched
+                if (this.model && !this.modelVisible) {
+                    this.modelVisible = true;
+                    this.model.visible = true;
+                    this.scene.add(this.model);
+                }
             }
 
             updatePose(pose) {
