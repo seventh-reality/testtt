@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Onirix SDK with Surface Tracking</title>
+    <title>Onirix SDK with Surface Tracking and GLB Model</title>
     <style>
         body {
             margin: 0;
@@ -23,6 +23,7 @@
         import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.6.5/dist/ox-sdk.esm.js";
         import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
         import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js";
+        import { GLTFLoader } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js";
 
         class ARScene {
             constructor() {
@@ -32,6 +33,7 @@
                 this.controls = null;
                 this.oxSDK = null;
                 this.surfaceDetected = false;
+                this.model = null; // To store the loaded model
             }
 
             async init() {
@@ -42,7 +44,7 @@
                     // Initialize Onirix SDK with Surface Tracking mode
                     this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
                     const { canvas } = await this.oxSDK.init({
-                        mode: OnirixSDK.TrackingMode.Surface // Use Surface Tracking mode
+                        mode: OnirixSDK.TrackingMode.Surface
                     });
 
                     this.setupRenderer(canvas);
@@ -62,6 +64,9 @@
                     this.oxSDK.subscribe(OnirixSDK.Events.OnPose, (pose) => {
                         this.updatePose(pose);
                     });
+
+                    // Load and add GLB model to the scene
+                    await this.loadModel('Steerad.glb');
                 } catch (error) {
                     console.error("Failed to initialize AR experience:", error);
                     alert("Could not access the camera. Please enable camera permissions.");
@@ -90,7 +95,7 @@
                 this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
                 this.camera.position.z = 5;
 
-                // Add some basic geometry to visualize
+                // Optionally, add some basic geometry to visualize
                 const geometry = new THREE.BoxGeometry();
                 const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
                 const cube = new THREE.Mesh(geometry, material);
@@ -110,6 +115,20 @@
                     this.camera.aspect = window.innerWidth / window.innerHeight;
                     this.camera.updateProjectionMatrix();
                     this.renderer.setSize(window.innerWidth, window.innerHeight);
+                });
+            }
+
+            async loadModel(url) {
+                const loader = new GLTFLoader();
+                return new Promise((resolve, reject) => {
+                    loader.load(url, (gltf) => {
+                        this.model = gltf.scene;
+                        this.scene.add(this.model);
+                        resolve();
+                    }, undefined, (error) => {
+                        console.error('Error loading model:', error);
+                        reject(error);
+                    });
                 });
             }
 
