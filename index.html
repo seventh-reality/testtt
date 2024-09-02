@@ -1,194 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Onirix SDK with Surface Tracking and GLB Model</title>
+    <title>3D Model Editor with AR</title>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background: #000;
-        }
-
-        canvas {
-            display: block;
+        body { margin: 0; overflow: hidden; }
+        #canvasContainer { width: 100vw; height: 100vh; }
+        #ar-button {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
         }
     </style>
+    <!-- Include Three.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Include dat.GUI library for UI controls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    <!-- Include WebXR Polyfill for broader device support -->
+    <script src="https://cdn.jsdelivr.net/npm/webxr-polyfill@latest/build/webxr-polyfill.min.js"></script>
 </head>
-
 <body>
-    <script type="module">
-        import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.6.5/dist/ox-sdk.esm.js";
-        import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
-        import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js";
-        import { GLTFLoader } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js";
+    <div id="canvasContainer"></div>
+    <button id="ar-button">Enter AR</button>
 
-        class ARScene {
-            constructor() {
-                this.renderer = null;
-                this.scene = null;
-                this.camera = null;
-                this.controls = null;
-                this.oxSDK = null;
-                this.surfaceDetected = false;
-                this.model = null; // To store the loaded model
-                this.modelVisible = false; // To control the visibility of the model
-                this.surfacePosition = null; // To store the position of the detected surface
-            }
+    <script>
+        // Basic setup
+        const container = document.getElementById('canvasContainer');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
 
-            async init() {
-                try {
-                    // Check for camera access
-                    await this.requestCameraAccess();
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 5, 5).normalize();
+        scene.add(directionalLight);
 
-                    // Initialize Onirix SDK with Surface Tracking mode
-                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
-                    const { canvas } = await this.oxSDK.init({
-                        mode: OnirixSDK.TrackingMode.Surface
-                    });
+        // Basic 3D Model (Cube)
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+        const cube = new THREE.Mesh(geometry, material);
+        scene.add(cube);
+        camera.position.z = 3;
 
-                    this.setupRenderer(canvas);
-                    this.setupScene();
-                    this.setupControls();
-                    this.addEventListeners();
+        // GUI for editing the model
+        const gui = new dat.GUI();
+        const modelSettings = {
+            color: material.color.getHex(),
+            wireframe: material.wireframe,
+            metalness: material.metalness,
+            roughness: material.roughness
+        };
 
-                    // Load and add GLB model to the scene
-                    await this.loadModel('Steerad.glb');
+        gui.addColor(modelSettings, 'color').onChange(value => {
+            material.color.setHex(value);
+        });
 
-                    // Initially, hide the model
-                    if (this.model) {
-                        this.model.visible = false;
-                    }
+        gui.add(modelSettings, 'wireframe').onChange(value => {
+            material.wireframe = value;
+        });
 
-                    // Subscribe to Onirix SDK events
-                    this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
-                        this.render();
-                    });
+        gui.add(material, 'metalness', 0, 1).onChange(value => {
+            material.metalness = value;
+        });
 
-                    this.oxSDK.subscribe(OnirixSDK.Events.OnSurfaceDetected, (surface) => {
-                        this.handleSurfaceDetected(surface);
-                    });
+        gui.add(material, 'roughness', 0, 1).onChange(value => {
+            material.roughness = value;
+        });
 
-                    this.oxSDK.subscribe(OnirixSDK.Events.OnPose, (pose) => {
-                        this.updatePose(pose);
-                    });
-                } catch (error) {
-                    console.error("Failed to initialize AR experience:", error);
-                    alert("Could not access the camera. Please enable camera permissions.");
-                }
-            }
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
+            renderer.render(scene, camera);
+        }
+        animate();
 
-            async requestCameraAccess() {
-                try {
-                    // Request access to the camera
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    // Stop all video tracks after obtaining permission, as Onirix SDK will use the camera
-                    stream.getTracks().forEach(track => track.stop());
-                } catch (error) {
-                    throw new Error("Camera access denied. Please enable camera permissions in your browser settings.");
-                }
-            }
+        // Resize handling
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
 
-            setupRenderer(canvas) {
-                this.renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
-                this.renderer.setSize(window.innerWidth, window.innerHeight);
-                this.renderer.setPixelRatio(window.devicePixelRatio);
-            }
+        // AR button setup
+        const arButton = document.getElementById('ar-button');
 
-            setupScene() {
-                this.scene = new THREE.Scene();
-                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-                this.camera.position.z = 5;
-
-                // Optionally, add some basic geometry to visualize
-                const geometry = new THREE.BoxGeometry();
-                const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-                const cube = new THREE.Mesh(geometry, material);
-                this.scene.add(cube);
-            }
-
-            setupControls() {
-                this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-                this.controls.enableDamping = true;
-                this.controls.dampingFactor = 0.25;
-                this.controls.enableZoom = true;
-                this.controls.zoomSpeed = 1.2;
-            }
-
-            addEventListeners() {
-                window.addEventListener('resize', () => {
-                    this.camera.aspect = window.innerWidth / window.innerHeight;
-                    this.camera.updateProjectionMatrix();
-                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+        if (navigator.xr) {
+            arButton.style.display = 'block';
+            arButton.addEventListener('click', async () => {
+                const session = await navigator.xr.requestSession('immersive-ar', {
+                    requiredFeatures: ['hit-test']
                 });
 
-                // Add event listener for surface click
-                window.addEventListener('click', () => {
-                    if (this.surfaceDetected && this.model) {
-                        this.toggleModelVisibility();
-                    }
+                session.addEventListener('end', () => {
+                    renderer.xr.setSession(null);
+                    arButton.style.display = 'block';
                 });
-            }
 
-            async loadModel(url) {
-                const loader = new GLTFLoader();
-                return new Promise((resolve, reject) => {
-                    loader.load(url, (gltf) => {
-                        this.model = gltf.scene;
-                        // Do not add the model to the scene yet
-                        resolve();
-                    }, undefined, (error) => {
-                        console.error('Error loading model:', error);
-                        reject(error);
-                    });
+                const xrCamera = renderer.xr.getCamera(camera);
+                renderer.xr.setSession(session);
+                renderer.xr.enabled = true;
+
+                arButton.style.display = 'none';
+
+                session.updateWorldTrackingState({
+                    hitTest: { 'topHitTestSource': 'persistent' }
                 });
-            }
 
-            handleSurfaceDetected(surface) {
-                // Handle surface detection event here
-                console.log("Surface detected:", surface);
-                this.surfaceDetected = true;
-                this.surfacePosition = surface.position; // Store the position of the detected surface
-
-                // Optionally, place the model at the detected surface position
-                if (this.model && !this.modelVisible) {
-                    this.model.position.set(this.surfacePosition.x, this.surfacePosition.y, this.surfacePosition.z);
-                }
-            }
-
-            toggleModelVisibility() {
-                if (this.modelVisible) {
-                    this.model.visible = false;
-                    this.modelVisible = false;
-                } else {
-                    this.model.visible = true;
-                    this.modelVisible = true;
-                    this.scene.add(this.model); // Ensure the model is added to the scene
-                }
-            }
-
-            updatePose(pose) {
-                if (this.surfaceDetected) {
-                    // Update camera pose based on surface tracking
-                    this.camera.matrix.fromArray(pose);
-                    this.camera.matrixWorldNeedsUpdate = true;
-                    this.controls.update();
-                }
-            }
-
-            render() {
-                this.controls.update();
-                this.renderer.render(this.scene, this.camera);
-            }
+                renderer.setAnimationLoop(() => {
+                    renderer.render(scene, xrCamera);
+                });
+            });
         }
 
-        document.addEventListener("DOMContentLoaded", async () => {
-            const arScene = new ARScene();
-            await arScene.init();
-        });
     </script>
 </body>
-
 </html>
