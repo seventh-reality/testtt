@@ -20,108 +20,121 @@
 </head>
 <body>
     <script>
+        // Replace with your actual Onirix project API token
+        const ONIRIX_API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k';
+
         // Initialize Onirix SDK
-        const OxAPI = new OnirixSDK();
+        OnirixSDK.initialize({ apiToken: ONIRIX_API_TOKEN })
+            .then(() => {
+                console.log('Onirix SDK Initialized');
+                // Call your AR setup function
+                setupARScene();
+            })
+            .catch((error) => {
+                console.error('Error initializing Onirix SDK:', error);
+            });
 
-        // Initialize scene, camera, and renderer
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
+        function setupARScene() {
+            // Initialize scene, camera, and renderer
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
 
-        // Add a basic light to the scene
-        const ambientLight = new THREE.AmbientLight(0x404040, 2);
-        scene.add(ambientLight);
-        
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-        directionalLight.position.set(1, 1, 1).normalize();
-        scene.add(directionalLight);
+            // Add a basic light to the scene
+            const ambientLight = new THREE.AmbientLight(0x404040, 2);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(1, 1, 1).normalize();
+            scene.add(directionalLight);
 
-        // Load a 3D model using Onirix SDK
-        let model;
-        const loader = new THREE.GLTFLoader();
-        loader.load('Steerad.glb', function (gltf) {
-            model = gltf.scene;
-            scene.add(model);
-            model.position.set(0, 0, -5);
-        });
+            // Load a 3D model using Onirix SDK
+            let model;
+            const loader = new THREE.GLTFLoader();
+            loader.load('Steerad.glb', function (gltf) {
+                model = gltf.scene;
+                scene.add(model);
+                model.position.set(0, 0, -5);
+            });
 
-        // Set up camera position
-        camera.position.z = 5;
+            // Set up camera position
+            camera.position.z = 5;
 
-        // Rotation variables
-        let isDragging = false;
-        let previousMousePosition = {
-            x: 0,
-            y: 0
-        };
-
-        // Mouse event listeners
-        document.addEventListener('mousedown', function (e) {
-            isDragging = true;
-        }, false);
-
-        document.addEventListener('mousemove', function (e) {
-            if (isDragging && model) {
-                const deltaMove = {
-                    x: e.offsetX - previousMousePosition.x,
-                    y: e.offsetY - previousMousePosition.y
-                };
-
-                const rotationSpeed = 0.005;
-                model.rotation.y += deltaMove.x * rotationSpeed;
-                model.rotation.x += deltaMove.y * rotationSpeed;
-
-                previousMousePosition = {
-                    x: e.offsetX,
-                    y: e.offsetY
-                };
-            }
-        }, false);
-
-        document.addEventListener('mouseup', function (e) {
-            isDragging = false;
-        }, false);
-
-        // Touch event listeners for mobile
-        document.addEventListener('touchstart', function (e) {
-            isDragging = true;
-            previousMousePosition = {
-                x: e.touches[0].clientX,
-                y: e.touches[0].clientY
+            // Rotation variables
+            let isDragging = false;
+            let previousMousePosition = {
+                x: 0,
+                y: 0
             };
-        }, false);
 
-        document.addEventListener('touchmove', function (e) {
-            if (isDragging && model) {
-                const deltaMove = {
-                    x: e.touches[0].clientX - previousMousePosition.x,
-                    y: e.touches[0].clientY - previousMousePosition.y
-                };
+            // Mouse event listeners
+            document.addEventListener('mousedown', function (e) {
+                isDragging = true;
+            }, false);
 
-                const rotationSpeed = 0.005;
-                model.rotation.y += deltaMove.x * rotationSpeed;
-                model.rotation.x += deltaMove.y * rotationSpeed;
+            document.addEventListener('mousemove', function (e) {
+                if (isDragging && model) {
+                    const deltaMove = {
+                        x: e.offsetX - previousMousePosition.x,
+                        y: e.offsetY - previousMousePosition.y
+                    };
 
+                    const rotationSpeed = 0.005;
+                    model.rotation.y += deltaMove.x * rotationSpeed;
+                    model.rotation.x += deltaMove.y * rotationSpeed;
+
+                    previousMousePosition = {
+                        x: e.offsetX,
+                        y: e.offsetY
+                    };
+                }
+            }, false);
+
+            document.addEventListener('mouseup', function (e) {
+                isDragging = false;
+            }, false);
+
+            // Touch event listeners for mobile
+            document.addEventListener('touchstart', function (e) {
+                isDragging = true;
                 previousMousePosition = {
                     x: e.touches[0].clientX,
                     y: e.touches[0].clientY
                 };
+            }, false);
+
+            document.addEventListener('touchmove', function (e) {
+                if (isDragging && model) {
+                    const deltaMove = {
+                        x: e.touches[0].clientX - previousMousePosition.x,
+                        y: e.touches[0].clientY - previousMousePosition.y
+                    };
+
+                    const rotationSpeed = 0.005;
+                    model.rotation.y += deltaMove.x * rotationSpeed;
+                    model.rotation.x += deltaMove.y * rotationSpeed;
+
+                    previousMousePosition = {
+                        x: e.touches[0].clientX,
+                        y: e.touches[0].clientY
+                    };
+                }
+            }, false);
+
+            document.addEventListener('touchend', function (e) {
+                isDragging = false;
+            }, false);
+
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                renderer.render(scene, camera);
             }
-        }, false);
 
-        document.addEventListener('touchend', function (e) {
-            isDragging = false;
-        }, false);
-
-        // Animation loop
-        function animate() {
-            requestAnimationFrame(animate);
-            renderer.render(scene, camera);
+            animate();
         }
-
-        animate();
     </script>
 </body>
 </html>
