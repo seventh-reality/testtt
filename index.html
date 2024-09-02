@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Onirix SDK Rotation Scene</title>
-    <script src="https://cdn.onirix.com/sdk/onirix-web-sdk.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <style>
+
         body, html {
             margin: 0;
             overflow: hidden;
@@ -19,7 +17,9 @@
     </style>
 </head>
 <body>
-    <script>
+   <script type="module">
+        import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.6.5/dist/ox-sdk.esm.js";
+        import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
         // Replace with your actual Onirix project API token
         const ONIRIX_API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k';
 
