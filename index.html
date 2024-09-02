@@ -21,6 +21,19 @@
             cursor: pointer;
             display: none;
         }
+        #upload-button {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #28A745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
     <!-- Include Three.js library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -28,9 +41,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
     <!-- Include WebXR Polyfill for broader device support -->
     <script src="https://cdn.jsdelivr.net/npm/webxr-polyfill@latest/build/webxr-polyfill.min.js"></script>
+    <!-- Include GLTFLoader to load .glb models -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
     <div id="canvasContainer"></div>
+    <button id="upload-button">Upload .glb Model</button>
     <button id="ar-button">Enter AR</button>
 
     <script>
@@ -49,43 +65,67 @@
         directionalLight.position.set(5, 5, 5).normalize();
         scene.add(directionalLight);
 
-        // Basic 3D Model (Cube)
-        const geometry = new THREE.BoxGeometry(1, 1, 1);
-        const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-        const cube = new THREE.Mesh(geometry, material);
-        scene.add(cube);
-        camera.position.z = 3;
+        // Variables to hold loaded model
+        let model = null;
 
         // GUI for editing the model
         const gui = new dat.GUI();
         const modelSettings = {
-            color: material.color.getHex(),
-            wireframe: material.wireframe,
-            metalness: material.metalness,
-            roughness: material.roughness
+            color: 0xffffff,
+            wireframe: false,
+            metalness: 0.5,
+            roughness: 0.5
         };
 
-        gui.addColor(modelSettings, 'color').onChange(value => {
-            material.color.setHex(value);
-        });
+        function updateModelMaterial() {
+            if (model) {
+                model.traverse(child => {
+                    if (child.isMesh) {
+                        child.material.color.setHex(modelSettings.color);
+                        child.material.wireframe = modelSettings.wireframe;
+                        child.material.metalness = modelSettings.metalness;
+                        child.material.roughness = modelSettings.roughness;
+                    }
+                });
+            }
+        }
 
-        gui.add(modelSettings, 'wireframe').onChange(value => {
-            material.wireframe = value;
-        });
+        gui.addColor(modelSettings, 'color').onChange(updateModelMaterial);
+        gui.add(modelSettings, 'wireframe').onChange(updateModelMaterial);
+        gui.add(modelSettings, 'metalness', 0, 1).onChange(updateModelMaterial);
+        gui.add(modelSettings, 'roughness', 0, 1).onChange(updateModelMaterial);
 
-        gui.add(material, 'metalness', 0, 1).onChange(value => {
-            material.metalness = value;
-        });
-
-        gui.add(material, 'roughness', 0, 1).onChange(value => {
-            material.roughness = value;
+        // Handle GLB file upload
+        const uploadButton = document.getElementById('upload-button');
+        uploadButton.addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.glb';
+            input.onchange = (event) => {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const gltfLoader = new THREE.GLTFLoader();
+                    gltfLoader.parse(e.target.result, '', (gltf) => {
+                        if (model) {
+                            scene.remove(model);
+                        }
+                        model = gltf.scene;
+                        scene.add(model);
+                        camera.position.z = 5; // Reset camera position
+                    });
+                };
+                reader.readAsArrayBuffer(file);
+            };
+            input.click();
         });
 
         // Animation loop
         function animate() {
             requestAnimationFrame(animate);
-            cube.rotation.x += 0.01;
-            cube.rotation.y += 0.01;
+            if (model) {
+                model.rotation.y += 0.01;
+            }
             renderer.render(scene, camera);
         }
         animate();
@@ -127,7 +167,6 @@
                 });
             });
         }
-
     </script>
 </body>
 </html>
