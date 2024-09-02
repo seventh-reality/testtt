@@ -28,16 +28,8 @@
             padding: 25px;
         }
 
-        #model1 {
-            background-color: #FFFFFF00;
-            border: 0;
-        }
-
-        #model2 {
-            background-color: #FFFFFF00;
-            border: 0;
-        }
-
+        #model1,
+        #model2,
         #model3 {
             background-color: #FFFFFF00;
             border: 0;
@@ -107,16 +99,8 @@
             border-radius: 10px;
         }
 
-        #one {
-            display: none;
-            scale: .7;
-        }
-
-        #two {
-            display: none;
-            scale: .7;
-        }
-
+        #one,
+        #two,
         #three {
             display: none;
             scale: .7;
@@ -126,9 +110,9 @@
 
 <body>
     <div id="UItext">
-        <img id="one" src="one.png"></img>
-        <img id="two" src="two.png"></img>
-        <img id="three" src="three.png"></img>
+        <img id="one" src="one.png" />
+        <img id="two" src="two.png" />
+        <img id="three" src="three.png" />
     </div>
     <div id="transform-controls">
         <button id="tap-to-place">Place Model</button>
@@ -185,21 +169,13 @@
                     this._envMap.encoding = THREE.sRGBEncoding;
 
                     this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
-                        try {
-                            const delta = this._clock.getDelta();
-                            this._animationMixers.forEach((mixer) => mixer.update(delta));
-                            this.render();
-                        } catch (err) {
-                            console.error("Error during frame update", err);
-                        }
+                        const delta = this._clock.getDelta();
+                        this._animationMixers.forEach((mixer) => mixer.update(delta));
+                        this.render();
                     });
 
                     this.oxSDK.subscribe(OnirixSDK.Events.OnPose, (pose) => {
-                        try {
-                            this.updatePose(pose);
-                        } catch (err) {
-                            console.error("Error updating pose", err);
-                        }
+                        this.updatePose(pose);
                     });
 
                     this.oxSDK.subscribe(OnirixSDK.Events.OnResize, () => {
@@ -207,7 +183,7 @@
                     });
 
                     this.oxSDK.subscribe(OnirixSDK.Events.OnHitTestResult, (hitResult) => {
-                        if (this._modelPlaced && !this.isCarPlaced()) {
+                        if (!this._carPlaced) {
                             this._models.forEach((model) => {
                                 model.position.copy(hitResult.position);
                             });
@@ -218,33 +194,28 @@
                     const gltfLoader = new GLTFLoader();
                     modelsToLoad.forEach((modelUrl, index) => {
                         gltfLoader.load(modelUrl, (gltf) => {
-                            try {
-                                const model = gltf.scene;
-                                model.traverse((child) => {
-                                    if (child.material) {
-                                        child.material.envMap = this._envMap;
-                                        child.material.needsUpdate = true;
-                                    }
-                                });
-
-                                if (gltf.animations && gltf.animations.length) {
-                                    const mixer = new THREE.AnimationMixer(model);
-                                    gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
-                                    this._animationMixers.push(mixer);
-
-                                    setTimeout(() => {
-                                        mixer.stopAllAction();
-                                    }, 50000);
+                            const model = gltf.scene;
+                            model.traverse((child) => {
+                                if (child.material) {
+                                    child.material.envMap = this._envMap;
+                                    child.material.needsUpdate = true;
                                 }
+                            });
 
-                                this._models[index] = model;
-                                if (index === 0) {
-                                    this._currentModel = model;
-                                    this._modelPlaced = true;
-                                    this._scene.add(model);
-                                }
-                            } catch (err) {
-                                console.error("Error loading model", err);
+                            if (gltf.animations && gltf.animations.length) {
+                                const mixer = new THREE.AnimationMixer(model);
+                                gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
+                                this._animationMixers.push(mixer);
+
+                                setTimeout(() => {
+                                    mixer.stopAllAction();
+                                }, 50000);
+                            }
+
+                            this._models[index] = model;
+                            if (index === 0) {
+                                this._currentModel = model;
+                                this._scene.add(model);
                             }
                         }, undefined, (error) => {
                             console.error("Model loading error", error);
@@ -260,7 +231,7 @@
 
             async initSDK() {
                 try {
-                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
+                    this.oxSDK = new OnirixSDK("YOUR_ONIRIX_API_KEY");
                     const config = {
                         mode: OnirixSDK.TrackingMode.Surface,
                     };
@@ -272,111 +243,82 @@
             }
 
             setupRenderer(canvas) {
-                try {
-                    this._renderer = new THREE.WebGLRenderer({
-                        antialias: true,
-                        alpha: true,
-                        canvas: canvas,
-                    });
+                this._renderer = new THREE.WebGLRenderer({
+                    antialias: true,
+                    alpha: true,
+                    canvas: canvas,
+                });
 
-                    this._renderer.autoClear = false;
-                    this._renderer.outputEncoding = THREE.sRGBEncoding;
-                    this._renderer.setSize(window.innerWidth, window.innerHeight);
-                    this._scene = new THREE.Scene();
-                    this._camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 1000);
+                this._renderer.autoClear = false;
+                this._renderer.outputEncoding = THREE.sRGBEncoding;
+                this._renderer.setSize(window.innerWidth, window.innerHeight);
+                this._scene = new THREE.Scene();
+                this._camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 1000);
 
-                    const environment = new THREE.TextureLoader().load("img/environment.jpg", () => {
-                        environment.mapping = THREE.EquirectangularReflectionMapping;
-                        environment.encoding = THREE.sRGBEncoding;
-                        this._scene.background = environment;
-                        this._scene.environment = environment;
-                    });
-                } catch (err) {
-                    console.error("Error setting up renderer", err);
-                    throw err;
-                }
+                const environment = new THREE.TextureLoader().load("img/environment.jpg", () => {
+                    environment.mapping = THREE.EquirectangularReflectionMapping;
+                    environment.encoding = THREE.sRGBEncoding;
+                    this._scene.background = environment;
+                    this._scene.environment = environment;
+                });
             }
 
             setupControls(canvas) {
-                try {
-                    this._controls = new OrbitControls(this._camera, canvas);
-                    this._controls.enableDamping = true;
-                    this._controls.dampingFactor = 0.1;
-                    this._controls.screenSpacePanning = true;
-                    this._controls.minDistance = 0.1;
-                    this._controls.maxDistance = 10;
-                    this._controls.enableZoom = false;  // Disable zoom if not needed
+                this._controls = new OrbitControls(this._camera, canvas);
+                this._controls.enableDamping = true;
+                this._controls.dampingFactor = 0.1;
+                this._controls.screenSpacePanning = true;
+                this._controls.minDistance = 0.1;
+                this._controls.maxDistance = 10;
+                this._controls.enableZoom = false;
 
-                    // Add event listener for single-touch rotation
-                    canvas.addEventListener('touchstart', (event) => {
-                        if (event.touches.length === 1) {
-                            this._controls.enabled = true;
-                        }
-                    });
+                canvas.addEventListener('touchstart', (event) => {
+                    if (event.touches.length === 1) {
+                        this._controls.enabled = true;
+                        this._controls.handleTouchStartRotate(event);
+                    }
+                });
 
-                    // Reset controls when the user stops touching the screen
-                    canvas.addEventListener('touchend', () => {
-                        this._controls.enabled = false;
-                    });
-                } catch (err) {
-                    console.error("Error setting up controls", err);
-                    throw err;
-                }
+                canvas.addEventListener('touchmove', (event) => {
+                    if (event.touches.length === 1) {
+                        this._controls.handleTouchMoveRotate(event);
+                    }
+                });
+
+                canvas.addEventListener('touchend', () => {
+                    this._controls.enabled = false;
+                });
             }
 
             addLights() {
-                try {
-                    const light = new THREE.HemisphereLight(0xffffff, 0x444444);
-                    light.position.set(0, 20, 0);
-                    this._scene.add(light);
+                const light = new THREE.HemisphereLight(0xffffff, 0x444444);
+                light.position.set(0, 20, 0);
+                this._scene.add(light);
 
-                    const directionalLight = new THREE.DirectionalLight(0xffffff);
-                    directionalLight.position.set(0, 20, 10);
-                    this._scene.add(directionalLight);
-                } catch (err) {
-                    console.error("Error adding lights", err);
-                    throw err;
-                }
+                const directionalLight = new THREE.DirectionalLight(0xffffff);
+                directionalLight.position.set(0, 20, 10);
+                this._scene.add(directionalLight);
             }
 
             render() {
-                try {
-                    this._renderer.clear();
-                    this._renderer.render(this._scene, this._camera);
-                } catch (err) {
-                    console.error("Error rendering scene", err);
-                    throw err;
-                }
+                this._renderer.clear();
+                this._renderer.render(this._scene, this._camera);
             }
 
             updatePose(pose) {
-                try {
-                    this._camera.matrixAutoUpdate = false;
-                    this._camera.matrixWorldInverse.fromArray(pose.viewMatrix);
-                    this._camera.matrixWorld.copy(this._camera.matrixWorldInverse).invert();
-                } catch (err) {
-                    console.error("Error updating camera pose", err);
-                    throw err;
-                }
+                this._camera.matrixAutoUpdate = false;
+                this._camera.matrixWorldInverse.fromArray(pose.viewMatrix);
+                this._camera.matrixWorld.copy(this._camera.matrixWorldInverse).invert();
             }
 
             onResize() {
-                try {
-                    const canvas = this._renderer.domElement;
-                    const width = canvas.clientWidth;
-                    const height = canvas.clientHeight;
+                const canvas = this._renderer.domElement;
+                const width = canvas.clientWidth;
+                const height = canvas.clientHeight;
 
-                    this._camera.aspect = width / height;
-                    this._camera.updateProjectionMatrix();
-                    this._renderer.setSize(width, height, false);
-                } catch (err) {
-                    console.error("Error resizing renderer", err);
-                    throw err;
-                }
-            }
-
-            isCarPlaced() {
-                return this._carPlaced;
+                this._camera.aspect = width / height;
+                this._camera.updateProjectionMatrix();
+                this._renderer.setSize(width, height, false);
             }
 
             setCarPlaced(placed) {
