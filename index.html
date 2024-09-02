@@ -16,56 +16,6 @@
             display: block;
         }
 
-        #model-controls {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-40%, 200%);
-            padding: 20px;
-            margin: auto;
-            width: 240px;
-            padding: 25px;
-        }
-
-        #model1,
-        #model2,
-        #model3 {
-            background-color: #FFFFFF00;
-            border: 0;
-        }
-
-        #tap-to-place {
-            display: block;
-            margin: auto;
-            width: 200px;
-            padding: 25px;
-            background-color: #231532;
-            color: #FFFFFF;
-            border: 0;
-            border-radius: 20px;
-            box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 20px;
-        }
-
-        button {
-            margin-right: 10px;
-        }
-
-        #transform-controls,
-        #color-controls {
-            display: none;
-            position: static;
-            top: 20px;
-            left: 20px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
         #loading-screen {
             position: absolute;
             top: 50%;
@@ -89,45 +39,10 @@
             border-radius: 10px;
             text-align: center;
         }
-
-        #UItext {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, 150%);
-            padding: 20px;
-            border-radius: 10px;
-        }
-
-        #one,
-        #two,
-        #three {
-            display: none;
-            scale: .7;
-        }
     </style>
 </head>
 
 <body>
-    <div id="UItext">
-        <img id="one" src="one.png" />
-        <img id="two" src="two.png" />
-        <img id="three" src="three.png" />
-    </div>
-    <div id="transform-controls">
-        <button id="tap-to-place">Place Model</button>
-    </div>
-    <div id="color-controls">
-        <button id="black">Black</button>
-        <button id="blue">Blue</button>
-        <button id="orange">Orange</button>
-        <button id="silver">Silver</button>
-    </div>
-    <div id="model-controls">
-        <button id="model1"><img src="Icon.png" style="width:40px;height:40px;"></button>
-        <button id="model2"><img src="Icon_1.png" style="width:40px;height:40px;"></button>
-        <button id="model3"><img src="Icon_2.png" style="width:40px;height:40px;"></button>
-    </div>
     <div id="loading-screen">Loading...</div>
     <div id="error-screen">
         <div id="error-title"></div>
@@ -145,12 +60,13 @@
             _scene = null;
             _camera = null;
             _models = [];
-            _modelIndex = 0;
             _currentModel = null;
             _controls = null;
             _animationMixers = [];
             _clock = null;
             _carPlaced = false;
+            _initialDistance = null;
+            _initialScale = null;
 
             oxSDK;
 
@@ -231,7 +147,7 @@
 
             async initSDK() {
                 try {
-                    this.oxSDK = new OnirixSDK("YOUR_ONIRIX_API_KEY");
+                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
                     const config = {
                         mode: OnirixSDK.TrackingMode.Surface,
                     };
@@ -276,18 +192,44 @@
                     if (event.touches.length === 1) {
                         this._controls.enabled = true;
                         this._controls.handleTouchStartRotate(event);
+                    } else if (event.touches.length === 2) {
+                        this._controls.enabled = false;
+                        this.handlePinchStart(event);
                     }
                 });
 
                 canvas.addEventListener('touchmove', (event) => {
                     if (event.touches.length === 1) {
                         this._controls.handleTouchMoveRotate(event);
+                    } else if (event.touches.length === 2) {
+                        this.handlePinchMove(event);
                     }
                 });
 
-                canvas.addEventListener('touchend', () => {
-                    this._controls.enabled = false;
+                canvas.addEventListener('touchend', (event) => {
+                    if (event.touches.length === 0) {
+                        this._controls.enabled = false;
+                    }
                 });
+            }
+
+            handlePinchStart(event) {
+                this._initialDistance = this.getTouchDistance(event.touches);
+                this._initialScale = this._currentModel.scale.clone();
+            }
+
+            handlePinchMove(event) {
+                if (this._initialDistance && this._initialScale) {
+                    const newDistance = this.getTouchDistance(event.touches);
+                    const scaleChange = newDistance / this._initialDistance;
+                    this._currentModel.scale.copy(this._initialScale.clone().multiplyScalar(scaleChange));
+                }
+            }
+
+            getTouchDistance(touches) {
+                const dx = touches[0].pageX - touches[1].pageX;
+                const dy = touches[0].pageY - touches[1].pageY;
+                return Math.sqrt(dx * dx + dy * dy);
             }
 
             addLights() {
