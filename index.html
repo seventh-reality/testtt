@@ -10,7 +10,6 @@
             overflow: hidden;
             background: #000;
         }
-
         canvas {
             display: block;
         }
@@ -56,7 +55,7 @@
                     }
                 } catch (err) {
                     console.error("Error initializing ARScene", err);
-                    alert("Failed to initialize AR. Please check your camera permissions and SDK configuration.");
+                    alert("Failed to initialize AR. Please check your camera permissions and SDK configuration. Error: " + err.message);
                 }
             }
 
