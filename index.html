@@ -189,15 +189,16 @@
         // Share button setup
         const shareButton = document.getElementById('share-button');
         shareButton.addEventListener('click', () => {
-            const baseUrl = window.location.href.split('?')[0];
+            const baseUrl = 'https://github.com/seventh-reality/Web-'; // Replace with your GitHub Pages URL
             const modelData = encodeURIComponent(JSON.stringify({
                 material: modelSettings.material,
                 color: modelSettings.color.toString(16),
                 wireframe: modelSettings.wireframe,
-                model: model.name  // Assuming the model has a name property
+                model: model ? model.name : ''  // Assuming the model has a name property
             }));
             const link = `${baseUrl}?ar=true&data=${modelData}`;
             prompt("Share this WebAR link:", link);
+            window.location.href = link; // Automatically open the AR view
         });
 
         // Load settings from URL if available and start AR directly if requested
