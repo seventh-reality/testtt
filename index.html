@@ -34,6 +34,19 @@
             border-radius: 5px;
             cursor: pointer;
         }
+        #share-button {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
     <!-- Include Three.js library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -48,6 +61,7 @@
     <div id="canvasContainer"></div>
     <button id="upload-button">Upload .glb Model</button>
     <button id="ar-button">Enter AR</button>
+    <button id="share-button">Share WebAR Link</button>
 
     <script>
         // Basic setup
@@ -65,35 +79,38 @@
         directionalLight.position.set(5, 5, 5).normalize();
         scene.add(directionalLight);
 
-        // Variables to hold loaded model
+        // Variables to hold loaded model and materials
         let model = null;
+        const materials = {
+            'Basic': new THREE.MeshBasicMaterial({ color: 0xffffff }),
+            'Lambert': new THREE.MeshLambertMaterial({ color: 0xffffff }),
+            'Phong': new THREE.MeshPhongMaterial({ color: 0xffffff }),
+            'Standard': new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.5, roughness: 0.5 }),
+        };
 
         // GUI for editing the model
         const gui = new dat.GUI();
         const modelSettings = {
+            material: 'Standard',
             color: 0xffffff,
-            wireframe: false,
-            metalness: 0.5,
-            roughness: 0.5
+            wireframe: false
         };
 
         function updateModelMaterial() {
             if (model) {
                 model.traverse(child => {
                     if (child.isMesh) {
+                        child.material = materials[modelSettings.material];
                         child.material.color.setHex(modelSettings.color);
                         child.material.wireframe = modelSettings.wireframe;
-                        child.material.metalness = modelSettings.metalness;
-                        child.material.roughness = modelSettings.roughness;
                     }
                 });
             }
         }
 
+        gui.add(modelSettings, 'material', Object.keys(materials)).onChange(updateModelMaterial);
         gui.addColor(modelSettings, 'color').onChange(updateModelMaterial);
         gui.add(modelSettings, 'wireframe').onChange(updateModelMaterial);
-        gui.add(modelSettings, 'metalness', 0, 1).onChange(updateModelMaterial);
-        gui.add(modelSettings, 'roughness', 0, 1).onChange(updateModelMaterial);
 
         // Handle GLB file upload
         const uploadButton = document.getElementById('upload-button');
@@ -113,6 +130,7 @@
                         model = gltf.scene;
                         scene.add(model);
                         camera.position.z = 5; // Reset camera position
+                        updateModelMaterial();
                     });
                 };
                 reader.readAsArrayBuffer(file);
@@ -167,6 +185,33 @@
                 });
             });
         }
+
+        // Share button setup
+        const shareButton = document.getElementById('share-button');
+        shareButton.addEventListener('click', () => {
+            const baseUrl = window.location.href.split('?')[0];
+            const link = `${baseUrl}?model=${encodeURIComponent(model.name)}&material=${encodeURIComponent(modelSettings.material)}&color=${modelSettings.color.toString(16)}&wireframe=${modelSettings.wireframe}`;
+            prompt("Share this WebAR link:", link);
+        });
+
+        // Load settings from URL if available
+        function loadSettingsFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const modelName = urlParams.get('model');
+            const material = urlParams.get('material');
+            const color = urlParams.get('color');
+            const wireframe = urlParams.get('wireframe');
+
+            if (modelName && materials[material]) {
+                modelSettings.material = material;
+                modelSettings.color = parseInt(color, 16);
+                modelSettings.wireframe = wireframe === 'true';
+                updateModelMaterial();
+            }
+        }
+
+        loadSettingsFromURL();
+
     </script>
 </body>
 </html>
