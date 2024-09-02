@@ -22,18 +22,17 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, 50%);
+            transform: translate(-50%, -50%);
             padding: 20px;
             margin: auto;
             width: 240px;
-            padding: 25px;
         }
 
         #model1,
         #model2,
         #model3 {
-            background-color: #FFFFFF00;
-            border: 0;
+            background-color: transparent;
+            border: none;
         }
 
         #tap-to-place {
@@ -43,7 +42,7 @@
             padding: 25px;
             background-color: #231532;
             color: #FFFFFF;
-            border: 0;
+            border: none;
             border-radius: 20px;
             box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
             position: absolute;
@@ -59,11 +58,9 @@
         #transform-controls,
         #color-controls {
             display: none;
-            position: static;
+            position: absolute;
             top: 20px;
             left: 20px;
-            margin-left: auto;
-            margin-right: auto;
         }
 
         #loading-screen {
@@ -103,7 +100,7 @@
         #two,
         #three {
             display: none;
-            scale: 0.7;
+            transform: scale(0.7);
         }
 
         #rotation-slider {
@@ -115,9 +112,9 @@
 
 <body>
     <div id="UItext">
-        <img id="one" src="one.png"></img>
-        <img id="two" src="two.png"></img>
-        <img id="three" src="three.png"></img>
+        <img id="one" src="one.png" alt="One">
+        <img id="two" src="two.png" alt="Two">
+        <img id="three" src="three.png" alt="Three">
     </div>
     <div id="transform-controls">
         <button id="tap-to-place">Place Model</button>
@@ -129,9 +126,9 @@
         <button id="silver">Silver</button>
     </div>
     <div id="model-controls">
-        <button id="model1"><img src="Icon.png" style="width:40px;height:40px;"></button>
-        <button id="model2"><img src="Icon_1.png" style="width:40px;height:40px;"></button>
-        <button id="model3"><img src="Icon_2.png" style="width:40px;height:40px;"></button>
+        <button id="model1"><img src="Icon.png" style="width:40px;height:40px;" alt="Model 1"></button>
+        <button id="model2"><img src="Icon_1.png" style="width:40px;height:40px;" alt="Model 2"></button>
+        <button id="model3"><img src="Icon_2.png" style="width:40px;height:40px;" alt="Model 3"></button>
     </div>
     <div id="rotation-controls">
         <input type="range" id="rotation-slider" min="0" max="360" value="0">
@@ -149,17 +146,20 @@
         import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js";
 
         class OxExperience {
-            _renderer = null;
-            _scene = null;
-            _camera = null;
-            _models = [];
-            _modelIndex = 0;
-            _currentModel = null;
-            _controls = null;
-            _animationMixers = [];
-            _clock = null;
-            _carPlaced = false;
-            oxSDK;
+            constructor() {
+                this._renderer = null;
+                this._scene = null;
+                this._camera = null;
+                this._models = [];
+                this._modelIndex = 0;
+                this._currentModel = null;
+                this._controls = null;
+                this._animationMixers = [];
+                this._clock = null;
+                this._carPlaced = false;
+                this.oxSDK = null;
+                this._envMap = null;
+            }
 
             async init() {
                 try {
@@ -256,95 +256,135 @@
                 const near = 0.01;
                 const far = 1000.0;
                 this._camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+                this._camera.matrixAutoUpdate = false;
+
+                const controls = new OrbitControls(this._camera, canvas);
+                controls.enableZoom = true;
+                controls.enablePan = false;
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.25;
+                controls.rotateSpeed = 0.35;
+                controls.minDistance = 2;
+                controls.maxDistance = 10;
+
+                this._controls = controls;
             }
 
             setupControls(canvas) {
-                this._controls = new OrbitControls(this._camera, canvas);
-                this._controls.enableZoom = true;
-                this._controls.enablePan = false;
-                this._controls.enableRotate = true;
-            }
+                const tapToPlace = document.getElementById("tap-to-place");
+                tapToPlace.addEventListener("click", () => {
+                    if (this.isCarPlaced()) {
+                        tapToPlace.style.display = "none";
+                    }
+                });
 
-            addLights() {
-                const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
-                directionalLight.position.set(10, 10, 10);
+                const rotationSlider = document.getElementById("rotation-slider");
+                rotationSlider.addEventListener("input", (event) => {
+                    const rotationValue = event.target.value;
+                    if (this._currentModel) {
+                        this._currentModel.rotation.y = THREE.MathUtils.degToRad(rotationValue);
+                    }
+                });
 
-                this._scene.add(ambientLight, directionalLight);
+                const colorButtons = document.querySelectorAll("#color-controls button");
+                colorButtons.forEach((button) => {
+                    button.addEventListener("click", (event) => {
+                        const color = event.target.id;
+                        this.setModelColor(color);
+                    });
+                });
+
+                const modelButtons = document.querySelectorAll("#model-controls button");
+                modelButtons.forEach((button, index) => {
+                    button.addEventListener("click", () => {
+                        this.switchModel(index);
+                    });
+                });
+
+                const errorScreen = document.getElementById("error-screen");
+                const errorTitle = document.getElementById("error-title");
+                const errorMessage = document.getElementById("error-message");
+                this.oxSDK.subscribe(OnirixSDK.Events.OnError, (error) => {
+                    errorScreen.style.display = "block";
+                    errorTitle.innerText = "Error!";
+                    errorMessage.innerText = error.message;
+                });
+
+                window.addEventListener("resize", this.onResize.bind(this));
             }
 
             updatePose(pose) {
-                this._camera.position.set(pose.position.x, pose.position.y, pose.position.z);
-                this._camera.quaternion.set(pose.rotation.x, pose.rotation.y, pose.rotation.z, pose.rotation.w);
+                this._camera.matrix.fromArray(pose);
+                this._camera.matrixWorldNeedsUpdate = true;
+                if (this._controls) {
+                    this._controls.update();
+                }
             }
 
             onResize() {
-                const { width, height } = this.oxSDK.getResolution();
+                const { width, height } = this._renderer.domElement;
                 this._camera.aspect = width / height;
                 this._camera.updateProjectionMatrix();
                 this._renderer.setSize(width, height);
             }
 
-            render() {
-                this._renderer.render(this._scene, this._camera);
+            isCarPlaced() {
+                return this._carPlaced;
             }
 
-            toggleModel(index) {
-                if (index < this._models.length) {
-                    this._scene.remove(this._currentModel);
+            setModelColor(color) {
+                if (this._currentModel) {
+                    this._currentModel.traverse((child) => {
+                        if (child.material) {
+                            switch (color) {
+                                case "black":
+                                    child.material.color.set(0x000000);
+                                    break;
+                                case "blue":
+                                    child.material.color.set(0x0000ff);
+                                    break;
+                                case "orange":
+                                    child.material.color.set(0xffa500);
+                                    break;
+                                case "silver":
+                                    child.material.color.set(0xc0c0c0);
+                                    break;
+                                default:
+                                    child.material.color.set(0xffffff);
+                            }
+                        }
+                    });
+                }
+            }
+
+            switchModel(index) {
+                if (this._models[index]) {
+                    if (this._currentModel) {
+                        this._scene.remove(this._currentModel);
+                    }
                     this._currentModel = this._models[index];
                     this._scene.add(this._currentModel);
                 }
             }
 
-            setModelColor(color) {
-                this._currentModel.traverse((child) => {
-                    if (child.isMesh) {
-                        child.material.color.set(color);
-                    }
-                });
+            addLights() {
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
+                directionalLight.position.set(0, 10, 10);
+                this._scene.add(directionalLight);
+
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+                this._scene.add(ambientLight);
             }
 
-            setModelRotation(value) {
-                const angle = THREE.MathUtils.degToRad(value);
-                this._currentModel.rotation.y = angle;
-            }
-
-            isCarPlaced() {
-                return this._carPlaced;
+            render() {
+                this._renderer.render(this._scene, this._camera);
             }
         }
 
-        window.onload = async () => {
-            const oxExperience = new OxExperience();
-            await oxExperience.init();
-
-            const model1Btn = document.getElementById("model1");
-            const model2Btn = document.getElementById("model2");
-            const model3Btn = document.getElementById("model3");
-            const blackBtn = document.getElementById("black");
-            const blueBtn = document.getElementById("blue");
-            const orangeBtn = document.getElementById("orange");
-            const silverBtn = document.getElementById("silver");
-            const rotationSlider = document.getElementById("rotation-slider");
-            const tapToPlaceBtn = document.getElementById("tap-to-place");
-
-            model1Btn.addEventListener("click", () => oxExperience.toggleModel(0));
-            model2Btn.addEventListener("click", () => oxExperience.toggleModel(1));
-            model3Btn.addEventListener("click", () => oxExperience.toggleModel(2));
-            blackBtn.addEventListener("click", () => oxExperience.setModelColor("black"));
-            blueBtn.addEventListener("click", () => oxExperience.setModelColor("blue"));
-            orangeBtn.addEventListener("click", () => oxExperience.setModelColor("orange"));
-            silverBtn.addEventListener("click", () => oxExperience.setModelColor("silver"));
-            rotationSlider.addEventListener("input", (e) => oxExperience.setModelRotation(e.target.value));
-            tapToPlaceBtn.addEventListener("click", () => {
-                tapToPlaceBtn.style.display = "none";
-                document.getElementById("transform-controls").style.display = "block";
-                document.getElementById("color-controls").style.display = "block";
-                document.getElementById("model-controls").style.display = "block";
-                document.getElementById("rotation-controls").style.display = "block";
-            });
-        };
+        document.addEventListener("DOMContentLoaded", async () => {
+            const experience = new OxExperience();
+            await experience.init();
+        });
     </script>
 </body>
 
