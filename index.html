@@ -190,10 +190,14 @@
                     });
 
                     this.oxSDK.subscribe(OnirixSDK.Events.OnHitTestResult, (hitResult) => {
-                        if (this._modelPlaced && !this.isCarPlaced()) {
+                        if (!this.isCarPlaced()) {
                             this._models.forEach((model) => {
                                 model.position.copy(hitResult.position);
+                                model.rotation.set(0, 0, 0);  // Ensure the model is not rotated initially
                             });
+                            this._currentModel = this._models[0];  // Ensure the first model is set as current
+                            this._scene.add(this._currentModel); // Add the model to the scene after placement
+                            this._carPlaced = true; // Mark the car as placed
                         }
                     });
 
@@ -222,8 +226,6 @@
                             this._models[index] = model;
                             if (index === 0) {
                                 this._currentModel = model;
-                                this._modelPlaced = true;
-                                this._scene.add(model);
                             }
                         }, undefined, (error) => {
                             console.error("Model loading error", error);
@@ -238,55 +240,37 @@
             }
 
             async initSDK() {
-                this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
-                const config = {
-                    mode: OnirixSDK.TrackingMode.Surface,
-                };
-                return this.oxSDK.init(config);
+                this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTY5MzcwNzA4OX0.e3huLttgCHXErTBO35wNYZWrRzAfv2JkD60cdhvFjIs");
+                const { canvas } = await this.oxSDK.init({ mode: OnirixSDK.Mode.World });
+                return canvas;
             }
 
-            placeCar() {
-                this._carPlaced = true;
-                this.oxSDK.start();
-            }
-
-            isCarPlaced() {
-                return this._carPlaced;
-            }
-
-            setupRenderer(renderCanvas) {
-                const width = renderCanvas.width;
-                const height = renderCanvas.height;
-
-                this._renderer = new THREE.WebGLRenderer({ canvas: renderCanvas, alpha: true });
-                this._renderer.setClearColor(0x000000, 0);
-                this._renderer.setSize(width, height);
+            setupRenderer(canvas) {
+                this._renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+                this._renderer.autoClear = true;
                 this._renderer.outputEncoding = THREE.sRGBEncoding;
-
-                const cameraParams = this.oxSDK.getCameraParameters();
-                this._camera = new THREE.PerspectiveCamera(cameraParams.fov, cameraParams.aspect, cameraParams.near, cameraParams.far);
-
                 this._scene = new THREE.Scene();
-                this._scene.environment = this._envMap;
+
+                const fov = 60;
+                const aspect = canvas.width / canvas.height;
+                const near = 0.01;
+                const far = 1000.0;
+                this._camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
             }
 
-            setupControls(renderCanvas) {
-                this._controls = new OrbitControls(this._camera, renderCanvas);
-                this._controls.enableDamping = true;
-                this._controls.dampingFactor = 0.05;
-                this._controls.screenSpacePanning = false;
-                this._controls.maxPolarAngle = Math.PI / 2;
+            setupControls(canvas) {
+                this._controls = new OrbitControls(this._camera, canvas);
+                this._controls.enableZoom = true;
+                this._controls.enablePan = false;
+                this._controls.enableRotate = true;
             }
 
             addLights() {
-                const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-                directionalLight.position.set(1, 1, 1).normalize();
-                this._scene.add(directionalLight);
-            }
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
+                directionalLight.position.set(10, 10, 10);
 
-            render() {
-                this._controls.update();
-                this._renderer.render(this._scene, this._camera);
+                this._scene.add(ambientLight, directionalLight);
             }
 
             updatePose(pose) {
@@ -295,66 +279,71 @@
             }
 
             onResize() {
-                const { width, height } = this.oxSDK.getRenderCanvas();
+                const { width, height } = this.oxSDK.getResolution();
                 this._camera.aspect = width / height;
                 this._camera.updateProjectionMatrix();
                 this._renderer.setSize(width, height);
             }
 
-            toggleModel(modelIndex) {
-                if (this._currentModel) {
-                    this._scene.remove(this._currentModel);
-                }
-                this._currentModel = this._models[modelIndex];
-                this._scene.add(this._currentModel);
+            render() {
+                this._renderer.render(this._scene, this._camera);
             }
 
-            rotateModel(rotationValue) {
-                if (this._currentModel) {
-                    const radians = THREE.MathUtils.degToRad(rotationValue);
-                    this._currentModel.rotation.y = radians;
+            toggleModel(index) {
+                if (index < this._models.length) {
+                    this._scene.remove(this._currentModel);
+                    this._currentModel = this._models[index];
+                    this._scene.add(this._currentModel);
                 }
+            }
+
+            setModelColor(color) {
+                this._currentModel.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material.color.set(color);
+                    }
+                });
+            }
+
+            setModelRotation(value) {
+                const angle = THREE.MathUtils.degToRad(value);
+                this._currentModel.rotation.y = angle;
+            }
+
+            isCarPlaced() {
+                return this._carPlaced;
             }
         }
 
-        const oxExperience = new OxExperience();
-
         window.onload = async () => {
-            try {
-                await oxExperience.init();
-                document.getElementById("loading-screen").style.display = "none";
+            const oxExperience = new OxExperience();
+            await oxExperience.init();
+
+            const model1Btn = document.getElementById("model1");
+            const model2Btn = document.getElementById("model2");
+            const model3Btn = document.getElementById("model3");
+            const blackBtn = document.getElementById("black");
+            const blueBtn = document.getElementById("blue");
+            const orangeBtn = document.getElementById("orange");
+            const silverBtn = document.getElementById("silver");
+            const rotationSlider = document.getElementById("rotation-slider");
+            const tapToPlaceBtn = document.getElementById("tap-to-place");
+
+            model1Btn.addEventListener("click", () => oxExperience.toggleModel(0));
+            model2Btn.addEventListener("click", () => oxExperience.toggleModel(1));
+            model3Btn.addEventListener("click", () => oxExperience.toggleModel(2));
+            blackBtn.addEventListener("click", () => oxExperience.setModelColor("black"));
+            blueBtn.addEventListener("click", () => oxExperience.setModelColor("blue"));
+            orangeBtn.addEventListener("click", () => oxExperience.setModelColor("orange"));
+            silverBtn.addEventListener("click", () => oxExperience.setModelColor("silver"));
+            rotationSlider.addEventListener("input", (e) => oxExperience.setModelRotation(e.target.value));
+            tapToPlaceBtn.addEventListener("click", () => {
+                tapToPlaceBtn.style.display = "none";
                 document.getElementById("transform-controls").style.display = "block";
+                document.getElementById("color-controls").style.display = "block";
                 document.getElementById("model-controls").style.display = "block";
                 document.getElementById("rotation-controls").style.display = "block";
-
-                document.getElementById("tap-to-place").addEventListener("click", () => {
-                    oxExperience.placeCar();
-                    document.getElementById("transform-controls").style.display = "none";
-                });
-
-                document.getElementById("model1").addEventListener("click", () => {
-                    oxExperience.toggleModel(0);
-                });
-
-                document.getElementById("model2").addEventListener("click", () => {
-                    oxExperience.toggleModel(1);
-                });
-
-                document.getElementById("model3").addEventListener("click", () => {
-                    oxExperience.toggleModel(2);
-                });
-
-                const rotationSlider = document.getElementById("rotation-slider");
-                rotationSlider.addEventListener("input", (event) => {
-                    const rotationValue = event.target.value;
-                    oxExperience.rotateModel(rotationValue);
-                });
-            } catch (err) {
-                console.error("Error during initialization", err);
-                document.getElementById("error-screen").style.display = "block";
-                document.getElementById("error-title").textContent = "Initialization Error";
-                document.getElementById("error-message").textContent = err.message;
-            }
+            });
         };
     </script>
 </body>
