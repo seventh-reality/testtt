@@ -40,7 +40,9 @@
 
                     // Initialize Onirix SDK
                     this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
-                    const { canvas } = await this.oxSDK.init({ mode: OnirixSDK.Mode.World });
+                    const { canvas } = await this.oxSDK.init({
+                        mode: OnirixSDK.TrackingMode.World // Make sure this is the correct mode parameter
+                    });
 
                     this.setupRenderer(canvas);
                     this.setupScene();
@@ -63,11 +65,12 @@
 
             async requestCameraAccess() {
                 try {
+                    // Request access to the camera
                     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    // Stop all video tracks after obtaining permission, Onirix SDK will use the camera
+                    // Stop all video tracks after obtaining permission, as Onirix SDK will use the camera
                     stream.getTracks().forEach(track => track.stop());
                 } catch (error) {
-                    throw new Error("Camera access denied.");
+                    throw new Error("Camera access denied. Please enable camera permissions in your browser settings.");
                 }
             }
 
