@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,7 +16,6 @@
         }
     </style>
 </head>
-
 <body>
     <script type="module">
         import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.6.5/dist/ox-sdk.esm.js";
@@ -34,21 +32,29 @@
             }
 
             async init() {
-                this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
-                const { canvas } = await this.oxSDK.init({ mode: OnirixSDK.Mode.World });
+                try {
+                    // Initialize Onirix SDK with correct mode
+                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
+                    const { canvas } = await this.oxSDK.init({ mode: OnirixSDK.TrackingMode.World });
 
-                this.setupRenderer(canvas);
-                this.setupScene();
-                this.setupControls();
-                this.addEventListeners();
+                    this.setupRenderer(canvas);
+                    this.setupScene();
+                    this.setupControls();
+                    this.addEventListeners();
 
-                this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
-                    this.render();
-                });
+                    // Subscribe to Onirix SDK events
+                    this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
+                        this.render();
+                    });
 
-                this.oxSDK.subscribe(OnirixSDK.Events.OnPose, (pose) => {
-                    this.updatePose(pose);
-                });
+                    this.oxSDK.subscribe(OnirixSDK.Events.OnPose, (pose) => {
+                        this.updatePose(pose);
+                    });
+
+                } catch (err) {
+                    console.error("Error initializing ARScene", err);
+                    alert("Failed to initialize AR. Please check your camera permissions and SDK configuration.");
+                }
             }
 
             setupRenderer(canvas) {
@@ -103,5 +109,4 @@
         });
     </script>
 </body>
-
 </html>
