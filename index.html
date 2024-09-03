@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js and OnirixSDK Example with Sprite Rendering</title>
+    <title>Three.js and OnirixSDK Example</title>
     <style>
         body {
             margin: 0;
@@ -168,7 +168,7 @@
             _animationMixers = [];
             _clock = null;
             _carPlaced = false;
-            _sprite = null; // Sprite reference
+            _sprite = null;
 
             oxSDK;
 
@@ -213,7 +213,7 @@
                             this._models.forEach((model) => {
                                 model.position.copy(hitResult.position);
                             });
-                            this._sprite.position.copy(hitResult.position); // Update sprite position
+                            this._sprite.position.copy(hitResult.position); // Update sprite position with hit result
                         }
                     });
 
@@ -255,7 +255,7 @@
                     });
 
                     this.addLights();
-                    this.addSprite(); // Call method to add the sprite
+                    this.addSprite(); // Add sprite after lights
                 } catch (err) {
                     console.error("Error initializing OxExperience", err);
                     throw err;
@@ -276,90 +276,95 @@
             }
 
             setupRenderer(canvas) {
-                this._renderer = new THREE.WebGLRenderer({
-                    canvas: canvas,
-                    antialias: true,
-                    alpha: true
-                });
-                this._renderer.setSize(window.innerWidth, window.innerHeight);
-                this._renderer.outputEncoding = THREE.sRGBEncoding;
-                this._renderer.shadowMap.enabled = true;
-                this._renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-                this._scene = new THREE.Scene();
-                this._camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+                try {
+                    this._renderer = new THREE.WebGLRenderer({
+                        antialias: true,
+                        alpha: true,
+                        canvas,
+                    });
+                    this._renderer.outputEncoding = THREE.sRGBEncoding;
+                    this._renderer.setSize(window.innerWidth, window.innerHeight);
+                } catch (err) {
+                    console.error("Error setting up renderer", err);
+                    throw err;
+                }
             }
 
             setupControls(canvas) {
-                this._controls = new OrbitControls(this._camera, canvas);
-                this._controls.enableDamping = true;
-                this._controls.dampingFactor = 0.25;
-                this._controls.screenSpacePanning = false;
-                this._controls.maxPolarAngle = Math.PI / 2;
-                this._controls.target.set(0, 1.6, 0);
-            }
-
-            addLights() {
-                const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-                this._scene.add(ambientLight);
-
-                const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-                directionalLight.position.set(5, 10, 7.5);
-                directionalLight.castShadow = true;
-                directionalLight.shadow.mapSize.width = 1024;
-                directionalLight.shadow.mapSize.height = 1024;
-                directionalLight.shadow.camera.near = 0.5;
-                directionalLight.shadow.camera.far = 50;
-                this._scene.add(directionalLight);
-            }
-
-            addSprite() {
-                const spriteMap = new THREE.TextureLoader().load('4 (1).png');
-                const spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap });
-                this._sprite = new THREE.Sprite(spriteMaterial);
-                this._sprite.scale.set(1, 1, 1); // Adjust the scale as needed
-                this._scene.add(this._sprite);
+                try {
+                    this._camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 1000);
+                    this._camera.position.set(0, 0, 3);
+                    this._controls = new OrbitControls(this._camera, canvas);
+                } catch (err) {
+                    console.error("Error setting up controls", err);
+                    throw err;
+                }
             }
 
             render() {
-                if (this._renderer) {
+                if (this._renderer && this._scene && this._camera) {
                     this._renderer.render(this._scene, this._camera);
                 }
             }
 
             updatePose(pose) {
-                if (this._camera) {
-                    this._camera.matrix.fromArray(pose);
-                    this._camera.matrix.decompose(this._camera.position, this._camera.quaternion, this._camera.scale);
-                    this._camera.updateMatrixWorld(true);
+                if (this._camera && pose) {
+                    this._camera.position.copy(pose.position);
+                    this._camera.quaternion.copy(pose.rotation);
                 }
             }
 
             onResize() {
-                const width = window.innerWidth;
-                const height = window.innerHeight;
-
-                if (this._renderer && this._camera) {
-                    this._renderer.setSize(width, height);
-                    this._camera.aspect = width / height;
+                if (this._camera) {
+                    this._camera.aspect = window.innerWidth / window.innerHeight;
                     this._camera.updateProjectionMatrix();
+                }
+                if (this._renderer) {
+                    this._renderer.setSize(window.innerWidth, window.innerHeight);
+                }
+            }
+
+            addLights() {
+                try {
+                    const ambientLight = new THREE.AmbientLight(0xffffff, 1.1);
+                    this._scene.add(ambientLight);
+
+                    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                    directionalLight.position.set(1, 1, 1).normalize();
+                    this._scene.add(directionalLight);
+                } catch (err) {
+                    console.error("Error adding lights", err);
+                    throw err;
+                }
+            }
+
+            addSprite() {
+                try {
+                    const textureLoader = new THREE.TextureLoader();
+                    const spriteMap = textureLoader.load("4 (1).png");
+                    const spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap });
+                    this._sprite = new THREE.Sprite(spriteMaterial);
+                    this._sprite.scale.set(1, 1, 1); // Adjust size as needed
+                    this._scene.add(this._sprite);
+                } catch (err) {
+                    console.error("Error adding sprite", err);
+                    throw err;
                 }
             }
 
             isCarPlaced() {
                 return this._carPlaced;
             }
-
         }
 
-        window.addEventListener("DOMContentLoaded", () => {
-            const experience = new OxExperience();
-            experience.init().then(() => {
-                console.log("OxExperience initialized successfully");
-            }).catch((err) => {
-                console.error("Error initializing OxExperience", err);
-            });
+        window.OxExperience = new OxExperience();
+        window.OxExperience.init().catch((err) => {
+            console.error("Error initializing experience", err);
+            document.getElementById("error-title").innerText = "Error";
+            document.getElementById("error-message").innerText = "An error occurred while initializing the experience.";
+            document.getElementById("error-screen").style.display = "block";
         });
+
     </script>
 </body>
 
