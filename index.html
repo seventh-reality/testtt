@@ -101,8 +101,7 @@
             scale: .7;
         }
 
-        #scale-controls {
-           
+        #scale-controls {  
             position: absolute;
             top: 20px;
             right: 20px;  
@@ -429,6 +428,7 @@
                     this._modelControls = document.querySelector("#model-controls");
                     this._scaleInButton = document.querySelector("#scale-in");
                     this._scaleOutButton = document.querySelector("#scale-out");
+                    this._scaleControls  = document.querySelector("#scale-controls");
 
                     document.querySelector("#tap-to-place").addEventListener("click", () => {
                         oxExp.placeCar();
