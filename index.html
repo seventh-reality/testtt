@@ -265,7 +265,7 @@
             async initSDK() {
                 try {
                     this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTY4OTQ4MTE4OX0.Rp69Py4av61aWB47syWcC1fPEJKJeo6fwo92E9Q4X5I", {
-                        mode: OnirixSDK.Mode.AR,
+                        mode: OnirixSDK.TrackingMode.Surface,
                     });
 
                     await this.oxSDK.connect();
