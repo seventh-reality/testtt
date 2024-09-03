@@ -36,29 +36,37 @@
     <model-viewer src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" ar ar-modes="webxr scene-viewer quick-look" auto-rotate camera-controls></model-viewer>
 
     <!-- Image element for AI processing -->
-    <img id="input-image" src="two.png" alt="Input for AI">
+    <img id="input-image" src="envmap.jpg" alt="Input for AI">
 
     <script>
-        // Load AI model (using MobileNet as an example)
+        // Load AI model (using a MobileNet example from TensorFlow Hub)
         async function loadModel() {
-            const model = await tf.loadLayersModel('https://tfhub.dev/google/tfjs-model/mobilenet_v2_1.0_224/1/default/1/model.json');
-            return model;
+            try {
+                const model = await tf.loadGraphModel('https://tfhub.dev/google/tfjs-model/imagenet/mobilenet_v2_100_224/classification/5/default/1/model.json');
+                return model;
+            } catch (error) {
+                console.error("Failed to load AI model:", error);
+            }
         }
 
         // Run inference on the image and get predictions
         async function runInference(model, inputElement) {
-            const image = tf.browser.fromPixels(inputElement);
-            const resizedImage = tf.image.resizeBilinear(image, [224, 224]);
-            const batchedImage = resizedImage.expandDims(0).toFloat().div(tf.scalar(127)).sub(tf.scalar(1));
-            const predictions = await model.predict(batchedImage).data();
-            return predictions;
+            try {
+                const image = tf.browser.fromPixels(inputElement);
+                const resizedImage = tf.image.resizeBilinear(image, [224, 224]);
+                const batchedImage = resizedImage.expandDims(0).toFloat().div(tf.scalar(127.5)).sub(tf.scalar(1));
+                const predictions = await model.predict(batchedImage).data();
+                return predictions;
+            } catch (error) {
+                console.error("Error during inference:", error);
+            }
         }
 
         // Handle AI predictions
         function handleAIPrediction(predictions) {
             const modelViewer = document.querySelector('model-viewer');
             const maxPrediction = Math.max(...predictions);
-            
+
             // Example: Change the model's background color based on prediction confidence
             if (maxPrediction > 0.5) {
                 modelViewer.style.backgroundColor = 'green';
@@ -77,6 +85,11 @@
                 const predictions = await runInference(model, inputElement);
                 handleAIPrediction(predictions);
             };
+
+            // Trigger the image load event manually (if the image is already cached)
+            if (inputElement.complete && inputElement.naturalHeight !== 0) {
+                inputElement.onload();
+            }
         })();
     </script>
 </body>
