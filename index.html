@@ -16,8 +16,6 @@
             display: block;
         }
 
-        
-
         #model-controls {
             display: none;
             position: absolute;
@@ -28,7 +26,6 @@
             margin: auto;
             width: 240px;
             padding: 25px;
-           
         }
         #model1{
             background-color:#FFFFFF00;
@@ -65,8 +62,7 @@
         }
 
         #transform-controls,
-        #color-controls
-         {
+        #color-controls {
             display: none;
             position: static;
             top: 20px;
@@ -98,36 +94,34 @@
             border-radius: 10px;
             text-align: center;
         }
-        #UItext{
+        #UItext {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, 150%);
             padding: 20px;
             border-radius: 10px;
-            
         }
-         #one {
+        #one {
             display: none;
-            scale: .7; 
-                }
+            scale: .7;
+        }
         #two {
             display: none;
             scale: .7;
-                }
+        }
         #three {
             display: none;
             scale: .7;
-                }
-        
+        }
     </style>
 </head>
 
 <body>
-     <div id="UItext">
-        <img id="one" src="one.png"></img>
-        <img id="two" src="two.png"></img>
-        <img id="three" src="three.png"></img>
+    <div id="UItext">
+        <img id="one" src="one.png" alt="One"></img>
+        <img id="two" src="two.png" alt="Two"></img>
+        <img id="three" src="three.png" alt="Three"></img>
     </div>
     <div id="transform-controls">
         <button id="tap-to-place">Place Model</button>
@@ -139,9 +133,9 @@
         <button id="silver">Silver</button>
     </div>
     <div id="model-controls">
-        <button id="model1"><img src="Icon.png" style="width:40px;height:40px;"></button>
-        <button id="model2"><img src="Icon_1.png" style="width:40px;height:40px;"></button>
-        <button id="model3"><img src="Icon_2.png" style="width:40px;height:40px;"></button>
+        <button id="model1"><img src="Icon.png" style="width:40px;height:40px;" alt="Model 1 Icon"></button>
+        <button id="model2"><img src="Icon_1.png" style="width:40px;height:40px;" alt="Model 2 Icon"></button>
+        <button id="model3"><img src="Icon_2.png" style="width:40px;height:40px;" alt="Model 3 Icon"></button>
     </div>
     <div id="loading-screen">Loading...</div>
     <div id="error-screen">
@@ -153,7 +147,6 @@
         import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.6.5/dist/ox-sdk.esm.js";
         import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
         import { GLTFLoader } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js";
-        import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js";
 
         class OxExperience {
             _renderer = null;
@@ -162,7 +155,6 @@
             _models = [];
             _modelIndex = 0;
             _currentModel = null;
-            _controls = null;
             _animationMixers = [];
             _clock = null;
             _carPlaced = false;
@@ -176,7 +168,6 @@
 
                     const renderCanvas = await this.initSDK();
                     this.setupRenderer(renderCanvas);
-                    this.setupControls(renderCanvas);
 
                     const textureLoader = new THREE.TextureLoader();
                     this._envMap = textureLoader.load("envmap.jpg");
@@ -259,7 +250,7 @@
 
             async initSDK() {
                 try {
-                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
+                    this.oxSDK = new OnirixSDK("YOUR_API_KEY");
                     const config = {
                         mode: OnirixSDK.TrackingMode.Surface,
                     };
@@ -317,32 +308,8 @@
                 }
             }
 
-            setupControls(renderCanvas) {
-                try {
-                    this._controls = new OrbitControls(this._camera, renderCanvas);
-                    this._controls.enableDamping = true;
-                    this._controls.dampingFactor = 0.25;
-                    this._controls.enableZoom = true;
-                    this._controls.enableRotate = true;
-                    this._controls.enablePan = false;
-
-                    renderCanvas.addEventListener('touchstart', (event) => {
-                        if (event.touches.length === 2) {
-                            this._controls.enablePan = false;
-                        }
-                    });
-
-                    renderCanvas.addEventListener('touchend', () => {
-                        this._controls.enablePan = false;
-                    });
-                } catch (err) {
-                    console.error("Error setting up controls", err);
-                }
-            }
-
             render() {
                 try {
-                    this._controls.update();
                     this._renderer.render(this._scene, this._camera);
                 } catch (err) {
                     console.error("Error during rendering", err);
@@ -440,27 +407,26 @@
                     document.querySelector("#model1").addEventListener("click", () => {
                         oxExp.switchModel(0);
                         oxExp.playAudio("v.mp3");
-                     document.getElementById('UItext').style.display = 'block';   
-                     document.getElementById('one').style.display = 'block';
-                     document.getElementById('two').style.display = 'none';
-                     document.getElementById('three').style.display = 'none';   
+                        document.getElementById('UItext').style.display = 'block';   
+                        document.getElementById('one').style.display = 'block';
+                        document.getElementById('two').style.display = 'none';
+                        document.getElementById('three').style.display = 'none';   
                     });
                     document.querySelector("#model2").addEventListener("click", () => {
                         oxExp.switchModel(1);
                         oxExp.playAudio("v.mp3");
-                    document.getElementById('UItext').style.display = 'block';      
-                    document.getElementById('one').style.display = 'none';
-                     document.getElementById('two').style.display = 'block';
-                     document.getElementById('three').style.display = 'none';
-                        
+                        document.getElementById('UItext').style.display = 'block';      
+                        document.getElementById('one').style.display = 'none';
+                        document.getElementById('two').style.display = 'block';
+                        document.getElementById('three').style.display = 'none';
                     });
                     document.querySelector("#model3").addEventListener("click", () => {
                         oxExp.switchModel(2);
                         oxExp.playAudio("v.mp3");
-                     document.getElementById('UItext').style.display = 'block';     
-                     document.getElementById('one').style.display = 'none';
-                     document.getElementById('two').style.display = 'none';
-                     document.getElementById('three').style.display = 'block';
+                        document.getElementById('UItext').style.display = 'block';     
+                        document.getElementById('one').style.display = 'none';
+                        document.getElementById('two').style.display = 'none';
+                        document.getElementById('three').style.display = 'block';
                     });
                
                 } catch (err) {
