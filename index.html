@@ -4,93 +4,362 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR and AI Integration</title>
-    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <title>Three.js and OnirixSDK Example with Sprite Rendering</title>
     <style>
         body {
             margin: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
+            overflow: hidden;
+            background: #000;
         }
 
-        model-viewer {
-            width: 100%;
-            height: 60%;
-            max-width: 600px;
-            max-height: 600px;
+        canvas {
+            display: block;
         }
 
-        img {
-            display: none; /* Hide the image element as it's used only for AI processing */
+        #model-controls {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-40%, 200%);
+            padding: 20px;
+            margin: auto;
+            width: 240px;
+            padding: 25px;
         }
+
+        #model1 {
+            background-color: #FFFFFF00;
+            border: 0;
+        }
+
+        #model2 {
+            background-color: #FFFFFF00;
+            border: 0;
+        }
+
+        #model3 {
+            background-color: #FFFFFF00;
+            border: 0;
+        }
+
+        #tap-to-place {
+            display: block;
+            margin: auto;
+            width: 200px;
+            padding: 25px;
+            background-color: #231532;
+            color: #FFFFFF;
+            border: 0;
+            border-radius: 20px;
+            box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+        }
+
+        button {
+            margin-right: 10px;
+        }
+
+        #transform-controls,
+        #color-controls {
+            display: none;
+            position: static;
+            top: 20px;
+            left: 20px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #loading-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        #error-screen {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        #UItext {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, 150%);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        #one {
+            display: none;
+            scale: .7;
+        }
+
+        #two {
+            display: none;
+            scale: .7;
+        }
+
+        #three {
+            display: none;
+            scale: .7;
+        }
+
     </style>
 </head>
 
 <body>
-    <!-- AR Model Viewer -->
-    <model-viewer src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" ar ar-modes="webxr scene-viewer quick-look" auto-rotate camera-controls></model-viewer>
+    <div id="UItext">
+        <img id="one" src="one.png"></img>
+        <img id="two" src="two.png"></img>
+        <img id="three" src="three.png"></img>
+    </div>
+    <div id="transform-controls">
+        <button id="tap-to-place">Place Model</button>
+    </div>
+    <div id="color-controls">
+        <button id="black">Black</button>
+        <button id="blue">Blue</button>
+        <button id="orange">Orange</button>
+        <button id="silver">Silver</button>
+    </div>
+    <div id="model-controls">
+        <button id="model1"><img src="Icon.png" style="width:40px;height:40px;"></button>
+        <button id="model2"><img src="Icon_1.png" style="width:40px;height:40px;"></button>
+        <button id="model3"><img src="Icon_2.png" style="width:40px;height:40px;"></button>
+    </div>
+    <div id="loading-screen">Loading...</div>
+    <div id="error-screen">
+        <div id="error-title"></div>
+        <div id="error-message"></div>
+    </div>
 
-    <!-- Image element for AI processing -->
-    <img id="input-image" src="envmap.jpg" alt="Input for AI">
+    <script type="module">
+        import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.6.5/dist/ox-sdk.esm.js";
+        import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
+        import { GLTFLoader } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js";
+        import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js";
 
-    <script>
-        // Load AI model (using a MobileNet example from TensorFlow Hub)
-        async function loadModel() {
-            try {
-                const model = await tf.loadGraphModel('https://tfhub.dev/google/tfjs-model/imagenet/mobilenet_v2_100_224/classification/5/default/1/model.json');
-                return model;
-            } catch (error) {
-                console.error("Failed to load AI model:", error);
+        class OxExperience {
+            _renderer = null;
+            _scene = null;
+            _camera = null;
+            _models = [];
+            _modelIndex = 0;
+            _currentModel = null;
+            _controls = null;
+            _animationMixers = [];
+            _clock = null;
+            _carPlaced = false;
+            _sprite = null; // Sprite reference
+
+            oxSDK;
+
+            async init() {
+                try {
+                    this._raycaster = new THREE.Raycaster();
+                    this._clock = new THREE.Clock(true);
+
+                    const renderCanvas = await this.initSDK();
+                    this.setupRenderer(renderCanvas);
+                    this.setupControls(renderCanvas);
+
+                    const textureLoader = new THREE.TextureLoader();
+                    this._envMap = textureLoader.load("envmap.jpg");
+                    this._envMap.mapping = THREE.EquirectangularReflectionMapping;
+                    this._envMap.encoding = THREE.sRGBEncoding;
+
+                    this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
+                        try {
+                            const delta = this._clock.getDelta();
+                            this._animationMixers.forEach((mixer) => mixer.update(delta));
+                            this.render();
+                        } catch (err) {
+                            console.error("Error during frame update", err);
+                        }
+                    });
+
+                    this.oxSDK.subscribe(OnirixSDK.Events.OnPose, (pose) => {
+                        try {
+                            this.updatePose(pose);
+                        } catch (err) {
+                            console.error("Error updating pose", err);
+                        }
+                    });
+
+                    this.oxSDK.subscribe(OnirixSDK.Events.OnResize, () => {
+                        this.onResize();
+                    });
+
+                    this.oxSDK.subscribe(OnirixSDK.Events.OnHitTestResult, (hitResult) => {
+                        if (this._modelPlaced && !this.isCarPlaced()) {
+                            this._models.forEach((model) => {
+                                model.position.copy(hitResult.position);
+                            });
+                            this._sprite.position.copy(hitResult.position); // Update sprite position
+                        }
+                    });
+
+                    const modelsToLoad = ["Steerad.glb", "Steeradtext.glb", "sterrad_anim.glb"];
+                    const gltfLoader = new GLTFLoader();
+                    modelsToLoad.forEach((modelUrl, index) => {
+                        gltfLoader.load(modelUrl, (gltf) => {
+                            try {
+                                const model = gltf.scene;
+                                model.traverse((child) => {
+                                    if (child.material) {
+                                        child.material.envMap = this._envMap;
+                                        child.material.needsUpdate = true;
+                                    }
+                                });
+
+                                if (gltf.animations && gltf.animations.length) {
+                                    const mixer = new THREE.AnimationMixer(model);
+                                    gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
+                                    this._animationMixers.push(mixer);
+
+                                    setTimeout(() => {
+                                        mixer.stopAllAction();
+                                    }, 50000);
+                                }
+
+                                this._models[index] = model;
+                                if (index === 0) {
+                                    this._currentModel = model;
+                                    this._modelPlaced = true;
+                                    this._scene.add(model);
+                                }
+                            } catch (err) {
+                                console.error("Error loading model", err);
+                            }
+                        }, undefined, (error) => {
+                            console.error("Model loading error", error);
+                        });
+                    });
+
+                    this.addLights();
+                    this.addSprite(); // Call method to add the sprite
+                } catch (err) {
+                    console.error("Error initializing OxExperience", err);
+                    throw err;
+                }
             }
+
+            async initSDK() {
+                try {
+                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
+                    const config = {
+                        mode: OnirixSDK.TrackingMode.Surface,
+                    };
+                    return this.oxSDK.init(config);
+                } catch (err) {
+                    console.error("Error initializing Onirix SDK", err);
+                    throw err;
+                }
+            }
+
+            setupRenderer(canvas) {
+                this._renderer = new THREE.WebGLRenderer({
+                    canvas: canvas,
+                    antialias: true,
+                    alpha: true
+                });
+                this._renderer.setSize(window.innerWidth, window.innerHeight);
+                this._renderer.outputEncoding = THREE.sRGBEncoding;
+                this._renderer.shadowMap.enabled = true;
+                this._renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+                this._scene = new THREE.Scene();
+                this._camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            }
+
+            setupControls(canvas) {
+                this._controls = new OrbitControls(this._camera, canvas);
+                this._controls.enableDamping = true;
+                this._controls.dampingFactor = 0.25;
+                this._controls.screenSpacePanning = false;
+                this._controls.maxPolarAngle = Math.PI / 2;
+                this._controls.target.set(0, 1.6, 0);
+            }
+
+            addLights() {
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+                this._scene.add(ambientLight);
+
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+                directionalLight.position.set(5, 10, 7.5);
+                directionalLight.castShadow = true;
+                directionalLight.shadow.mapSize.width = 1024;
+                directionalLight.shadow.mapSize.height = 1024;
+                directionalLight.shadow.camera.near = 0.5;
+                directionalLight.shadow.camera.far = 50;
+                this._scene.add(directionalLight);
+            }
+
+            addSprite() {
+                const spriteMap = new THREE.TextureLoader().load('sprite_image.png');
+                const spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap });
+                this._sprite = new THREE.Sprite(spriteMaterial);
+                this._sprite.scale.set(1, 1, 1); // Adjust the scale as needed
+                this._scene.add(this._sprite);
+            }
+
+            render() {
+                if (this._renderer) {
+                    this._renderer.render(this._scene, this._camera);
+                }
+            }
+
+            updatePose(pose) {
+                if (this._camera) {
+                    this._camera.matrix.fromArray(pose);
+                    this._camera.matrix.decompose(this._camera.position, this._camera.quaternion, this._camera.scale);
+                    this._camera.updateMatrixWorld(true);
+                }
+            }
+
+            onResize() {
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+
+                if (this._renderer && this._camera) {
+                    this._renderer.setSize(width, height);
+                    this._camera.aspect = width / height;
+                    this._camera.updateProjectionMatrix();
+                }
+            }
+
+            isCarPlaced() {
+                return this._carPlaced;
+            }
+
         }
 
-        // Run inference on the image and get predictions
-        async function runInference(model, inputElement) {
-            try {
-                const image = tf.browser.fromPixels(inputElement);
-                const resizedImage = tf.image.resizeBilinear(image, [224, 224]);
-                const batchedImage = resizedImage.expandDims(0).toFloat().div(tf.scalar(127.5)).sub(tf.scalar(1));
-                const predictions = await model.predict(batchedImage).data();
-                return predictions;
-            } catch (error) {
-                console.error("Error during inference:", error);
-            }
-        }
-
-        // Handle AI predictions
-        function handleAIPrediction(predictions) {
-            const modelViewer = document.querySelector('model-viewer');
-            const maxPrediction = Math.max(...predictions);
-
-            // Example: Change the model's background color based on prediction confidence
-            if (maxPrediction > 0.5) {
-                modelViewer.style.backgroundColor = 'green';
-            } else {
-                modelViewer.style.backgroundColor = 'red';
-            }
-        }
-
-        // Initialize AI and AR interaction
-        (async () => {
-            const model = await loadModel();
-            const inputElement = document.getElementById('input-image');
-
-            // Run the inference when the image loads
-            inputElement.onload = async () => {
-                const predictions = await runInference(model, inputElement);
-                handleAIPrediction(predictions);
-            };
-
-            // Trigger the image load event manually (if the image is already cached)
-            if (inputElement.complete && inputElement.naturalHeight !== 0) {
-                inputElement.onload();
-            }
-        })();
+        window.addEventListener("DOMContentLoaded", () => {
+            const experience = new OxExperience();
+            experience.init().then(() => {
+                console.log("OxExperience initialized successfully");
+            }).catch((err) => {
+                console.error("Error initializing OxExperience", err);
+            });
+        });
     </script>
 </body>
 
