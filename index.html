@@ -28,17 +28,7 @@
             padding: 25px;
         }
 
-        #model1 {
-            background-color: #FFFFFF00;
-            border: 0;
-        }
-
-        #model2 {
-            background-color: #FFFFFF00;
-            border: 0;
-        }
-
-        #model3 {
+        #model1, #model2, #model3 {
             background-color: #FFFFFF00;
             border: 0;
         }
@@ -58,10 +48,6 @@
             left: 50%;
             transform: translate(-50%, -50%);
             padding: 20px;
-        }
-
-        button {
-            margin-right: 10px;
         }
 
         #transform-controls,
@@ -107,29 +93,18 @@
             border-radius: 10px;
         }
 
-        #one {
+        #one, #two, #three {
             display: none;
             scale: .7;
         }
-
-        #two {
-            display: none;
-            scale: .7;
-        }
-
-        #three {
-            display: none;
-            scale: .7;
-        }
-
     </style>
 </head>
 
 <body>
     <div id="UItext">
-        <img id="one" src="one.png"></img>
-        <img id="two" src="two.png"></img>
-        <img id="three" src="three.png"></img>
+        <img id="one" src="one.png" />
+        <img id="two" src="two.png" />
+        <img id="three" src="three.png" />
     </div>
     <div id="transform-controls">
         <button id="tap-to-place">Place Model</button>
@@ -158,50 +133,37 @@
         import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js";
 
         class OxExperience {
-            _renderer = null;
-            _scene = null;
-            _camera = null;
-            _models = [];
-            _modelIndex = 0;
-            _currentModel = null;
-            _controls = null;
-            _animationMixers = [];
-            _clock = null;
-            _carPlaced = false;
-            _sprite = null;
-
-            oxSDK;
+            constructor() {
+                this._renderer = null;
+                this._scene = null;
+                this._camera = null;
+                this._models = [];
+                this._modelIndex = 0;
+                this._currentModel = null;
+                this._controls = null;
+                this._animationMixers = [];
+                this._clock = new THREE.Clock(true);
+                this._carPlaced = false;
+                this._sprite = null;
+                this.oxSDK = null;
+            }
 
             async init() {
                 try {
                     this._raycaster = new THREE.Raycaster();
-                    this._clock = new THREE.Clock(true);
-
+                    
                     const renderCanvas = await this.initSDK();
                     this.setupRenderer(renderCanvas);
                     this.setupControls(renderCanvas);
-
-                    const textureLoader = new THREE.TextureLoader();
-                    this._envMap = textureLoader.load("envmap.jpg");
-                    this._envMap.mapping = THREE.EquirectangularReflectionMapping;
-                    this._envMap.encoding = THREE.sRGBEncoding;
+                    
+                    await this.loadModels();
 
                     this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
-                        try {
-                            const delta = this._clock.getDelta();
-                            this._animationMixers.forEach((mixer) => mixer.update(delta));
-                            this.render();
-                        } catch (err) {
-                            console.error("Error during frame update", err);
-                        }
+                        this.updateFrame();
                     });
 
                     this.oxSDK.subscribe(OnirixSDK.Events.OnPose, (pose) => {
-                        try {
-                            this.updatePose(pose);
-                        } catch (err) {
-                            console.error("Error updating pose", err);
-                        }
+                        this.updatePose(pose);
                     });
 
                     this.oxSDK.subscribe(OnirixSDK.Events.OnResize, () => {
@@ -209,56 +171,14 @@
                     });
 
                     this.oxSDK.subscribe(OnirixSDK.Events.OnHitTestResult, (hitResult) => {
-                        if (this._modelPlaced && !this.isCarPlaced()) {
-                            this._models.forEach((model) => {
-                                model.position.copy(hitResult.position);
-                            });
-                            this._sprite.position.copy(hitResult.position); // Update sprite position with hit result
-                        }
-                    });
-
-                    const modelsToLoad = ["Steerad.glb", "Steeradtext.glb", "sterrad_anim.glb"];
-                    const gltfLoader = new GLTFLoader();
-                    modelsToLoad.forEach((modelUrl, index) => {
-                        gltfLoader.load(modelUrl, (gltf) => {
-                            try {
-                                const model = gltf.scene;
-                                model.traverse((child) => {
-                                    if (child.material) {
-                                        child.material.envMap = this._envMap;
-                                        child.material.needsUpdate = true;
-                                    }
-                                });
-
-                                if (gltf.animations && gltf.animations.length) {
-                                    const mixer = new THREE.AnimationMixer(model);
-                                    gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
-                                    this._animationMixers.push(mixer);
-
-                                    setTimeout(() => {
-                                        mixer.stopAllAction();
-                                    }, 50000);
-                                }
-
-                                this._models[index] = model;
-                                if (index === 0) {
-                                    this._currentModel = model;
-                                    this._modelPlaced = true;
-                                    this._scene.add(model);
-                                }
-                            } catch (err) {
-                                console.error("Error loading model", err);
-                            }
-                        }, undefined, (error) => {
-                            console.error("Model loading error", error);
-                        });
+                        this.updateHitTest(hitResult);
                     });
 
                     this.addLights();
                     this.addSprite(); // Add sprite after lights
                 } catch (err) {
                     console.error("Error initializing OxExperience", err);
-                    throw err;
+                    this.showErrorScreen("Error", "An error occurred while initializing the experience.");
                 }
             }
 
@@ -276,35 +196,57 @@
             }
 
             setupRenderer(canvas) {
-                try {
-                    this._renderer = new THREE.WebGLRenderer({
-                        antialias: true,
-                        alpha: true,
-                        canvas,
-                    });
-                    this._renderer.outputEncoding = THREE.sRGBEncoding;
-                    this._renderer.setSize(window.innerWidth, window.innerHeight);
-                } catch (err) {
-                    console.error("Error setting up renderer", err);
-                    throw err;
-                }
+                this._renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, canvas });
+                this._renderer.outputEncoding = THREE.sRGBEncoding;
+                this._renderer.setSize(window.innerWidth, window.innerHeight);
             }
 
             setupControls(canvas) {
-                try {
-                    this._camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 1000);
-                    this._camera.position.set(0, 0, 3);
-                    this._controls = new OrbitControls(this._camera, canvas);
-                } catch (err) {
-                    console.error("Error setting up controls", err);
-                    throw err;
+                this._camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 1000);
+                this._camera.position.set(0, 0, 3);
+                this._controls = new OrbitControls(this._camera, canvas);
+            }
+
+            async loadModels() {
+                const modelsToLoad = ["Steerad.glb", "Steeradtext.glb", "sterrad_anim.glb"];
+                const gltfLoader = new GLTFLoader();
+                
+                for (let i = 0; i < modelsToLoad.length; i++) {
+                    try {
+                        const gltf = await gltfLoader.loadAsync(modelsToLoad[i]);
+                        const model = gltf.scene;
+
+                        model.traverse((child) => {
+                            if (child.material) {
+                                child.material.envMap = this._envMap;
+                                child.material.needsUpdate = true;
+                            }
+                        });
+
+                        if (gltf.animations && gltf.animations.length) {
+                            const mixer = new THREE.AnimationMixer(model);
+                            gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
+                            this._animationMixers.push(mixer);
+                        }
+
+                        this._models.push(model);
+
+                        if (i === 0) {
+                            this._currentModel = model;
+                            this._modelPlaced = true;
+                            this._scene.add(model);
+                        }
+
+                    } catch (err) {
+                        console.error(`Error loading model ${modelsToLoad[i]}`, err);
+                    }
                 }
             }
 
-            render() {
-                if (this._renderer && this._scene && this._camera) {
-                    this._renderer.render(this._scene, this._camera);
-                }
+            updateFrame() {
+                const delta = this._clock.getDelta();
+                this._animationMixers.forEach((mixer) => mixer.update(delta));
+                this.render();
             }
 
             updatePose(pose) {
@@ -324,32 +266,43 @@
                 }
             }
 
-            addLights() {
-                try {
-                    const ambientLight = new THREE.AmbientLight(0xffffff, 1.1);
-                    this._scene.add(ambientLight);
-
-                    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-                    directionalLight.position.set(1, 1, 1).normalize();
-                    this._scene.add(directionalLight);
-                } catch (err) {
-                    console.error("Error adding lights", err);
-                    throw err;
+            updateHitTest(hitResult) {
+                if (this._modelPlaced && !this.isCarPlaced()) {
+                    this._models.forEach((model) => {
+                        model.position.copy(hitResult.position);
+                    });
+                    this._sprite.position.copy(hitResult.position); // Update sprite position with hit result
                 }
             }
 
+            addLights() {
+                const ambientLight = new THREE.AmbientLight(0xffffff, 1.1);
+                this._scene.add(ambientLight);
+
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(1, 1, 1).normalize();
+                this._scene.add(directionalLight);
+            }
+
             addSprite() {
-                try {
-                    const textureLoader = new THREE.TextureLoader();
-                    const spriteMap = textureLoader.load("4 (1).png");
-                    const spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap });
-                    this._sprite = new THREE.Sprite(spriteMaterial);
-                    this._sprite.scale.set(1, 1, 1); // Adjust size as needed
-                    this._scene.add(this._sprite);
-                } catch (err) {
-                    console.error("Error adding sprite", err);
-                    throw err;
+                const textureLoader = new THREE.TextureLoader();
+                const spriteMap = textureLoader.load("path_to_your_sprite_image.png");
+                const spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap });
+                this._sprite = new THREE.Sprite(spriteMaterial);
+                this._sprite.scale.set(1, 1, 1); // Adjust size as needed
+                this._scene.add(this._sprite);
+            }
+
+            render() {
+                if (this._renderer && this._scene && this._camera) {
+                    this._renderer.render(this._scene, this._camera);
                 }
+            }
+
+            showErrorScreen(title, message) {
+                document.getElementById("error-title").innerText = title;
+                document.getElementById("error-message").innerText = message;
+                document.getElementById("error-screen").style.display = "block";
             }
 
             isCarPlaced() {
@@ -360,11 +313,8 @@
         window.OxExperience = new OxExperience();
         window.OxExperience.init().catch((err) => {
             console.error("Error initializing experience", err);
-            document.getElementById("error-title").innerText = "Error";
-            document.getElementById("error-message").innerText = "An error occurred while initializing the experience.";
-            document.getElementById("error-screen").style.display = "block";
+            window.OxExperience.showErrorScreen("Error", "An error occurred while initializing the experience.");
         });
-
     </script>
 </body>
 
