@@ -266,7 +266,7 @@
             async initSDK() {
                 try {
                     this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6NDk5MiwiaWF0IjoxNjg1MjU0NzQ1fQ.EcJHK9SXTkACDna--viyMwpTuMHxy4TH2nGThVwoXLU", {
-                        mode: OnirixSDK.SensorsModes.SIX_DOF,
+                        OnirixSDK.TrackingMode.Surface,
                         renderCanvas: document.createElement("canvas"),
                     });
                     const renderCanvas = await this.oxSDK.init();
