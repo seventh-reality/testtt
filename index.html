@@ -170,8 +170,6 @@
             _clock = null;
             _carPlaced = false;
             _scale = 0.5;
-            _raycaster = null;
-            _intersectedObject = null;
 
             oxSDK;
 
@@ -258,7 +256,6 @@
                     });
 
                     this.addLights();
-                    this.setupTouchEvents(renderCanvas); // Set up touch events
                 } catch (err) {
                     console.error("Error initializing OxExperience", err);
                     throw err;
@@ -345,39 +342,6 @@
                     });
                 } catch (err) {
                     console.error("Error setting up controls", err);
-                }
-            }
-
-            setupTouchEvents(renderCanvas) {
-                renderCanvas.addEventListener('touchstart', (event) => {
-                    const touch = event.touches[0];
-                    this.handleTouch(touch);
-                });
-            }
-
-            handleTouch(touch) {
-                const rect = this._renderer.domElement.getBoundingClientRect();
-                const x = (touch.clientX - rect.left) / rect.width * 2 - 1;
-                const y = - (touch.clientY - rect.top) / rect.height * 2 + 1;
-                
-                this._raycaster.setFromCamera(new THREE.Vector2(x, y), this._camera);
-
-                const intersects = this._raycaster.intersectObjects(this._scene.children);
-
-                if (intersects.length > 0) {
-                    const intersected = intersects[0].object;
-                    console.log('Touched model:', intersected);
-
-                    // Handle the touch event on the model here
-                    // For example, switch model or interact with it
-                    if (this._currentModel && intersected === this._currentModel) {
-                        // Example: Trigger some action on the current model
-                        this._currentModel.traverse((child) => {
-                            if (child.material) {
-                                child.material.color.set(0xff0000); // Change color on touch
-                            }
-                        });
-                    }
                 }
             }
 
