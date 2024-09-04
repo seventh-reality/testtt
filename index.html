@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,9 +15,143 @@
         canvas {
             display: block;
         }
+
+        #model-controls {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-40%, 200%);
+            padding: 20px;
+            margin: auto;
+            width: 240px;
+            padding: 25px;
+        }
+
+        #model1, #model2, #model3 {
+            background-color: #FFFFFF00;
+            border: 0;
+        }
+
+        #tap-to-place {
+            display: block;
+            margin: auto;
+            width: 200px;
+            padding: 25px;
+            background-color: #231532;
+            color: #FFFFFF;
+            border: 0;
+            border-radius: 20px;
+            box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+        }
+
+        button {
+            margin-right: 10px;
+        }
+
+        #transform-controls, #color-controls {
+            display: none;
+            position: static;
+            top: 20px;
+            left: 20px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #loading-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        #error-screen {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        #UItext {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, 150%);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        #one, #two, #three {
+            display: none;
+            scale: .7;
+        }
+
+        #scale-controls { 
+            display: none;
+            position: absolute;
+            top: 20px;
+            right: 20px;  
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #scale-controls button {
+            background-color: #231532;
+            color: #FFFFFF;
+            border: 0;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 5px;
+            box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
+        }
     </style>
 </head>
+
 <body>
+    <div id="UItext">
+        <img id="one" src="one.png"></img>
+        <img id="two" src="two.png"></img>
+        <img id="three" src="three.png"></img>
+    </div>
+    <div id="transform-controls">
+        <button id="tap-to-place">Place Model</button>
+    </div>
+    <div id="color-controls">
+        <button id="black">Black</button>
+        <button id="blue">Blue</button>
+        <button id="orange">Orange</button>
+        <button id="silver">Silver</button>
+    </div>
+    <div id="model-controls">
+        <button id="model1"><img src="Icon.png" style="width:40px;height:40px;"></button>
+        <button id="model2"><img src="Icon_1.png" style="width:40px;height:40px;"></button>
+        <button id="model3"><img src="Icon_2.png" style="width:40px;height:40px;"></button>
+    </div>
+    <div id="scale-controls">
+        <button id="scale-in">Increase Scale</button>
+        <button id="scale-out">Decrease Scale</button>
+    </div>
+    <div id="loading-screen">Loading...</div>
+    <div id="error-screen">
+        <div id="error-title"></div>
+        <div id="error-message"></div>
+    </div>
+
     <script type="module">
         import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.6.5/dist/ox-sdk.esm.js";
         import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
@@ -36,11 +171,10 @@
             _carPlaced = false;
             _scale = 0.5;
 
+            oxSDK;
             sprite = null;
             spriteMovementSpeed = 0.02;
             spriteRotationSpeed = 0.01;
-
-            oxSDK;
 
             async init() {
                 try {
@@ -60,7 +194,7 @@
                         try {
                             const delta = this._clock.getDelta();
                             this._animationMixers.forEach((mixer) => mixer.update(delta));
-                            this.animateSprite();
+                            this.animateSprite(); // Add sprite animation here
                             this.render();
                         } catch (err) {
                             console.error("Error during frame update", err);
@@ -126,7 +260,7 @@
                     });
 
                     this.addLights();
-                    this.createSprite();
+                    this.createSprite(); // Create a sprite here
 
                 } catch (err) {
                     console.error("Error initializing OxExperience", err);
@@ -135,55 +269,85 @@
             }
 
             async initSDK() {
-                this.oxSDK = new OnirixSDK({
-                    // Your OnirixSDK configuration here
-                });
-
-                await this.oxSDK.init();
-                return this.oxSDK.getRenderCanvas();
+                try {
+                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiY2M0NzNhOWItNzg2Ni00MjFkLTgwYTQtMDdmM2FhZTY4OWYwIiwiaWF0IjoxNjkwNjQxNTM0LCJleHBpcmVtZSI6MjAxNjk4ODQ1MzQ5OTg1OTI4NzU5In0.rwy_iXBGnSyWxDa_CEqCXS68KwjkLDTqPp1d1THTlK4");
+                    return this.oxSDK.init({
+                        debug: false,
+                        nativeUI: false
+                    });
+                } catch (err) {
+                    console.error("Error initializing OnirixSDK", err);
+                    throw err;
+                }
             }
 
             setupRenderer(renderCanvas) {
-                this._renderer = new THREE.WebGLRenderer({ canvas: renderCanvas });
-                this._renderer.setSize(window.innerWidth, window.innerHeight);
-                this._renderer.setPixelRatio(window.devicePixelRatio);
+                try {
+                    this._renderer = new THREE.WebGLRenderer({ canvas: renderCanvas });
+                    this._renderer.setPixelRatio(window.devicePixelRatio);
+                    this._renderer.setSize(window.innerWidth, window.innerHeight);
+                    this._renderer.outputEncoding = THREE.sRGBEncoding;
+                } catch (err) {
+                    console.error("Error setting up renderer", err);
+                }
             }
 
             setupControls(renderCanvas) {
-                this._camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-                this._camera.position.z = 5;
-
-                this._scene = new THREE.Scene();
-
-                this._controls = new OrbitControls(this._camera, this._renderer.domElement);
-                this._controls.enableDamping = true;
-                this._controls.dampingFactor = 0.25;
-                this._controls.enableZoom = false;
+                try {
+                    this._scene = new THREE.Scene();
+                    this._camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                    this._camera.position.set(0, 1.6, 3);
+                    this._controls = new OrbitControls(this._camera, renderCanvas);
+                    this._controls.enableDamping = true;
+                    this._controls.dampingFactor = 0.25;
+                } catch (err) {
+                    console.error("Error setting up controls", err);
+                }
             }
 
-            render() {
+            addLights() {
                 try {
-                    this._controls.update();
-                    this._renderer.render(this._scene, this._camera);
+                    const ambientLight = new THREE.AmbientLight(0x404040, 1);
+                    this._scene.add(ambientLight);
+
+                    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+                    directionalLight.position.set(5, 5, 5);
+                    this._scene.add(directionalLight);
                 } catch (err) {
-                    console.error("Error during rendering", err);
+                    console.error("Error adding lights", err);
+                }
+            }
+
+            createSprite() {
+                try {
+                    const textureLoader = new THREE.TextureLoader();
+                    const texture = textureLoader.load('sprite.png'); // Replace with your sprite texture URL
+                    const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+                    this.sprite = new THREE.Sprite(spriteMaterial);
+                    this.sprite.scale.set(1, 1, 1); // Adjust size as needed
+                    this._scene.add(this.sprite);
+                } catch (err) {
+                    console.error("Error creating sprite", err);
                 }
             }
 
             animateSprite() {
                 if (this.sprite) {
-                    this.sprite.position.x += this.spriteMovementSpeed;
+                    // Rotate the sprite
                     this.sprite.rotation.z += this.spriteRotationSpeed;
 
-                    // Bounce back when reaching certain limits
-                    if (this.sprite.position.x > 5 || this.sprite.position.x < -5) {
-                        this.spriteMovementSpeed = -this.spriteMovementSpeed;
+                    // Move the sprite
+                    this.sprite.position.x += this.spriteMovementSpeed;
+                    
+                    // Optionally, bounce the sprite back and forth
+                    if (this.sprite.position.x > 2 || this.sprite.position.x < -2) {
+                        this.spriteMovementSpeed *= -1;
                     }
                 }
             }
 
             updatePose(pose) {
-                // Your existing updatePose logic here
+                // Update pose-related functionality
             }
 
             onResize() {
@@ -192,39 +356,19 @@
                 this._renderer.setSize(window.innerWidth, window.innerHeight);
             }
 
-            addLights() {
-                const ambientLight = new THREE.AmbientLight(0x404040); // soft white light
-                this._scene.add(ambientLight);
-
-                const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-                pointLight.position.set(10, 10, 10);
-                this._scene.add(pointLight);
+            render() {
+                this._renderer.render(this._scene, this._camera);
             }
 
-            createSprite() {
-                const spriteTexture = new THREE.TextureLoader().load('https://threejs.org/examples/textures/sprites/disc.png'); // Use a sample sprite texture
-                const spriteMaterial = new THREE.SpriteMaterial({ map: spriteTexture });
-                this.sprite = new THREE.Sprite(spriteMaterial);
-
-                this.sprite.position.set(0, 0, -10);
-                this.sprite.scale.set(1, 1, 1); // Adjust size if needed
-
-                this._scene.add(this.sprite);
+            isCarPlaced() {
+                return this._carPlaced;
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const oxExp = new OxExperience();
-            oxExp.init()
-                .then(() => {
-                    // Your additional initialization code here, if needed
-                })
-                .catch((error) => {
-                    console.error("Error initializing Onirix SDK", error);
-                });
+        const oxExperience = new OxExperience();
+        oxExperience.init();
 
-            window.addEventListener('resize', () => oxExp.onResize());
-        });
     </script>
 </body>
+
 </html>
