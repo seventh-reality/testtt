@@ -22,6 +22,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-40%, 200%);
+            padding: 20px;
+            margin: auto;
             width: 240px;
             padding: 25px;
         }
@@ -45,6 +47,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            padding: 20px;
         }
 
         button {
@@ -98,11 +101,11 @@
             scale: .7;
         }
 
-        #scale-controls {
+        #scale-controls { 
             display: none;
             position: absolute;
             top: 20px;
-            right: 20px;
+            right: 20px;  
             flex-direction: column;
             align-items: center;
         }
@@ -167,7 +170,7 @@
             _clock = null;
             _carPlaced = false;
             _scale = 0.5;
-            _sprite = null;
+
             oxSDK;
 
             async init() {
@@ -253,7 +256,7 @@
                     });
 
                     this.addLights();
-                    this.addSprite(); // Add the sprite to the scene
+                    this.addSprite();
                 } catch (err) {
                     console.error("Error initializing OxExperience", err);
                     throw err;
@@ -262,109 +265,116 @@
 
             async initSDK() {
                 try {
-                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTY4NDE0NzU0MywiZXhwIjoxNzA5MDY3NTQzfQ.r6jQ7DCyybNJcQw9nEJXnGbJkmRaTXt4qjXtqaos0hQ");
-                    const session = await this.oxSDK.createSession({
-                        mode: OnirixSDK.SessionMode.AR,
-                        estimatedHeight: true,
-                        requiredFeatures: [],
+                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6NDk5MiwiaWF0IjoxNjg1MjU0NzQ1fQ.EcJHK9SXTkACDna--viyMwpTuMHxy4TH2nGThVwoXLU", {
+                        mode: OnirixSDK.SensorsModes.SIX_DOF,
+                        renderCanvas: document.createElement("canvas"),
                     });
-
-                    const renderCanvas = session.renderCanvas;
+                    const renderCanvas = await this.oxSDK.init();
                     return renderCanvas;
                 } catch (err) {
-                    console.error("Error initializing Onirix SDK", err);
+                    console.error("Error initializing SDK", err);
                     throw err;
                 }
             }
 
             setupRenderer(renderCanvas) {
-                this._renderer = new THREE.WebGLRenderer({
-                    alpha: true,
-                    antialias: true,
-                    canvas: renderCanvas,
-                });
-
-                this._renderer.setSize(window.innerWidth, window.innerHeight);
-                this._renderer.setPixelRatio(window.devicePixelRatio);
-                this._renderer.outputEncoding = THREE.sRGBEncoding;
-
-                this._scene = new THREE.Scene();
-                this._camera = new THREE.PerspectiveCamera(
-                    45,
-                    window.innerWidth / window.innerHeight,
-                    0.1,
-                    1000
-                );
+                try {
+                    this._renderer = new THREE.WebGLRenderer({
+                        antialias: true,
+                        alpha: true,
+                        canvas: renderCanvas,
+                    });
+                    this._renderer.setSize(window.innerWidth, window.innerHeight);
+                    this._renderer.outputEncoding = THREE.sRGBEncoding;
+                    this._scene = new THREE.Scene();
+                    this._camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+                } catch (err) {
+                    console.error("Error setting up renderer", err);
+                    throw err;
+                }
             }
 
             setupControls(renderCanvas) {
-                this._controls = new OrbitControls(this._camera, renderCanvas);
-                this._controls.enableDamping = true;
-                this._controls.dampingFactor = 0.25;
-                this._controls.screenSpacePanning = false;
-                this._controls.minDistance = 0.5;
-                this._controls.maxDistance = 100;
-                this._controls.maxPolarAngle = Math.PI / 2;
-            }
-
-            addLights() {
-                const ambientLight = new THREE.AmbientLight(0x404040);
-                this._scene.add(ambientLight);
-
-                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-                directionalLight.position.set(1, 1, 0);
-                this._scene.add(directionalLight);
-            }
-
-            addSprite() {
-                const textureLoader = new THREE.TextureLoader();
-                const spriteMaterial = new THREE.SpriteMaterial({
-                    map: textureLoader.load('4 (1).png'), // Provide the path to your sprite image here
-                    color: 0xffffff,
-                    transparent: true,
-                    opacity: 1,
-                });
-
-                this._sprite = new THREE.Sprite(spriteMaterial);
-                this._sprite.scale.set(1, 1, 1);
-                this._sprite.position.set(0, 0, 0); // Position at the center initially
-
-                this._scene.add(this._sprite);
+                try {
+                    this._controls = new OrbitControls(this._camera, renderCanvas);
+                    this._controls.enableZoom = false;
+                } catch (err) {
+                    console.error("Error setting up controls", err);
+                    throw err;
+                }
             }
 
             updatePose(pose) {
-                this._camera.position.set(pose.position.x, pose.position.y, pose.position.z);
-                this._camera.quaternion.set(
-                    pose.orientation.x,
-                    pose.orientation.y,
-                    pose.orientation.z,
-                    pose.orientation.w
-                );
-                this._camera.updateMatrixWorld(true);
+                try {
+                    this._camera.position.copy(pose.position);
+                    this._camera.quaternion.copy(pose.rotation);
+                } catch (err) {
+                    console.error("Error updating pose", err);
+                    throw err;
+                }
             }
 
             render() {
-                this._controls.update();
-                this._renderer.render(this._scene, this._camera);
+                try {
+                    this._renderer.render(this._scene, this._camera);
+                } catch (err) {
+                    console.error("Error rendering", err);
+                    throw err;
+                }
             }
 
             onResize() {
-                this._camera.aspect = window.innerWidth / window.innerHeight;
-                this._camera.updateProjectionMatrix();
-                this._renderer.setSize(window.innerWidth, window.innerHeight);
+                try {
+                    this._camera.aspect = window.innerWidth / window.innerHeight;
+                    this._camera.updateProjectionMatrix();
+                    this._renderer.setSize(window.innerWidth, window.innerHeight);
+                } catch (err) {
+                    console.error("Error during resize", err);
+                    throw err;
+                }
+            }
+
+            addLights() {
+                try {
+                    const ambientLight = new THREE.AmbientLight(0x404040, 3);
+                    this._scene.add(ambientLight);
+
+                    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+                    directionalLight.position.set(1, 1, 1).normalize();
+                    this._scene.add(directionalLight);
+                } catch (err) {
+                    console.error("Error adding lights", err);
+                    throw err;
+                }
+            }
+
+            addSprite() {
+                try {
+                    const spriteMap = new THREE.TextureLoader().load("4 (1).png"); // Replace with actual path to your sprite image
+                    const spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, color: 0xffffff });
+                    const sprite = new THREE.Sprite(spriteMaterial);
+                    sprite.scale.set(1, 1, 1); // Adjust size as necessary
+                    sprite.position.set(0, 1, 0); // Adjust position as necessary
+                    this._scene.add(sprite);
+                } catch (err) {
+                    console.error("Error adding sprite", err);
+                    throw err;
+                }
             }
 
             isCarPlaced() {
                 return this._carPlaced;
             }
-
-            toggleCarPlaced() {
-                this._carPlaced = !this._carPlaced;
-            }
         }
 
-        const experience = new OxExperience();
-        experience.init();
+        const oxExperience = new OxExperience();
+        oxExperience.init().catch((err) => {
+            console.error("Error initializing experience", err);
+            document.getElementById("loading-screen").style.display = "none";
+            document.getElementById("error-screen").style.display = "block";
+            document.getElementById("error-title").innerText = "Initialization Error";
+            document.getElementById("error-message").innerText = err.message;
+        });
     </script>
 </body>
 
