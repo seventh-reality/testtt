@@ -256,6 +256,8 @@
                     });
 
                     this.addLights();
+                    this.createSprite(); // Create a sprite here
+
                 } catch (err) {
                     console.error("Error initializing OxExperience", err);
                     throw err;
@@ -409,6 +411,19 @@
                     this._currentModel.scale.set(scale, scale, scale);
                 }
             }
+
+            createSprite() {
+                // Create a sprite with a texture
+                const spriteTexture = new THREE.TextureLoader().load('4 (1).png');
+                const spriteMaterial = new THREE.SpriteMaterial({ map: spriteTexture });
+                const sprite = new THREE.Sprite(spriteMaterial);
+                
+                // Set sprite position
+                sprite.position.set(0, 0, -5);
+                sprite.scale.set(2, 2, 1); // Adjust size if needed
+
+                this._scene.add(sprite);
+            }
         }
 
         class OxExperienceUI {
@@ -519,5 +534,4 @@
             });
     </script>
 </body>
-
 </html>
