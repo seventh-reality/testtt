@@ -170,6 +170,7 @@
             _clock = null;
             _carPlaced = false;
             _scale = 0.5;
+            _sprite = null;
 
             oxSDK;
 
@@ -210,7 +211,7 @@
                     });
 
                     this.oxSDK.subscribe(OnirixSDK.Events.OnHitTestResult, (hitResult) => {
-                        if (this._carPlaced) {
+                        if (this._modelPlaced && !this.isCarPlaced()) {
                             this._models.forEach((model) => {
                                 model.position.copy(hitResult.position);
                             });
@@ -244,7 +245,7 @@
                                 this._models[index] = model;
                                 if (index === 0) {
                                     this._currentModel = model;
-                                    this._carPlaced = true;
+                                    this._modelPlaced = true;
                                     this._scene.add(model);
                                 }
                             } catch (err) {
@@ -266,106 +267,54 @@
 
             async initSDK() {
                 try {
-                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k"); // Replace with your API key
-                    const config = {
-                        mode: OnirixSDK.TrackingMode.Surface,
-                    };
-                    await this.oxSDK.init(config);
+                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjksInJlYWxtSWQiOjEzMjk2LCJpYXQiOjE2OTM3MDY0OTQsImV4cCI6MTY5NDkwNjQ5NH0.vPjGFxdtYcnNFuPzJEdkIVpRZrL9-UzAObxqQY0AP_g", {
+                        mode: OnirixSDK.RunModes.AR,
+                        modeConfigurations: {
+                            AR: {
+                                captureVideo: true,
+                            }
+                        }
+                    });
 
-                    const canvas = this.oxSDK.getCanvas();
-                    if (!canvas) {
-                        throw new Error("Canvas not available");
-                    }
+                    const canvas = await this.oxSDK.init();
+                    document.body.appendChild(canvas);
                     return canvas;
                 } catch (err) {
-                    console.error("Error initializing SDK", err);
+                    console.error("Error initializing OnirixSDK", err);
+                    document.getElementById('error-screen').style.display = 'block';
+                    document.getElementById('error-title').textContent = "SDK Initialization Error";
+                    document.getElementById('error-message').textContent = err.message;
                     throw err;
                 }
             }
 
-            setupRenderer(canvas) {
+            setupRenderer(renderCanvas) {
                 try {
                     this._renderer = new THREE.WebGLRenderer({
-                        canvas: canvas,
-                        alpha: true,
+                        canvas: renderCanvas,
+                        antialias: true,
+                        alpha: true
                     });
                     this._renderer.setPixelRatio(window.devicePixelRatio);
                     this._renderer.setSize(window.innerWidth, window.innerHeight);
                     this._renderer.outputEncoding = THREE.sRGBEncoding;
+
+                    this._scene = new THREE.Scene();
+                    this._camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
                 } catch (err) {
                     console.error("Error setting up renderer", err);
                     throw err;
                 }
             }
 
-            setupControls(canvas) {
+            setupControls(renderCanvas) {
                 try {
-                    this._scene = new THREE.Scene();
-                    this._camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-                    this._camera.position.z = 5;
-                    this._controls = new OrbitControls(this._camera, canvas);
-                    this._controls.enableDamping = true;
-                    this._controls.dampingFactor = 0.25;
+                    this._controls = new OrbitControls(this._camera, renderCanvas);
+                    this._controls.target.set(0, 1.5, 0);
+                    this._controls.enablePan = true;
+                    this._controls.enableZoom = true;
                 } catch (err) {
                     console.error("Error setting up controls", err);
-                    throw err;
-                }
-            }
-
-            addLights() {
-                try {
-                    const ambientLight = new THREE.AmbientLight(0x404040);
-                    this._scene.add(ambientLight);
-
-                    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-                    directionalLight.position.set(1, 1, 1).normalize();
-                    this._scene.add(directionalLight);
-                } catch (err) {
-                    console.error("Error adding lights", err);
-                    throw err;
-                }
-            }
-
-            createSprite() {
-                try {
-                    const canvas = document.createElement("canvas");
-                    canvas.width = 256;
-                    canvas.height = 256;
-                    const context = canvas.getContext("2d");
-                    const sprite = new THREE.Sprite();
-                    const texture = new THREE.CanvasTexture(canvas);
-                    sprite.material = new THREE.SpriteMaterial({ map: texture });
-
-                    this._scene.add(sprite);
-                } catch (err) {
-                    console.error("Error creating sprite", err);
-                    throw err;
-                }
-            }
-
-            updatePose(pose) {
-                try {
-                    if (!this._carPlaced) {
-                        this._models.forEach((model) => {
-                            model.position.copy(pose.position);
-                        });
-                        this._carPlaced = true;
-                    }
-                } catch (err) {
-                    console.error("Error updating pose", err);
-                    throw err;
-                }
-            }
-
-            onResize() {
-                try {
-                    const width = window.innerWidth;
-                    const height = window.innerHeight;
-                    this._camera.aspect = width / height;
-                    this._camera.updateProjectionMatrix();
-                    this._renderer.setSize(width, height);
-                } catch (err) {
-                    console.error("Error handling resize", err);
                     throw err;
                 }
             }
@@ -374,24 +323,78 @@
                 try {
                     this._renderer.render(this._scene, this._camera);
                 } catch (err) {
-                    console.error("Error during render", err);
-                    throw err;
+                    console.error("Error rendering scene", err);
                 }
+            }
+
+            updatePose(pose) {
+                try {
+                    this._camera.position.copy(pose.position);
+                    this._camera.quaternion.copy(pose.rotation);
+                } catch (err) {
+                    console.error("Error updating pose", err);
+                }
+            }
+
+            onResize() {
+                try {
+                    this._camera.aspect = window.innerWidth / window.innerHeight;
+                    this._camera.updateProjectionMatrix();
+                    this._renderer.setSize(window.innerWidth, window.innerHeight);
+                } catch (err) {
+                    console.error("Error resizing", err);
+                }
+            }
+
+            addLights() {
+                try {
+                    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+                    directionalLight.position.set(5, 10, 7.5).normalize();
+                    this._scene.add(directionalLight);
+
+                    const ambientLight = new THREE.AmbientLight(0x404040);
+                    this._scene.add(ambientLight);
+                } catch (err) {
+                    console.error("Error adding lights", err);
+                }
+            }
+
+            createSprite() {
+                try {
+                    const spriteMap = new THREE.TextureLoader().load("4 (1).png");
+                    const spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap });
+                    this._sprite = new THREE.Sprite(spriteMaterial);
+                    this._sprite.position.set(0, 1.5, -1); // Example position
+                    this._scene.add(this._sprite);
+
+                    // Add touch event to remove the sprite
+                    const canvas = this._renderer.domElement;
+                    canvas.addEventListener('touchstart', (event) => {
+                        const touch = event.touches[0];
+                        const mouse = new THREE.Vector2();
+                        mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+                        mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+
+                        this._raycaster.setFromCamera(mouse, this._camera);
+                        const intersects = this._raycaster.intersectObject(this._sprite);
+
+                        if (intersects.length > 0) {
+                            this._scene.remove(this._sprite);
+                            this._sprite = null; // Optionally nullify the reference
+                        }
+                    }, { passive: true });
+                } catch (err) {
+                    console.error("Error creating sprite", err);
+                }
+            }
+
+            isCarPlaced() {
+                return this._carPlaced;
             }
         }
 
-        // Initialize and start experience
-        window.onload = async () => {
-            try {
-                const experience = new OxExperience();
-                await experience.init();
-            } catch (err) {
-                document.getElementById('error-title').textContent = "Initialization Error";
-                document.getElementById('error-message').textContent = err.message;
-                document.getElementById('error-screen').style.display = 'block';
-                console.error("Initialization error:", err);
-            }
-        };
+        const oxExperience = new OxExperience();
+        oxExperience.init();
     </script>
 </body>
 
