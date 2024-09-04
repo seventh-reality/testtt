@@ -170,6 +170,7 @@
             _clock = null;
             _carPlaced = false;
             _scale = 0.5;
+            _audio = new Audio("v.mp3"); // Audio file for the models
 
             oxSDK;
 
@@ -234,7 +235,7 @@
                                 if (gltf.animations && gltf.animations.length) {
                                     const mixer = new THREE.AnimationMixer(model);
                                     gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
-                                    this._animationMixers[index] = mixer;
+                                    this._animationMixers.push(mixer);
 
                                     setTimeout(() => {
                                         mixer.stopAllAction();
@@ -264,121 +265,127 @@
 
             async initSDK() {
                 try {
-                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTY4OTQ4MTE4OX0.Rp69Py4av61aWB47syWcC1fPEJKJeo6fwo92E9Q4X5I", {
-                        mode: OnirixSDK.Mode.AR,
-                    });
-
-                    await this.oxSDK.connect();
-
-                    const canvas = document.createElement("canvas");
-                    document.body.appendChild(canvas);
-                    return canvas;
+                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGGOsTgeMS51x_PGbCn5HrVm2Ye8GFrbKpEA", "YOUR_SCENE_ID");
+                    const renderCanvas = await this.oxSDK.init({ cameraHeight: 1.5 });
+                    return renderCanvas;
                 } catch (err) {
-                    console.error("Error initializing SDK", err);
+                    console.error("Error initializing OnirixSDK", err);
                     throw err;
                 }
             }
 
             setupRenderer(renderCanvas) {
-                this._renderer = new THREE.WebGLRenderer({
-                    canvas: renderCanvas,
-                    antialias: true,
-                    alpha: true,
-                });
-                this._renderer.setSize(window.innerWidth, window.innerHeight);
-                this._renderer.setPixelRatio(window.devicePixelRatio);
-                this._renderer.outputEncoding = THREE.sRGBEncoding;
-
-                this._scene = new THREE.Scene();
-                this._scene.environment = this._envMap;
-
-                this._camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 1000);
-                this._camera.position.set(0, 1.6, 3);
+                try {
+                    this._scene = new THREE.Scene();
+                    this._camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
+                    this._renderer = new THREE.WebGLRenderer({ canvas: renderCanvas, antialias: true, alpha: true });
+                    this._renderer.setSize(window.innerWidth, window.innerHeight);
+                    this._renderer.outputEncoding = THREE.sRGBEncoding;
+                } catch (err) {
+                    console.error("Error setting up renderer", err);
+                    throw err;
+                }
             }
 
             setupControls(renderCanvas) {
-                this._controls = new OrbitControls(this._camera, renderCanvas);
-                this._controls.enableZoom = true;
-                this._controls.enablePan = false;
-            }
-
-            updatePose(pose) {
-                const { position, rotation } = pose;
-                this._camera.position.copy(position);
-                this._camera.quaternion.copy(rotation);
-            }
-
-            onResize() {
-                this._camera.aspect = window.innerWidth / window.innerHeight;
-                this._camera.updateProjectionMatrix();
-                this._renderer.setSize(window.innerWidth, window.innerHeight);
-            }
-
-            render() {
-                this._renderer.render(this._scene, this._camera);
+                try {
+                    this._controls = new OrbitControls(this._camera, renderCanvas);
+                    this._controls.enableDamping = true;
+                    this._controls.dampingFactor = 0.25;
+                    this._controls.enableZoom = false;
+                    this._controls.enableRotate = true;
+                } catch (err) {
+                    console.error("Error setting up controls", err);
+                    throw err;
+                }
             }
 
             addLights() {
-                const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-                this._scene.add(ambientLight);
+                try {
+                    const light1 = new THREE.DirectionalLight(0xffffff, 0.6);
+                    light1.position.set(1, 1, 1).normalize();
+                    this._scene.add(light1);
 
-                const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
-                directionalLight.position.set(10, 10, 10);
-                this._scene.add(directionalLight);
+                    const light2 = new THREE.DirectionalLight(0xffffff, 0.6);
+                    light2.position.set(-1, 1, -1).normalize();
+                    this._scene.add(light2);
+
+                    const ambientLight = new THREE.AmbientLight(0x404040);
+                    this._scene.add(ambientLight);
+                } catch (err) {
+                    console.error("Error adding lights", err);
+                    throw err;
+                }
+            }
+
+            updatePose(pose) {
+                try {
+                    this._camera.position.copy(pose.position);
+                    this._camera.quaternion.copy(pose.rotation);
+                } catch (err) {
+                    console.error("Error updating pose", err);
+                }
+            }
+
+            onResize() {
+                try {
+                    this._camera.aspect = window.innerWidth / window.innerHeight;
+                    this._camera.updateProjectionMatrix();
+                    this._renderer.setSize(window.innerWidth, window.innerHeight);
+                } catch (err) {
+                    console.error("Error resizing", err);
+                }
+            }
+
+            render() {
+                try {
+                    this._renderer.render(this._scene, this._camera);
+                } catch (err) {
+                    console.error("Error rendering", err);
+                }
             }
 
             isCarPlaced() {
                 return this._carPlaced;
             }
 
-            placeCar() {
-                if (!this.isCarPlaced()) {
-                    this._carPlaced = true;
-                    this._scene.add(this._currentModel);
-                }
-            }
-
-            switchModel(index) {
-                if (index >= 0 && index < this._models.length) {
-                    if (this._currentModel) {
-                        this._scene.remove(this._currentModel);
-                    }
-
-                    this._currentModel = this._models[index];
-                    this._currentModel.position.set(0, 0, 0);
-                    this._scene.add(this._currentModel);
-
-                    const mixer = this._animationMixers[index];
-                    if (mixer) {
-                        mixer.stopAllAction();
-                        mixer.setTime(0); // Reset the animation
-                        mixer.play();
-                    }
-                }
-            }
-
-            scaleModel(amount) {
-                this._scale += amount;
-                if (this._currentModel) {
-                    this._currentModel.scale.set(this._scale, this._scale, this._scale);
-                }
+            resetAnimationAndAudio() {
+                this._animationMixers.forEach((mixer) => {
+                    mixer.stopAllAction();
+                    mixer.update(0); // Reset animation time
+                });
+                this._audio.pause();
+                this._audio.currentTime = 0; // Reset audio time
             }
         }
 
-        const oxExperience = new OxExperience();
-        oxExperience.init();
+        const experience = new OxExperience();
 
-        const model1Button = document.getElementById("model1");
-        const model2Button = document.getElementById("model2");
-        const model3Button = document.getElementById("model3");
-        const scaleInButton = document.getElementById("scale-in");
-        const scaleOutButton = document.getElementById("scale-out");
+        document.getElementById('model1').addEventListener('click', function () {
+            experience.resetAnimationAndAudio();
+            experience._scene.remove(experience._currentModel);
+            experience._currentModel = experience._models[0];
+            experience._scene.add(experience._currentModel);
+            experience._audio.play();
+        });
 
-        model1Button.addEventListener("click", () => oxExperience.switchModel(0));
-        model2Button.addEventListener("click", () => oxExperience.switchModel(1));
-        model3Button.addEventListener("click", () => oxExperience.switchModel(2));
-        scaleInButton.addEventListener("click", () => oxExperience.scaleModel(0.1));
-        scaleOutButton.addEventListener("click", () => oxExperience.scaleModel(-0.1));
+        document.getElementById('model2').addEventListener('click', function () {
+            experience.resetAnimationAndAudio();
+            experience._scene.remove(experience._currentModel);
+            experience._currentModel = experience._models[1];
+            experience._scene.add(experience._currentModel);
+            experience._audio.play();
+        });
+
+        document.getElementById('model3').addEventListener('click', function () {
+            experience.resetAnimationAndAudio();
+            experience._scene.remove(experience._currentModel);
+            experience._currentModel = experience._models[2];
+            experience._scene.add(experience._currentModel);
+            experience._audio.play();
+        });
+
+        window.addEventListener('DOMContentLoaded', () => experience.init());
     </script>
 </body>
 
