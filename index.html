@@ -111,7 +111,6 @@
                 this._clock = null;
                 this._carPlaced = false;
                 this._scale = 0.5;
-                this._sprite = null;
                 this.oxSDK = null;
                 this.apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k"; // Replace with your actual Onirix SDK API key
             }
@@ -187,8 +186,8 @@
                 this.oxSDK.subscribe(OnirixSDK.Events.OnResize, () => this.onResize());
 
                 this.oxSDK.subscribe(OnirixSDK.Events.OnHitTestResult, (hitResult) => {
-                    if (this._modelPlaced && !this.isCarPlaced()) {
-                        this._models.forEach(model => model.position.copy(hitResult.position));
+                    if (!this._carPlaced) {
+                        this._currentModel.position.copy(hitResult.position);
                     }
                 });
             }
@@ -196,13 +195,14 @@
             async loadModels() {
                 const gltfLoader = new GLTFLoader();
                 const modelUrls = ["Steerad.glb", "Steeradtext.glb", "sterrad_anim.glb"];
-                
+
                 for (let i = 0; i < modelUrls.length; i++) {
                     const modelUrl = modelUrls[i];
                     try {
                         const gltf = await gltfLoader.loadAsync(modelUrl);
                         const model = gltf.scene;
                         model.scale.set(this._scale, this._scale, this._scale);
+                        model.visible = (i === 0);
                         this._scene.add(model);
 
                         if (gltf.animations.length > 0) {
@@ -214,7 +214,6 @@
                         this._models.push(model);
                         if (i === 0) {
                             this._currentModel = model;
-                            this._modelPlaced = true;
                         }
                     } catch (err) {
                         console.error("Error loading model:", modelUrl, err);
@@ -225,10 +224,6 @@
             placeCar() {
                 this._carPlaced = true;
                 this.oxSDK.start();
-            }
-
-            isCarPlaced() {
-                return this._carPlaced;
             }
 
             changeScale(amount) {
