@@ -6,7 +6,119 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Three.js and OnirixSDK Example</title>
     <style>
-        /* Your CSS styles here */
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #model-controls {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-40%, 200%);
+            padding: 20px;
+            margin: auto;
+            width: 240px;
+            padding: 25px;
+        }
+
+        #model1, #model2, #model3 {
+            background-color: #FFFFFF00;
+            border: 0;
+        }
+
+        #tap-to-place {
+            display: block;
+            margin: auto;
+            width: 200px;
+            padding: 25px;
+            background-color: #231532;
+            color: #FFFFFF;
+            border: 0;
+            border-radius: 20px;
+            box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+        }
+
+        button {
+            margin-right: 10px;
+        }
+
+        #transform-controls, #color-controls {
+            display: none;
+            position: static;
+            top: 20px;
+            left: 20px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #loading-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        #error-screen {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        #UItext {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, 150%);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        #one, #two, #three {
+            display: none;
+            scale: .7;
+        }
+
+        #scale-controls { 
+            display: none;
+            position: absolute;
+            top: 20px;
+            right: 20px;  
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #scale-controls button {
+            background-color: #231532;
+            color: #FFFFFF;
+            border: 0;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 5px;
+            box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
+        }
     </style>
 </head>
 
@@ -134,6 +246,9 @@
                                     this._currentModel = model;
                                     this._modelPlaced = true;
                                     this._scene.add(model);
+
+                                    // Add touch event listener to toggle model visibility
+                                    this.addTouchEventToModel(model);
                                 }
                             } catch (err) {
                                 console.error("Error loading model", err);
@@ -152,79 +267,77 @@
 
             async initSDK() {
                 try {
-                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
+                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOiJjcmVhdG9yIiwiaWF0IjoxNjg4MjI1NTg3fQ.iLlc2qmnG7z3o9zdrIvGxk9u00B3YbEoAv9Ki6F80lU", {
+                        type: OnirixSDK.Types.AUGMENTED_REALITY
+                    });
 
-                    // Try initializing without a specific pipeline if it's not available
-                    return await this.oxSDK.init();
+                    const renderCanvas = await this.oxSDK.start();
+                    return renderCanvas;
                 } catch (err) {
-                    console.error("Error initializing OnirixSDK", err);
+                    console.error("Error initializing SDK", err);
                     throw err;
                 }
             }
 
-            setupRenderer(canvas) {
-                try {
-                    this._renderer = new THREE.WebGLRenderer({
-                        antialias: true,
-                        alpha: true,
-                        canvas,
-                    });
-                    this._renderer.outputEncoding = THREE.sRGBEncoding;
-                    this._renderer.physicallyCorrectLights = true;
-                    this._renderer.setSize(window.innerWidth, window.innerHeight);
-                } catch (err) {
-                    console.error("Error setting up renderer", err);
-                }
+            setupRenderer(renderCanvas) {
+                this._renderer = new THREE.WebGLRenderer({
+                    canvas: renderCanvas,
+                    antialias: true
+                });
+
+                this._renderer.setPixelRatio(window.devicePixelRatio);
+                this._renderer.setSize(window.innerWidth, window.innerHeight);
+                this._renderer.outputEncoding = THREE.sRGBEncoding;
             }
 
-            setupControls(canvas) {
-                try {
-                    this._camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-                    this._camera.position.set(0, 1.6, 3);
-                    this._scene = new THREE.Scene();
-                    this._scene.background = new THREE.Color(0x000000);
+            setupControls(renderCanvas) {
+                this._scene = new THREE.Scene();
+                this._camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                this._camera.position.z = 5;
 
-                    this._controls = new OrbitControls(this._camera, canvas);
-                    this._controls.enablePan = false;
-                    this._controls.enableZoom = false;
-                    this._controls.enableDamping = true;
-                    this._controls.dampingFactor = 0.1;
-                    this._controls.rotateSpeed = 0.1;
-                } catch (err) {
-                    console.error("Error setting up controls", err);
-                }
+                this._controls = new OrbitControls(this._camera, this._renderer.domElement);
+                this._controls.enableDamping = true;
+                this._controls.dampingFactor = 0.25;
+                this._controls.enableZoom = true;
             }
 
             addLights() {
-                try {
-                    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
-                    directionalLight.position.set(0, 4, 4);
-                    this._scene.add(directionalLight);
+                const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+                this._scene.add(ambientLight);
 
-                    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-                    this._scene.add(ambientLight);
-                } catch (err) {
-                    console.error("Error adding lights", err);
-                }
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+                directionalLight.position.set(1, 1, 1).normalize();
+                this._scene.add(directionalLight);
             }
 
-            render() {
-                try {
-                    this._controls.update();
-                    this._renderer.render(this._scene, this._camera);
-                } catch (err) {
-                    console.error("Error during rendering", err);
-                }
+            addTouchEventToModel(model) {
+                this._renderer.domElement.addEventListener('click', (event) => {
+                    const rect = this._renderer.domElement.getBoundingClientRect();
+                    const x = (event.clientX - rect.left) / rect.width * 2 - 1;
+                    const y = -(event.clientY - rect.top) / rect.height * 2 + 1;
+
+                    this._raycaster.setFromCamera(new THREE.Vector2(x, y), this._camera);
+                    const intersects = this._raycaster.intersectObject(model);
+
+                    if (intersects.length > 0) {
+                        model.visible = !model.visible;
+                    }
+                });
             }
 
             updatePose(pose) {
-                try {
-                    const { position, orientation } = pose;
-                    this._camera.position.copy(position);
-                    this._camera.quaternion.copy(orientation);
-                } catch (err) {
-                    console.error("Error updating pose", err);
+                if (pose && pose.position) {
+                    if (!this._modelPlaced) {
+                        this._models.forEach((model) => {
+                            model.position.copy(pose.position);
+                        });
+                        this._modelPlaced = true;
+                    }
                 }
+            }
+
+            isCarPlaced() {
+                return this._modelPlaced;
             }
 
             onResize() {
@@ -233,15 +346,14 @@
                 this._renderer.setSize(window.innerWidth, window.innerHeight);
             }
 
-            isCarPlaced() {
-                return this._carPlaced;
+            render() {
+                this._renderer.render(this._scene, this._camera);
+                this._controls.update();
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const experience = new OxExperience();
-            experience.init();
-        });
+        const experience = new OxExperience();
+        experience.init();
     </script>
 </body>
 
