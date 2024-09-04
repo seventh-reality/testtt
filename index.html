@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,89 +8,15 @@
         body {
             margin: 0;
             overflow: hidden;
-            font-family: Arial, sans-serif;
+            background: #000;
         }
 
-        #UItext img {
-            width: 100px;
-            height: 100px;
-            position: absolute;
-            top: 10px;
-        }
-
-        #transform-controls,
-        #color-controls,
-        #model-controls,
-        #scale-controls {
-            position: absolute;
-            bottom: 10px;
-            display: flex;
-            justify-content: center;
-            width: 100%;
-        }
-
-        #transform-controls button,
-        #color-controls button,
-        #model-controls button,
-        #scale-controls button {
-            margin: 5px;
-            padding: 10px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        #loading-screen,
-        #error-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            display: none;
-        }
-
-        #error-screen {
-            flex-direction: column;
+        canvas {
+            display: block;
         }
     </style>
 </head>
-
 <body>
-    <div id="UItext">
-        <img id="one" src="one.png" alt="one">
-        <img id="two" src="two.png" alt="two">
-        <img id="three" src="three.png" alt="three">
-    </div>
-    <div id="transform-controls">
-        <button id="tap-to-place">Place Model</button>
-    </div>
-    <div id="color-controls">
-        <button id="black">Black</button>
-        <button id="blue">Blue</button>
-        <button id="orange">Orange</button>
-        <button id="silver">Silver</button>
-    </div>
-    <div id="model-controls">
-        <button id="model1"><img src="Icon.png" style="width:40px;height:40px;" alt="Model 1"></button>
-        <button id="model2"><img src="Icon_1.png" style="width:40px;height:40px;" alt="Model 2"></button>
-        <button id="model3"><img src="Icon_2.png" style="width:40px;height:40px;" alt="Model 3"></button>
-    </div>
-    <div id="scale-controls">
-        <button id="scale-in">Increase Scale</button>
-        <button id="scale-out">Decrease Scale</button>
-    </div>
-    <div id="loading-screen">Loading...</div>
-    <div id="error-screen">
-        <div id="error-title"></div>
-        <div id="error-message"></div>
-    </div>
-
     <script type="module">
         import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.6.5/dist/ox-sdk.esm.js";
         import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
@@ -99,195 +24,207 @@
         import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js";
 
         class OxExperience {
-            constructor() {
-                this._renderer = null;
-                this._scene = null;
-                this._camera = null;
-                this._models = [];
-                this._modelIndex = 0;
-                this._currentModel = null;
-                this._controls = null;
-                this._animationMixers = [];
-                this._clock = null;
-                this._carPlaced = false;
-                this._scale = 0.5;
-                this.oxSDK = null;
-                this.apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k"; // Replace with your actual Onirix SDK API key
-            }
+            _renderer = null;
+            _scene = null;
+            _camera = null;
+            _models = [];
+            _modelIndex = 0;
+            _currentModel = null;
+            _controls = null;
+            _animationMixers = [];
+            _clock = null;
+            _carPlaced = false;
+            _scale = 0.5;
+
+            sprite = null;
+            spriteMovementSpeed = 0.02;
+            spriteRotationSpeed = 0.01;
+
+            oxSDK;
 
             async init() {
                 try {
-                    this.showLoadingScreen(true);
+                    this._raycaster = new THREE.Raycaster();
                     this._clock = new THREE.Clock(true);
+
                     const renderCanvas = await this.initSDK();
                     this.setupRenderer(renderCanvas);
                     this.setupControls(renderCanvas);
-                    this.setupEventListeners();
-                    await this.loadModels();
+
+                    const textureLoader = new THREE.TextureLoader();
+                    this._envMap = textureLoader.load("envmap.jpg");
+                    this._envMap.mapping = THREE.EquirectangularReflectionMapping;
+                    this._envMap.encoding = THREE.sRGBEncoding;
+
+                    this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
+                        try {
+                            const delta = this._clock.getDelta();
+                            this._animationMixers.forEach((mixer) => mixer.update(delta));
+                            this.animateSprite();
+                            this.render();
+                        } catch (err) {
+                            console.error("Error during frame update", err);
+                        }
+                    });
+
+                    this.oxSDK.subscribe(OnirixSDK.Events.OnPose, (pose) => {
+                        try {
+                            this.updatePose(pose);
+                        } catch (err) {
+                            console.error("Error updating pose", err);
+                        }
+                    });
+
+                    this.oxSDK.subscribe(OnirixSDK.Events.OnResize, () => {
+                        this.onResize();
+                    });
+
+                    this.oxSDK.subscribe(OnirixSDK.Events.OnHitTestResult, (hitResult) => {
+                        if (this._modelPlaced && !this.isCarPlaced()) {
+                            this._models.forEach((model) => {
+                                model.position.copy(hitResult.position);
+                            });
+                        }
+                    });
+
+                    const modelsToLoad = ["Steerad.glb", "Steeradtext.glb", "sterrad_anim.glb"];
+                    const gltfLoader = new GLTFLoader();
+                    modelsToLoad.forEach((modelUrl, index) => {
+                        gltfLoader.load(modelUrl, (gltf) => {
+                            try {
+                                const model = gltf.scene;
+                                model.scale.set(this._scale, this._scale, this._scale);
+                                model.traverse((child) => {
+                                    if (child.material) {
+                                        child.material.envMap = this._envMap;
+                                        child.material.needsUpdate = true;
+                                    }
+                                });
+
+                                if (gltf.animations && gltf.animations.length) {
+                                    const mixer = new THREE.AnimationMixer(model);
+                                    gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
+                                    this._animationMixers.push(mixer);
+
+                                    setTimeout(() => {
+                                        mixer.stopAllAction();
+                                    }, 50000);
+                                }
+
+                                this._models[index] = model;
+                                if (index === 0) {
+                                    this._currentModel = model;
+                                    this._modelPlaced = true;
+                                    this._scene.add(model);
+                                }
+                            } catch (err) {
+                                console.error("Error loading model", err);
+                            }
+                        }, undefined, (error) => {
+                            console.error("Model loading error", error);
+                        });
+                    });
+
                     this.addLights();
-                    this.showLoadingScreen(false);
+                    this.createSprite();
+
                 } catch (err) {
-                    this.showErrorScreen("Initialization Error", err.message);
+                    console.error("Error initializing OxExperience", err);
+                    throw err;
                 }
             }
 
             async initSDK() {
-                try {
-                    this.oxSDK = new OnirixSDK(this.apiKey);
-                    const config = {
-                        mode: OnirixSDK.TrackingMode.Surface,
-                    };
-                    const renderCanvas = await this.oxSDK.init(config);
-                    document.body.appendChild(renderCanvas);
-                    return renderCanvas;
-                } catch (err) {
-                    throw new Error("Failed to initialize Onirix SDK: " + err.message);
-                }
+                this.oxSDK = new OnirixSDK({
+                    // Your OnirixSDK configuration here
+                });
+
+                await this.oxSDK.init();
+                return this.oxSDK.getRenderCanvas();
             }
 
             setupRenderer(renderCanvas) {
-                const width = renderCanvas.width;
-                const height = renderCanvas.height;
-
-                this._renderer = new THREE.WebGLRenderer({ canvas: renderCanvas, alpha: true });
-                this._renderer.setSize(width, height);
+                this._renderer = new THREE.WebGLRenderer({ canvas: renderCanvas });
+                this._renderer.setSize(window.innerWidth, window.innerHeight);
                 this._renderer.setPixelRatio(window.devicePixelRatio);
-                this._renderer.outputEncoding = THREE.sRGBEncoding;
-
-                this._scene = new THREE.Scene();
-
-                const cameraParams = this.oxSDK.getCameraParameters();
-                this._camera = new THREE.PerspectiveCamera(cameraParams.fov, cameraParams.aspect, 0.1, 1000);
-                this._camera.matrixAutoUpdate = false;
             }
 
             setupControls(renderCanvas) {
-                this._controls = new OrbitControls(this._camera, renderCanvas);
+                this._camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                this._camera.position.z = 5;
+
+                this._scene = new THREE.Scene();
+
+                this._controls = new OrbitControls(this._camera, this._renderer.domElement);
                 this._controls.enableDamping = true;
                 this._controls.dampingFactor = 0.25;
-                this._controls.enableZoom = true;
-                this._controls.enableRotate = true;
-                this._controls.enablePan = false;
-            }
-
-            setupEventListeners() {
-                document.getElementById('tap-to-place').addEventListener('click', () => this.placeCar());
-                document.getElementById('scale-in').addEventListener('click', () => this.changeScale(0.1));
-                document.getElementById('scale-out').addEventListener('click', () => this.changeScale(-0.1));
-
-                this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
-                    const delta = this._clock.getDelta();
-                    this._animationMixers.forEach(mixer => mixer.update(delta));
-                    this.render();
-                });
-
-                this.oxSDK.subscribe(OnirixSDK.Events.OnPose, (pose) => this.updatePose(pose));
-
-                this.oxSDK.subscribe(OnirixSDK.Events.OnResize, () => this.onResize());
-
-                this.oxSDK.subscribe(OnirixSDK.Events.OnHitTestResult, (hitResult) => {
-                    if (!this._carPlaced) {
-                        this._currentModel.position.copy(hitResult.position);
-                    }
-                });
-            }
-
-            async loadModels() {
-                const gltfLoader = new GLTFLoader();
-                const modelUrls = ["Steerad.glb", "Steeradtext.glb", "sterrad_anim.glb"];
-
-                for (let i = 0; i < modelUrls.length; i++) {
-                    const modelUrl = modelUrls[i];
-                    try {
-                        const gltf = await gltfLoader.loadAsync(modelUrl);
-                        const model = gltf.scene;
-                        model.scale.set(this._scale, this._scale, this._scale);
-                        model.visible = (i === 0);
-                        this._scene.add(model);
-
-                        if (gltf.animations.length > 0) {
-                            const mixer = new THREE.AnimationMixer(model);
-                            gltf.animations.forEach(clip => mixer.clipAction(clip).play());
-                            this._animationMixers.push(mixer);
-                        }
-
-                        this._models.push(model);
-                        if (i === 0) {
-                            this._currentModel = model;
-                        }
-                    } catch (err) {
-                        console.error("Error loading model:", modelUrl, err);
-                    }
-                }
-            }
-
-            placeCar() {
-                this._carPlaced = true;
-                this.oxSDK.start();
-            }
-
-            changeScale(amount) {
-                this._scale = Math.max(0.1, this._scale + amount);
-                if (this._currentModel) {
-                    this._currentModel.scale.set(this._scale, this._scale, this._scale);
-                }
+                this._controls.enableZoom = false;
             }
 
             render() {
-                if (this._renderer && this._scene && this._camera) {
+                try {
+                    this._controls.update();
                     this._renderer.render(this._scene, this._camera);
+                } catch (err) {
+                    console.error("Error during rendering", err);
+                }
+            }
+
+            animateSprite() {
+                if (this.sprite) {
+                    this.sprite.position.x += this.spriteMovementSpeed;
+                    this.sprite.rotation.z += this.spriteRotationSpeed;
+
+                    // Bounce back when reaching certain limits
+                    if (this.sprite.position.x > 5 || this.sprite.position.x < -5) {
+                        this.spriteMovementSpeed = -this.spriteMovementSpeed;
+                    }
                 }
             }
 
             updatePose(pose) {
-                if (this._camera) {
-                    this._camera.position.copy(pose.position);
-                    this._camera.rotation.set(pose.rotation.x, pose.rotation.y, pose.rotation.z);
-                    this._camera.updateMatrix();
-                }
+                // Your existing updatePose logic here
             }
 
             onResize() {
-                const width = window.innerWidth;
-                const height = window.innerHeight;
-
-                this._camera.aspect = width / height;
+                this._camera.aspect = window.innerWidth / window.innerHeight;
                 this._camera.updateProjectionMatrix();
-                this._renderer.setSize(width, height);
+                this._renderer.setSize(window.innerWidth, window.innerHeight);
             }
 
             addLights() {
-                const ambientLight = new THREE.AmbientLight(0x666666, 0.5);
+                const ambientLight = new THREE.AmbientLight(0x404040); // soft white light
                 this._scene.add(ambientLight);
 
-                const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-                directionalLight.position.set(5, 10, 7.5);
-                this._scene.add(directionalLight);
-
                 const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-                pointLight.position.set(5, 10, 5);
+                pointLight.position.set(10, 10, 10);
                 this._scene.add(pointLight);
             }
 
-            showLoadingScreen(visible) {
-                const loadingScreen = document.getElementById('loading-screen');
-                loadingScreen.style.display = visible ? 'flex' : 'none';
-            }
+            createSprite() {
+                const spriteTexture = new THREE.TextureLoader().load('https://threejs.org/examples/textures/sprites/disc.png'); // Use a sample sprite texture
+                const spriteMaterial = new THREE.SpriteMaterial({ map: spriteTexture });
+                this.sprite = new THREE.Sprite(spriteMaterial);
 
-            showErrorScreen(title, message) {
-                const errorScreen = document.getElementById('error-screen');
-                const errorTitle = document.getElementById('error-title');
-                const errorMessage = document.getElementById('error-message');
-                errorTitle.textContent = title;
-                errorMessage.textContent = message;
-                errorScreen.style.display = 'flex';
+                this.sprite.position.set(0, 0, -10);
+                this.sprite.scale.set(1, 1, 1); // Adjust size if needed
+
+                this._scene.add(this.sprite);
             }
         }
 
-        const oxExperience = new OxExperience();
-        oxExperience.init();
+        document.addEventListener('DOMContentLoaded', () => {
+            const oxExp = new OxExperience();
+            oxExp.init()
+                .then(() => {
+                    // Your additional initialization code here, if needed
+                })
+                .catch((error) => {
+                    console.error("Error initializing Onirix SDK", error);
+                });
 
+            window.addEventListener('resize', () => oxExp.onResize());
+        });
     </script>
 </body>
-
 </html>
