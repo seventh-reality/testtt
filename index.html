@@ -101,11 +101,11 @@
             scale: .7;
         }
 
-        #scale-controls { 
+        #scale-controls {
             display: none;
             position: absolute;
             top: 20px;
-            right: 20px;  
+            right: 20px;
             flex-direction: column;
             align-items: center;
         }
@@ -170,7 +170,6 @@
             _clock = null;
             _carPlaced = false;
             _scale = 0.5;
-            _audio = new Audio("v.mp3"); // Audio file for the models
 
             oxSDK;
 
@@ -265,22 +264,24 @@
 
             async initSDK() {
                 try {
-                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGGOsTgeMS51x_PGbCn5HrVm2Ye8GFrbKpEA", "YOUR_SCENE_ID");
-                    const renderCanvas = await this.oxSDK.init({ cameraHeight: 1.5 });
-                    return renderCanvas;
+                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcDEB7b2J5vwLy27wwE5TqCge9O-jJ1U-JDPCs", { mode: OnirixSDK.Mode.AR });
+
+                    const { canvas } = await this.oxSDK.init();
+
+                    return canvas;
                 } catch (err) {
-                    console.error("Error initializing OnirixSDK", err);
+                    console.error("Error initializing Onirix SDK", err);
                     throw err;
                 }
             }
 
             setupRenderer(renderCanvas) {
                 try {
-                    this._scene = new THREE.Scene();
-                    this._camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
-                    this._renderer = new THREE.WebGLRenderer({ canvas: renderCanvas, antialias: true, alpha: true });
+                    this._renderer = new THREE.WebGLRenderer({ canvas: renderCanvas, alpha: true, antialias: true });
                     this._renderer.setSize(window.innerWidth, window.innerHeight);
                     this._renderer.outputEncoding = THREE.sRGBEncoding;
+                    this._scene = new THREE.Scene();
+                    this._camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
                 } catch (err) {
                     console.error("Error setting up renderer", err);
                     throw err;
@@ -290,10 +291,10 @@
             setupControls(renderCanvas) {
                 try {
                     this._controls = new OrbitControls(this._camera, renderCanvas);
-                    this._controls.enableDamping = true;
-                    this._controls.dampingFactor = 0.25;
+                    this._controls.enablePan = false;
                     this._controls.enableZoom = false;
-                    this._controls.enableRotate = true;
+                    this._controls.target.set(0, 0, 0);
+                    this._controls.update();
                 } catch (err) {
                     console.error("Error setting up controls", err);
                     throw err;
@@ -302,16 +303,13 @@
 
             addLights() {
                 try {
-                    const light1 = new THREE.DirectionalLight(0xffffff, 0.6);
-                    light1.position.set(1, 1, 1).normalize();
-                    this._scene.add(light1);
+                    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
+                    hemiLight.position.set(0, 200, 0);
+                    this._scene.add(hemiLight);
 
-                    const light2 = new THREE.DirectionalLight(0xffffff, 0.6);
-                    light2.position.set(-1, 1, -1).normalize();
-                    this._scene.add(light2);
-
-                    const ambientLight = new THREE.AmbientLight(0x404040);
-                    this._scene.add(ambientLight);
+                    const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+                    dirLight.position.set(75, 300, -75);
+                    this._scene.add(dirLight);
                 } catch (err) {
                     console.error("Error adding lights", err);
                     throw err;
@@ -320,10 +318,30 @@
 
             updatePose(pose) {
                 try {
-                    this._camera.position.copy(pose.position);
-                    this._camera.quaternion.copy(pose.rotation);
+                    if (this._carPlaced) {
+                        this._models.forEach((model) => {
+                            model.position.copy(pose.position);
+                            model.rotation.copy(pose.rotation);
+                        });
+                    } else {
+                        this._scene.children.forEach((child) => {
+                            if (child.isMesh) {
+                                child.rotation.y += 0.01;
+                            }
+                        });
+                    }
                 } catch (err) {
                     console.error("Error updating pose", err);
+                    throw err;
+                }
+            }
+
+            render() {
+                try {
+                    this._renderer.render(this._scene, this._camera);
+                } catch (err) {
+                    console.error("Error rendering scene", err);
+                    throw err;
                 }
             }
 
@@ -333,59 +351,50 @@
                     this._camera.updateProjectionMatrix();
                     this._renderer.setSize(window.innerWidth, window.innerHeight);
                 } catch (err) {
-                    console.error("Error resizing", err);
+                    console.error("Error on resize", err);
+                    throw err;
                 }
             }
 
-            render() {
-                try {
-                    this._renderer.render(this._scene, this._camera);
-                } catch (err) {
-                    console.error("Error rendering", err);
+            resetAnimations() {
+                this._animationMixers.forEach((mixer) => {
+                    mixer.stopAllAction();
+                    mixer.update(0); // Reset time to zero
+                    mixer.clipAction(mixer.getRoot()).play();
+                });
+            }
+
+            switchModel(index) {
+                if (this._currentModel) {
+                    this._scene.remove(this._currentModel);
                 }
+
+                this._modelIndex = index;
+                this._currentModel = this._models[this._modelIndex];
+                this._scene.add(this._currentModel);
+
+                this.resetAnimations();
             }
 
             isCarPlaced() {
                 return this._carPlaced;
             }
 
-            resetAnimationAndAudio() {
-                this._animationMixers.forEach((mixer) => {
-                    mixer.stopAllAction();
-                    mixer.update(0); // Reset animation time
-                });
-                this._audio.pause();
-                this._audio.currentTime = 0; // Reset audio time
+            placeCar() {
+                this._carPlaced = true;
             }
         }
 
-        const experience = new OxExperience();
-
-        document.getElementById('model1').addEventListener('click', function () {
-            experience.resetAnimationAndAudio();
-            experience._scene.remove(experience._currentModel);
-            experience._currentModel = experience._models[0];
-            experience._scene.add(experience._currentModel);
-            experience._audio.play();
+        const oxExperience = new OxExperience();
+        oxExperience.init().then(() => {
+            console.log("OxExperience initialized successfully");
+        }).catch((err) => {
+            console.error("Failed to initialize OxExperience", err);
         });
 
-        document.getElementById('model2').addEventListener('click', function () {
-            experience.resetAnimationAndAudio();
-            experience._scene.remove(experience._currentModel);
-            experience._currentModel = experience._models[1];
-            experience._scene.add(experience._currentModel);
-            experience._audio.play();
-        });
-
-        document.getElementById('model3').addEventListener('click', function () {
-            experience.resetAnimationAndAudio();
-            experience._scene.remove(experience._currentModel);
-            experience._currentModel = experience._models[2];
-            experience._scene.add(experience._currentModel);
-            experience._audio.play();
-        });
-
-        window.addEventListener('DOMContentLoaded', () => experience.init());
+        document.getElementById("model1").addEventListener("click", () => oxExperience.switchModel(0));
+        document.getElementById("model2").addEventListener("click", () => oxExperience.switchModel(1));
+        document.getElementById("model3").addEventListener("click", () => oxExperience.switchModel(2));
     </script>
 </body>
 
