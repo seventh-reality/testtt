@@ -1,523 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js and OnirixSDK Example</title>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background: #000;
-        }
-
-        canvas {
-            display: block;
-        }
-
-        #model-controls {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-40%, 200%);
-            padding: 20px;
-            margin: auto;
-            width: 240px;
-            padding: 25px;
-        }
-
-        #model1, #model2, #model3 {
-            background-color: #FFFFFF00;
-            border: 0;
-        }
-
-        #tap-to-place {
-            display: block;
-            margin: auto;
-            width: 200px;
-            padding: 25px;
-            background-color: #231532;
-            color: #FFFFFF;
-            border: 0;
-            border-radius: 20px;
-            box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 20px;
-        }
-
-        button {
-            margin-right: 10px;
-        }
-
-        #transform-controls, #color-controls {
-            display: none;
-            position: static;
-            top: 20px;
-            left: 20px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        #loading-screen {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-        }
-
-        #error-screen {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(255, 0, 0, 0.7);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        #UItext {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, 150%);
-            padding: 20px;
-            border-radius: 10px;
-        }
-
-        #one, #two, #three {
-            display: none;
-            scale: .7;
-        }
-
-        #scale-controls { 
-            display: none;
-            position: absolute;
-            top: 20px;
-            right: 20px;  
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #scale-controls button {
-            background-color: #231532;
-            color: #FFFFFF;
-            border: 0;
-            border-radius: 10px;
-            padding: 10px;
-            margin: 5px;
-            box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markerless Web AR with Three.js and TensorFlow.js</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
+    #startAR { position: absolute; top: 20px; left: 20px; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 10; }
+  </style>
+  
+  <!-- Include Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Include GLTFLoader from Three.js examples -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <!-- TensorFlow.js (Optional for AI integration) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.6.1/dist/tf.min.js"></script>
 </head>
-
 <body>
-    <div id="UItext">
-        <img id="one" src="one.png"></img>
-        <img id="two" src="two.png"></img>
-        <img id="three" src="three.png"></img>
-    </div>
-    <div id="transform-controls">
-        <button id="tap-to-place">Place Model</button>
-    </div>
-    <div id="color-controls">
-        <button id="black">Black</button>
-        <button id="blue">Blue</button>
-        <button id="orange">Orange</button>
-        <button id="silver">Silver</button>
-    </div>
-    <div id="model-controls">
-        <button id="model1"><img src="Icon.png" style="width:40px;height:40px;"></button>
-        <button id="model2"><img src="Icon_1.png" style="width:40px;height:40px;"></button>
-        <button id="model3"><img src="Icon_2.png" style="width:40px;height:40px;"></button>
-    </div>
-    <div id="scale-controls">
-        <button id="scale-in">Increase Scale</button>
-        <button id="scale-out">Decrease Scale</button>
-    </div>
-    <div id="loading-screen">Loading...</div>
-    <div id="error-screen">
-        <div id="error-title"></div>
-        <div id="error-message"></div>
-    </div>
 
-    <script type="module">
-        import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.6.5/dist/ox-sdk.esm.js";
-        import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
-        import { GLTFLoader } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js";
-        import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js";
+<button id="startAR">Start AR</button>
 
-        class OxExperience {
-            _renderer = null;
-            _scene = null;
-            _camera = null;
-            _models = [];
-            _modelIndex = 0;
-            _currentModel = null;
-            _controls = null;
-            _animationMixers = [];
-            _clock = null;
-            _carPlaced = false;
-            _scale = 0.5;
+<script>
+  let scene, camera, renderer, gltfLoader, xrSession;
+  let reticle, model;
 
-            oxSDK;
+  // Set up Three.js scene
+  function initThreeJS() {
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.xr.enabled = true;  // Enable WebXR for AR
+    document.body.appendChild(renderer.domElement);
+  }
 
-            async init() {
-                try {
-                    this._raycaster = new THREE.Raycaster();
-                    this._clock = new THREE.Clock(true);
+  // Load GLB model and add it to the scene
+  function loadGLBModel() {
+    gltfLoader = new THREE.GLTFLoader();
+    gltfLoader.load('Steerad.glb', (gltf) => {
+      model = gltf.scene;
+      model.visible = false;  // Model is hidden initially
+      scene.add(model);
+    }, undefined, function (error) {
+      console.error('An error occurred while loading the model:', error);
+    });
+  }
 
-                    const renderCanvas = await this.initSDK();
-                    this.setupRenderer(renderCanvas);
-                    this.setupControls(renderCanvas);
+  // Handle the placement of the 3D model on the detected surface
+  function placeModelAtReticle() {
+    if (reticle.visible && model) {
+      model.position.setFromMatrixPosition(reticle.matrix);
+      model.visible = true;
+    }
+  }
 
-                    const textureLoader = new THREE.TextureLoader();
-                    this._envMap = textureLoader.load("envmap.jpg");
-                    this._envMap.mapping = THREE.EquirectangularReflectionMapping;
-                    this._envMap.encoding = THREE.sRGBEncoding;
+  // Set up WebXR session for AR (with surface tracking)
+  function initWebXR() {
+    navigator.xr.requestSession('immersive-ar', {
+      requiredFeatures: ['hit-test'],
+    }).then((session) => {
+      renderer.xr.setSession(session);
+      xrSession = session;
 
-                    this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
-                        try {
-                            const delta = this._clock.getDelta();
-                            this._animationMixers.forEach((mixer) => mixer.update(delta));
-                            this.render();
-                        } catch (err) {
-                            console.error("Error during frame update", err);
-                        }
-                    });
-
-                    this.oxSDK.subscribe(OnirixSDK.Events.OnPose, (pose) => {
-                        try {
-                            this.updatePose(pose);
-                        } catch (err) {
-                            console.error("Error updating pose", err);
-                        }
-                    });
-
-                    this.oxSDK.subscribe(OnirixSDK.Events.OnResize, () => {
-                        this.onResize();
-                    });
-
-                    this.oxSDK.subscribe(OnirixSDK.Events.OnHitTestResult, (hitResult) => {
-                        if (this._modelPlaced && !this.isCarPlaced()) {
-                            this._models.forEach((model) => {
-                                model.position.copy(hitResult.position);
-                            });
-                        }
-                    });
-
-                    const modelsToLoad = ["Steerad.glb", "Steeradtext.glb", "sterrad_anim.glb"];
-                    const gltfLoader = new GLTFLoader();
-                    modelsToLoad.forEach((modelUrl, index) => {
-                        gltfLoader.load(modelUrl, (gltf) => {
-                            try {
-                                const model = gltf.scene;
-                                model.scale.set(this._scale, this._scale, this._scale);
-                                model.traverse((child) => {
-                                    if (child.material) {
-                                        child.material.envMap = this._envMap;
-                                        child.material.needsUpdate = true;
-                                    }
-                                });
-
-                                if (gltf.animations && gltf.animations.length) {
-                                    const mixer = new THREE.AnimationMixer(model);
-                                    gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
-                                    this._animationMixers.push(mixer);
-
-                                    setTimeout(() => {
-                                        mixer.stopAllAction();
-                                    }, 50000);
-                                }
-
-                                this._models[index] = model;
-                                if (index === 0) {
-                                    this._currentModel = model;
-                                    this._modelPlaced = true;
-                                    this._scene.add(model);
-                                }
-                            } catch (err) {
-                                console.error("Error loading model", err);
-                            }
-                        }, undefined, (error) => {
-                            console.error("Model loading error", error);
-                        });
-                    });
-
-                    this.addLights();
-                } catch (err) {
-                    console.error("Error initializing OxExperience", err);
-                    throw err;
-                }
+      // Set up hit-test for surface tracking
+      session.requestReferenceSpace('local').then((referenceSpace) => {
+        session.requestHitTestSource({ space: referenceSpace }).then((hitTestSource) => {
+          renderer.setAnimationLoop((timestamp, frame) => {
+            let hitTestResults = frame.getHitTestResults(hitTestSource);
+            if (hitTestResults.length > 0) {
+              let hit = hitTestResults[0];
+              reticle.visible = true;
+              reticle.matrix.fromArray(hit.getPose(referenceSpace).transform.matrix);
+            } else {
+              reticle.visible = false;
             }
+            renderer.render(scene, camera);
+            placeModelAtReticle();
+          });
+        });
+      });
+    }).catch((error) => {
+      console.error('Failed to start AR session:', error);
+    });
+  }
 
-            async initSDK() {
-                try {
-                    this.oxSDK = new OnirixSDK("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUyMDIsInByb2plY3RJZCI6MTQ0MjgsInJvbGUiOjMsImlhdCI6MTYxNjc1ODY5NX0.8F5eAPcBGaHzSSLuQAEgpdja9aEZ6Ca_Ll9wg84Rp5k");
-                    const config = {
-                        mode: OnirixSDK.TrackingMode.Surface,
-                    };
-                    return this.oxSDK.init(config);
-                } catch (err) {
-                    console.error("Error initializing Onirix SDK", err);
-                    throw err;
-                }
-            }
+  // Create a reticle to visualize where the object will be placed
+  function createReticle() {
+    const geometry = new THREE.RingGeometry(0.1, 0.15, 32).rotateX(-Math.PI / 2);
+    const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    reticle = new THREE.Mesh(geometry, material);
+    reticle.visible = false;
+    scene.add(reticle);
+  }
 
-            placeCar() {
-                this._carPlaced = true;
-                this.oxSDK.start();
-            }
+  // Initialize TensorFlow.js model (for AI-based tasks, optional)
+  async function initTensorFlowModel() {
+    if (typeof tf === 'undefined') {
+      console.error('TensorFlow.js is not loaded.');
+      return;
+    }
+    try {
+      const model = await tf.loadGraphModel('https://tfhub.dev/tensorflow/ssd_mobilenet_v2/1/default/1');
+      console.log('TensorFlow.js model loaded');
+      // Add your TensorFlow.js tasks here (e.g., object detection)
+    } catch (error) {
+      console.error('Error loading TensorFlow.js model:', error);
+    }
+  }
 
-            isCarPlaced() {
-                return this._carPlaced;
-            }
+  // Initialize the entire AR scene
+  function initARScene() {
+    initThreeJS();
+    createReticle();
+    loadGLBModel();
+    initTensorFlowModel();  // Optional: only if you need AI-based features
+  }
 
-            setupRenderer(renderCanvas) {
-                try {
-                    const width = renderCanvas.width;
-                    const height = renderCanvas.height;
+  // Start AR session on button click
+  document.getElementById('startAR').addEventListener('click', () => {
+    // Check if WebXR is available
+    if (navigator.xr) {
+      initARScene();
+      initWebXR();
+    } else {
+      console.error('WebXR is not available on this device.');
+    }
+  });
+</script>
 
-                    this._renderer = new THREE.WebGLRenderer({ canvas: renderCanvas, alpha: true });
-                    this._renderer.setClearColor(0x000000, 0);
-                    this._renderer.setSize(width, height);
-                    this._renderer.outputEncoding = THREE.sRGBEncoding;
-
-                    const cameraParams = this.oxSDK.getCameraParameters();
-                    this._camera = new THREE.PerspectiveCamera(cameraParams.fov, cameraParams.aspect, 0.1, 1000);
-                    this._camera.matrixAutoUpdate = false;
-
-                    this._scene = new THREE.Scene();
-
-                    const ambientLight = new THREE.AmbientLight(0x666666, 0.5);
-                    this._scene.add(ambientLight);
-                } catch (err) {
-                    console.error("Error setting up renderer", err);
-                }
-            }
-
-            addLights() {
-                try {
-                    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-                    directionalLight.position.set(5, 10, 7.5);
-                    directionalLight.castShadow = true;
-                    this._scene.add(directionalLight);
-
-                    const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-                    pointLight.position.set(5, 10, 5);
-                    this._scene.add(pointLight);
-                } catch (err) {
-                    console.error("Error adding lights", err);
-                }
-            }
-
-            setupControls(renderCanvas) {
-                try {
-                    this._controls = new OrbitControls(this._camera, renderCanvas);
-                    this._controls.enableDamping = true;
-                    this._controls.dampingFactor = 0.25;
-                    this._controls.enableZoom = true;
-                    this._controls.enableRotate = true;
-                    this._controls.enablePan = false;
-
-                    renderCanvas.addEventListener('touchstart', (event) => {
-                        if (event.touches.length === 2) {
-                            this._controls.enablePan = false;
-                        }
-                    });
-
-                    renderCanvas.addEventListener('touchend', () => {
-                        this._controls.enablePan = false;
-                    });
-                } catch (err) {
-                    console.error("Error setting up controls", err);
-                }
-            }
-
-            render() {
-                try {
-                    this._controls.update();
-                    this._renderer.render(this._scene, this._camera);
-                } catch (err) {
-                    console.error("Error during rendering", err);
-                }
-            }
-
-            updatePose(pose) {
-                try {
-                    let modelViewMatrix = new THREE.Matrix4();
-                    modelViewMatrix = modelViewMatrix.fromArray(pose);
-                    this._camera.matrix = modelViewMatrix;
-                    this._camera.matrixWorldNeedsUpdate = true;
-                } catch (err) {
-                    console.error("Error updating pose", err);
-                }
-            }
-
-            onResize() {
-                try {
-                    const width = this._renderer.domElement.width;
-                    const height = this._renderer.domElement.height;
-                    const cameraParams = this.oxSDK.getCameraParameters();
-                    this._camera.fov = cameraParams.fov;
-                    this._camera.aspect = cameraParams.aspect;
-                    this._camera.updateProjectionMatrix();
-                    this._renderer.setSize(width, height);
-                } catch (err) {
-                    console.error("Error handling resize", err);
-                }
-            }
-
-            changeModelsColor(value) {
-                if (this._currentModel) {
-                    this._currentModel.traverse((child) => {
-                        if (child.material) {
-                            child.material.color.setHex(value);
-                        }
-                    });
-                }
-            }
-
-            switchModel(index) {
-                if (this._currentModel) {
-                    this._scene.remove(this._currentModel);
-                }
-                this._currentModel = this._models[index];
-                if (this._currentModel) {
-                    this._scene.add(this._currentModel);
-                }
-            }
-
-            playAudio(audioFile) {
-                const audio = new Audio(audioFile);
-                audio.play();
-            }
-
-            setModelScale(scale) {
-                if (this._currentModel) {
-                    this._currentModel.scale.set(scale, scale, scale);
-                }
-            }
-        }
-
-        class OxExperienceUI {
-            _loadingScreen = null;
-            _errorScreen = null;
-            _errorTitle = null;
-            _errorMessage = null;
-
-            init() {
-                try {
-                    this._loadingScreen = document.querySelector("#loading-screen");
-                    this._errorScreen = document.querySelector("#error-screen");
-                    this._errorTitle = document.querySelector("#error-title");
-                    this._errorMessage = document.querySelector("#error-message");
-
-                    this._transformControls = document.querySelector("#transform-controls");
-                    this._colorControls = document.querySelector("#color-controls");
-                    this._modelControls = document.querySelector("#model-controls");
-                    this._scaleInButton = document.querySelector("#scale-in");
-                    this._scaleOutButton = document.querySelector("#scale-out");
-                    this._scaleControls  = document.querySelector("#scale-controls");
-
-                    document.querySelector("#tap-to-place").addEventListener("click", () => {
-                        oxExp.placeCar();
-                        this._transformControls.style.display = "none";
-                        this._colorControls.style.display = "none";
-                        this._modelControls.style.display = "block";
-                        this._scaleControls.style.display = "block";
-                    });
-
-                    document.querySelector("#black").addEventListener("click", () => {
-                        oxExp.changeModelsColor(0x000000);
-                    });
-                    document.querySelector("#blue").addEventListener("click", () => {
-                        oxExp.changeModelsColor(0x0000ff);
-                    });
-                    document.querySelector("#orange").addEventListener("click", () => {
-                        oxExp.changeModelsColor(0xffa500);
-                    });
-                    document.querySelector("#silver").addEventListener("click", () => {
-                        oxExp.changeModelsColor(0xc0c0c0);
-                    });
-
-                    document.querySelector("#model1").addEventListener("click", () => {
-                        oxExp.switchModel(0);
-                        oxExp.playAudio("v.mp3");
-                        document.getElementById('UItext').style.display = 'block';   
-                        document.getElementById('one').style.display = 'block';
-                        document.getElementById('two').style.display = 'none';
-                        document.getElementById('three').style.display = 'none';   
-                    });
-                    document.querySelector("#model2").addEventListener("click", () => {
-                        oxExp.switchModel(1);
-                        oxExp.playAudio("v.mp3");
-                        document.getElementById('UItext').style.display = 'block';      
-                        document.getElementById('one').style.display = 'none';
-                        document.getElementById('two').style.display = 'block';
-                        document.getElementById('three').style.display = 'none';
-                    });
-                    document.querySelector("#model3").addEventListener("click", () => {
-                        oxExp.switchModel(2);
-                        oxExp.playAudio("v.mp3");
-                        document.getElementById('UItext').style.display = 'block';     
-                        document.getElementById('one').style.display = 'none';
-                        document.getElementById('two').style.display = 'none';
-                        document.getElementById('three').style.display = 'block';
-                    });
-
-                    this._scaleInButton.addEventListener("click", () => {
-                        oxExp._scale += 0.1;
-                        oxExp.setModelScale(oxExp._scale);
-                    });
-
-                    this._scaleOutButton.addEventListener("click", () => {
-                        oxExp._scale = Math.max(0.1, oxExp._scale - 0.1);
-                        oxExp.setModelScale(oxExp._scale);
-                    });
-               
-                } catch (err) {
-                    console.error("Error initializing UI", err);
-                }
-            }
-
-            hideLoading() {
-                this._loadingScreen.style.display = "none";
-                this._transformControls.style.display = "block";
-            }
-
-            showError(title, message) {
-                this._errorTitle.textContent = title;
-                this._errorMessage.textContent = message;
-                this._errorScreen.style.display = "block";
-            }
-        }
-
-        const oxExp = new OxExperience();
-        const oxUI = new OxExperienceUI();
-
-        oxExp
-            .init()
-            .then(() => {
-                oxUI.init();
-                oxUI.hideLoading();
-            })
-            .catch((error) => {
-                console.error("Error initializing Onirix SDK", error);
-                oxUI.showError("Initialization Error", error.message);
-            });
-    </script>
 </body>
-
 </html>
