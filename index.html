@@ -42,7 +42,7 @@
         background-color:#FFFFFF00;
         border: 0;
         }
-        #backbutton{
+        #back-button{
             display: none;
             position: absolute;
             top: 50%;
@@ -69,10 +69,7 @@
             background-color:#FFFFFF00;
             border: 0;
         }
-         #backbutton{
-            background-color:#FFFFFF00;
-            border: 0;
-        }
+         
         #model2{
             background-color:#FFFFFF00;
             border: 0;
@@ -188,7 +185,7 @@
         <button id="orange">Orange</button>
         <button id="silver">Silver</button>
     </div>
-    <div id="backbutton">
+    <div id="back-button">
         <button id="back"><img src="Back.png" style="width:72px;height:40px;"></button>       
     </div>
     <div id="model-controls">
@@ -479,6 +476,7 @@
                     this._transformControls = document.querySelector("#transform-controls");
                     this._colorControls = document.querySelector("#color-controls");
                     this._modelControls = document.querySelector("#model-controls");
+                    this._backbutton = document.querySelector("#back-button");
 
                     document.querySelector("#tap-to-place").addEventListener("click", () => {
                         oxExp.placeCar();
@@ -539,7 +537,7 @@
                      document.getElementById('three').style.display = 'block';   
                      document.getElementById('insidebuttonscontrols1').style.display = 'none';    
                      document.getElementById('insidebuttonscontrols').style.display = 'none';
-                     document.getElementById('back').style.display = 'none';    
+                     document.getElementById('backbutton').style.display = 'none';    
                     });
                
                 } catch (err) {
