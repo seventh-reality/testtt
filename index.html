@@ -154,6 +154,18 @@
             background-color:#FFFFFF00;
             border: 0;
         }
+        #ins4{
+            background-color:#FFFFFF00;
+            border: 0;
+        }
+         #ins5{
+            background-color:#FFFFFF00;
+            border: 0;
+        }
+         #ins6{
+            background-color:#FFFFFF00;
+            border: 0;
+        }
          #one {
             display: none;
             scale: .7; 
@@ -198,9 +210,9 @@
         <button id="ins3"><img src="usage.png" style="width:72px;height:40px;"></button>
     </div>
     <div id="insidebuttons-controls1">
-        <button id="ins1"><img src="usp1.png" style="width:72px;height:40px;"></button>
-        <button id="ins2"><img src="usp2.png" style="width:72px;height:40px;"></button>
-        <button id="ins3"><img src="usp3.png" style="width:72px;height:40px;"></button>
+        <button id="ins4"><img src="usp1.png" style="width:72px;height:40px;"></button>
+        <button id="ins5"><img src="usp2.png" style="width:72px;height:40px;"></button>
+        <button id="ins6"><img src="usp3.png" style="width:72px;height:40px;"></button>
     </div>
     <div id="loading-screen">Loading...</div>
     <div id="error-screen">
@@ -514,7 +526,7 @@
                      document.getElementById('two').style.display = 'none';
                      document.getElementById('three').style.display = 'none';   
                     });
-                    document.querySelector("#model2").addEventListener("click", () => {
+                    document.querySelector("#ins1").addEventListener("click", () => {
                         oxExp.switchModel(1);
                         oxExp.playAudio("v.mp3");
                     document.getElementById('UItext').style.display = 'block';
