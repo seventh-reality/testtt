@@ -192,12 +192,12 @@
         <button id="model1"><img src="what.png" style="width:130px;height:40px;"></button>
         <button id="model2"><img src="why.png" style="width:130px;height:40px;"></button>        
     </div>
-    <div id="insidebuttonscontrols">
+    <div id="insidebuttons-controls">
         <button id="ins1"><img src="intro.png" style="width:72px;height:40px;"></button>
         <button id="ins2"><img src="parts.png" style="width:72px;height:40px;"></button>
         <button id="ins3"><img src="usage.png" style="width:72px;height:40px;"></button>
     </div>
-    <div id="insidebuttonscontrols1">
+    <div id="insidebuttons-controls1">
         <button id="ins1"><img src="usp1.png" style="width:72px;height:40px;"></button>
         <button id="ins2"><img src="usp2.png" style="width:72px;height:40px;"></button>
         <button id="ins3"><img src="usp3.png" style="width:72px;height:40px;"></button>
@@ -477,12 +477,16 @@
                     this._colorControls = document.querySelector("#color-controls");
                     this._modelControls = document.querySelector("#model-controls");
                     this._backbutton = document.querySelector("#back-button");
+                    this._insidebuttonscontrols = document.querySelector("#insidebuttons-controls");
+                     this._insidebuttonscontrols1 = document.querySelector("#insidebuttons-controls1");
 
                     document.querySelector("#tap-to-place").addEventListener("click", () => {
                         oxExp.placeCar();
                         this._transformControls.style.display = "none";
                         this._colorControls.style.display = "none";
                         this._modelControls.style.display = "block";
+                        this._insidebuttonscontrols.style.display = "block";
+                        this._insidebuttonscontrols1.style.display = "block";
                         this._backbutton.style.display = "none";
                     });
 
