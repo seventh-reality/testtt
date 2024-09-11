@@ -537,6 +537,16 @@
                      document.getElementById('two').style.display = 'block';
                      document.getElementById('three').style.display = 'none';
                         
+                    });                    
+                    document.querySelector("#back").addEventListener("click", () => {
+                        oxExp.playAudio("");
+                     document.getElementById('insidebuttons-controls1').style.display = 'none';    
+                     document.getElementById('insidebuttons-controls').style.display = 'none';
+                     document.getElementById('back-button').style.display = 'none';   
+                     document.getElementById('UItext').style.display = 'none';     
+                     document.getElementById('one').style.display = 'none';
+                     document.getElementById('two').style.display = 'none';
+                     document.getElementById('three').style.display = 'none';  
                     });
                     document.querySelector("#ins1").addEventListener("click", () => {
                         oxExp.switchModel(2);
@@ -549,17 +559,6 @@
                      document.getElementById('two').style.display = 'none';
                      document.getElementById('three').style.display = 'block';
                         
-                    });
-                    
-                    document.querySelector("#back").addEventListener("click", () => {
-                        oxExp.playAudio("");
-                     document.getElementById('insidebuttons-controls1').style.display = 'none';    
-                     document.getElementById('insidebuttons-controls').style.display = 'none';
-                     document.getElementById('back-button').style.display = 'none';   
-                     document.getElementById('UItext').style.display = 'none';     
-                     document.getElementById('one').style.display = 'none';
-                     document.getElementById('two').style.display = 'none';
-                     document.getElementById('three').style.display = 'none';  
                     });
                
                 } catch (err) {
