@@ -284,7 +284,7 @@
                         }
                     });
 
-                    const modelsToLoad = ["Leg.glb", "Hip.glb", "Hip_Anim.glb"];
+                    const modelsToLoad = ["Leg.glb", "Hip.glb", "Hip_Anim.glb", "UPS_1.glb", "UPS_2.glb", "USP_1.glb"];
                     const gltfLoader = new GLTFLoader();
                     modelsToLoad.forEach((modelUrl, index) => {
                         gltfLoader.load(modelUrl, (gltf) => {
@@ -574,6 +574,39 @@
                     });
                     document.querySelector("#ins3").addEventListener("click", () => {
                         oxExp.switchModel(2);
+                        oxExp.playAudio("v.mp3");
+                    document.getElementById('UItext').style.display = 'block';
+                    document.getElementById('insidebuttons-controls').style.display = 'block';    
+                    document.getElementById('insidebuttons-controls1').style.display = 'none';         
+                    document.getElementById('back-button').style.display = 'block';      
+                    document.getElementById('one').style.display = 'block';
+                     document.getElementById('two').style.display = 'none';
+                     document.getElementById('three').style.display = 'none';              
+                    });
+                    document.querySelector("#ins4").addEventListener("click", () => {
+                        oxExp.switchModel(3);
+                        oxExp.playAudio("v.mp3");
+                    document.getElementById('UItext').style.display = 'block';
+                    document.getElementById('insidebuttons-controls').style.display = 'block';    
+                    document.getElementById('insidebuttons-controls1').style.display = 'none';         
+                    document.getElementById('back-button').style.display = 'block';      
+                    document.getElementById('one').style.display = 'block';
+                     document.getElementById('two').style.display = 'none';
+                     document.getElementById('three').style.display = 'none';              
+                    });
+                    document.querySelector("#ins5").addEventListener("click", () => {
+                        oxExp.switchModel(4);
+                        oxExp.playAudio("v.mp3");
+                    document.getElementById('UItext').style.display = 'block';
+                    document.getElementById('insidebuttons-controls').style.display = 'block';    
+                    document.getElementById('insidebuttons-controls1').style.display = 'none';         
+                    document.getElementById('back-button').style.display = 'block';      
+                    document.getElementById('one').style.display = 'block';
+                     document.getElementById('two').style.display = 'none';
+                     document.getElementById('three').style.display = 'none';              
+                    });
+                    document.querySelector("#ins6").addEventListener("click", () => {
+                        oxExp.switchModel(5);
                         oxExp.playAudio("v.mp3");
                     document.getElementById('UItext').style.display = 'block';
                     document.getElementById('insidebuttons-controls').style.display = 'block';    
