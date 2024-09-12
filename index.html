@@ -284,7 +284,7 @@
                         }
                     });
 
-                    const modelsToLoad = ["Steerad.glb", "Steeradtext.glb", "sterrad_anim.glb"];
+                    const modelsToLoad = ["Leg.glb", "Hip.glb", "Hip_Anim.glb"];
                     const gltfLoader = new GLTFLoader();
                     modelsToLoad.forEach((modelUrl, index) => {
                         gltfLoader.load(modelUrl, (gltf) => {
@@ -549,7 +549,7 @@
                      document.getElementById('three').style.display = 'none';  
                     });
                     document.querySelector("#ins1").addEventListener("click", () => {
-                        oxExp.switchModel(2);
+                        oxExp.switchModel(0);
                         oxExp.playAudio("v.mp3");
                     document.getElementById('UItext').style.display = 'block';
                     document.getElementById('insidebuttons-controls').style.display = 'block';    
@@ -559,6 +559,28 @@
                      document.getElementById('two').style.display = 'none';
                      document.getElementById('three').style.display = 'block';
                         
+                    });
+                    document.querySelector("#ins2").addEventListener("click", () => {
+                        oxExp.switchModel(1);
+                        oxExp.playAudio("v.mp3");
+                    document.getElementById('UItext').style.display = 'block';
+                    document.getElementById('insidebuttons-controls').style.display = 'block';    
+                    document.getElementById('insidebuttons-controls1').style.display = 'none';         
+                    document.getElementById('back-button').style.display = 'block';      
+                    document.getElementById('one').style.display = 'none';
+                     document.getElementById('two').style.display = 'none';
+                     document.getElementById('three').style.display = 'block';              
+                    });
+                    document.querySelector("#ins3").addEventListener("click", () => {
+                        oxExp.switchModel(2);
+                        oxExp.playAudio("v.mp3");
+                    document.getElementById('UItext').style.display = 'block';
+                    document.getElementById('insidebuttons-controls').style.display = 'block';    
+                    document.getElementById('insidebuttons-controls1').style.display = 'none';         
+                    document.getElementById('back-button').style.display = 'block';      
+                    document.getElementById('one').style.display = 'none';
+                     document.getElementById('two').style.display = 'none';
+                     document.getElementById('three').style.display = 'block';              
                     });
                
                 } catch (err) {
