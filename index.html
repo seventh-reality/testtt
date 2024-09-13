@@ -129,15 +129,7 @@
             border-radius: 10px;
             text-align: center;
         }
-        #UItext{
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, 150%);
-            padding: 20px;
-            border-radius: 10px;
-            
-        }
+       
         #ins1{
             background-color:#FFFFFF00;
             border: 0;
@@ -251,11 +243,6 @@
 </head>
 
 <body>
-     <div id="UItext">
-        <img id="one" src="one.png"></img>
-        <img id="two" src="two.png"></img>
-        <img id="three" src="three.png"></img>
-    </div>
     <div id="transform-controls">
         <button id="tap-to-place">Place Model</button>
     </div>
@@ -586,24 +573,20 @@
                     document.querySelector("#model1").addEventListener("click", () => {
                         oxExp.switchModel(0);
                         oxExp.playAudio("v.mp3");
-                     document.getElementById('UItext').style.display = 'block';
+                
                      document.getElementById('insidebuttons-controls').style.display = 'block';
                      document.getElementById('insidebuttons-controls1').style.display = 'none';    
                      document.getElementById('back-button').style.display = 'block';      
-                     document.getElementById('one').style.display = 'block';
-                     document.getElementById('two').style.display = 'none';
-                     document.getElementById('three').style.display = 'none';   
+                       
                     });
                     document.querySelector("#model2").addEventListener("click", () => {
                         oxExp.switchModel(0);
                         oxExp.playAudio("v.mp3");
-                    document.getElementById('UItext').style.display = 'block';
+                   
                     document.getElementById('insidebuttons-controls1').style.display = 'block';    
                     document.getElementById('insidebuttons-controls').style.display = 'none';         
                     document.getElementById('back-button').style.display = 'block';      
-                    document.getElementById('one').style.display = 'none';
-                     document.getElementById('two').style.display = 'block';
-                     document.getElementById('three').style.display = 'none';
+                    
                         
                     });                    
                     document.querySelector("#back").addEventListener("click", () => {
@@ -612,77 +595,62 @@
                      document.getElementById('insidebuttons-controls1').style.display = 'none';    
                      document.getElementById('insidebuttons-controls').style.display = 'none';
                      document.getElementById('back-button').style.display = 'none';   
-                     document.getElementById('UItext').style.display = 'none';     
-                     document.getElementById('one').style.display = 'none';
-                     document.getElementById('two').style.display = 'none';
-                     document.getElementById('three').style.display = 'none';  
+                     
                     });
                     document.querySelector("#ins1").addEventListener("click", () => {
                         oxExp.switchModel(0);
                         oxExp.playAudio("v.mp3");
-                    document.getElementById('UItext').style.display = 'block';
+                   
                     document.getElementById('insidebuttons-controls').style.display = 'block';    
                     document.getElementById('insidebuttons-controls1').style.display = 'none';         
                     document.getElementById('back-button').style.display = 'block';      
-                    document.getElementById('one').style.display = 'none';
-                     document.getElementById('two').style.display = 'none';
-                     document.getElementById('three').style.display = 'block';
+                    
                         
                     });
                     document.querySelector("#ins2").addEventListener("click", () => {
                         oxExp.switchModel(1);
                         oxExp.playAudio("v.mp3");
-                    document.getElementById('UItext').style.display = 'block';
+                    
                     document.getElementById('insidebuttons-controls').style.display = 'block';    
                     document.getElementById('insidebuttons-controls1').style.display = 'none';         
                     document.getElementById('back-button').style.display = 'block';      
-                    document.getElementById('one').style.display = 'none';
-                     document.getElementById('two').style.display = 'block';
-                     document.getElementById('three').style.display = 'none';              
+                              
                     });
                     document.querySelector("#ins3").addEventListener("click", () => {
                         oxExp.switchModel(2);
                         oxExp.playAudio("v.mp3");
-                    document.getElementById('UItext').style.display = 'block';
+                   
                     document.getElementById('insidebuttons-controls').style.display = 'block';    
                     document.getElementById('insidebuttons-controls1').style.display = 'none';         
                     document.getElementById('back-button').style.display = 'block';      
-                    document.getElementById('one').style.display = 'block';
-                     document.getElementById('two').style.display = 'none';
-                     document.getElementById('three').style.display = 'none';              
+                              
                     });
                     document.querySelector("#ins4").addEventListener("click", () => {
                         oxExp.switchModel(3);
                         oxExp.playAudio("v.mp3");
-                    document.getElementById('UItext').style.display = 'block';
+                    
                     document.getElementById('insidebuttons-controls').style.display = 'none';    
                     document.getElementById('insidebuttons-controls1').style.display = 'block';         
                     document.getElementById('back-button').style.display = 'block';      
-                    document.getElementById('one').style.display = 'block';
-                     document.getElementById('two').style.display = 'none';
-                     document.getElementById('three').style.display = 'none';              
+                                
                     });
                     document.querySelector("#ins5").addEventListener("click", () => {
                         oxExp.switchModel(4);
                         oxExp.playAudio("v.mp3");
-                    document.getElementById('UItext').style.display = 'block';
+                    
                     document.getElementById('insidebuttons-controls').style.display = 'none';    
                     document.getElementById('insidebuttons-controls1').style.display = 'block';         
                     document.getElementById('back-button').style.display = 'block';      
-                    document.getElementById('one').style.display = 'block';
-                     document.getElementById('two').style.display = 'none';
-                     document.getElementById('three').style.display = 'none';              
+                               
                     });
                     document.querySelector("#ins6").addEventListener("click", () => {
                         oxExp.switchModel(5);
                         oxExp.playAudio("v.mp3");
-                    document.getElementById('UItext').style.display = 'block';
+                    
                     document.getElementById('insidebuttons-controls').style.display = 'none';    
                     document.getElementById('insidebuttons-controls1').style.display = 'block';         
                     document.getElementById('back-button').style.display = 'block';      
-                    document.getElementById('one').style.display = 'block';
-                     document.getElementById('two').style.display = 'none';
-                     document.getElementById('three').style.display = 'none';              
+                                
                     });
                
                 } catch (err) {
