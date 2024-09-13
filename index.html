@@ -105,6 +105,160 @@
             top: 20px;
             left: 20px;
             margin-left: auto;
+            margin-right: auto;<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js and OnirixSDK Example</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            #insidebuttons-controls,
+            #insidebuttons-controls1,
+            #back-button,
+            #model-controls,
+            #transform-controls,
+            #color-controls {
+                transform: translate(-50%, 120%);
+            }
+
+            #tap-to-place {
+                width: 180px;
+                padding: 18px;
+                font-size: 14px;
+            }
+
+            button img {
+                width: 100px;
+                height: 35px;
+            }
+
+            #UItext img {
+                scale: 0.6;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #tap-to-place {
+                width: 150px;
+                padding: 15px;
+                font-size: 12px;
+            }
+
+            button img {
+                width: 80px;
+                height: 30px;
+            }
+
+            #UItext img {
+                scale: 0.5;
+            }
+        }
+
+        #insidebuttons-controls {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-75%, 120%);
+            padding: 20px;
+            margin: auto;
+            padding: 25px;
+        }
+
+        #insidebuttons-controls1 {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-75%, 120%);
+            padding: 20px;
+            margin: auto;
+            padding: 25px;
+        }
+
+        #back {
+            background-color: #FFFFFF00;
+            border: 0;
+        }
+
+        #back-button {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-170%, 60%);
+            padding: 20px;
+            margin: auto;
+            padding: 25px;
+        }
+
+        #model-controls {
+            display: none;
+            position: absolute;
+            left: 50%;
+            transform: translate(-50%, 800%);
+            padding: 20px;
+            margin: auto;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #model1 {
+            background-color: #FFFFFF00;
+            border: 0;
+        }
+
+        #model2 {
+            background-color: #FFFFFF00;
+            border: 0;
+        }
+
+        #model3 {
+            background-color: #FFFFFF00;
+            border: 0;
+        }
+
+        #tap-to-place {
+            display: block;
+            margin: auto;
+            width: 200px;
+            padding: 21px;
+            background-color: #231532;
+            color: #FFFFFF;
+            border: 0;
+            border-radius: 20px;
+            box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+        }
+
+        button {
+            margin-right: 10px;
+        }
+
+        #transform-controls,
+        #color-controls {
+            display: none;
+            position: static;
+            top: 20px;
+            left: 20px;
+            margin-left: auto;
             margin-right: auto;
         }
 
@@ -131,129 +285,68 @@
             border-radius: 10px;
             text-align: center;
         }
-        #UItext{
+
+        #UItext {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, 150%);
             padding: 20px;
             border-radius: 10px;
-            
         }
-        #ins1{
-            background-color:#FFFFFF00;
+
+        #ins1 {
+            background-color: #FFFFFF00;
             border: 0;
         }
-         #ins2{
-            background-color:#FFFFFF00;
+
+        #ins2 {
+            background-color: #FFFFFF00;
             border: 0;
         }
-         #ins3{
-            background-color:#FFFFFF00;
+
+        #ins3 {
+            background-color: #FFFFFF00;
             border: 0;
         }
-        #ins4{
-            background-color:#FFFFFF00;
+
+        #ins4 {
+            background-color: #FFFFFF00;
             border: 0;
         }
-         #ins5{
-            background-color:#FFFFFF00;
+
+        #ins5 {
+            background-color: #FFFFFF00;
             border: 0;
         }
-         #ins6{
-            background-color:#FFFFFF00;
+
+        #ins6 {
+            background-color: #FFFFFF00;
             border: 0;
         }
-         #one {
+
+        #one {
             display: none;
-            scale: .7; 
-                }
+            scale: 0.7;
+        }
+
         #two {
             display: none;
-            scale: .7;
-                }
+            scale: 0.7;
+        }
+
         #three {
             display: none;
-            scale: .7;
-                }
-       @media screen and (max-width:600px) {
-           #model-controls {
-            display: flex;
-            position: absolute;
-            left: 50%;
-            transform: translate(-50%, 500%);
-            padding: 20px;
-            margin: auto;
-            margin-left: auto;
-            margin-right: auto;   
+            scale: 0.7;
         }
-             #insidebuttons-controls{
-            display: none;
-            position: static;
-            top: 50%;
-            left: 50%;
-            transform: translate(15%, 370%);
-            padding: 20px;
-            margin: auto; 
-            padding: 25px;
-           
-        }
-         #model1{
-            background-color:#FFFFFF00;
-            border: 0;
-            scale:.9;
-        }
-         
-        #model2{
-            background-color:#FFFFFF00;
-            border: 0;
-            scale:.9;
-        }       
-       }
-       /* For tablets (iPad and similar) */
-        @media (min-width: 601px) and (max-width: 1024px) {
-        #model-controls {
-            display: none;
-            position: absolute;
-            left: 50%;
-            transform: translate(-45%, 450%);
-            padding: 20px;
-            margin: auto;
-            margin-left: auto;
-            margin-right: auto;    
-        }
-             #insidebuttons-controls{
-            display: none;
-            position: static;
-            top: 50%;
-            left: 50%;
-            transform: translate(15%, 370%);
-            padding: 20px;
-            margin: auto; 
-            padding: 25px;
-           
-        }
-        #model1{
-            background-color:#FFFFFF00;
-            border: 0;
-            scale:.7;
-        }
-         
-        #model2{
-            background-color:#FFFFFF00;
-            border: 0;
-            scale:.7;
-        }     
-        }  
-           
     </style>
 </head>
 
 <body>
-     <div id="UItext">
-        <img id="one" src="one.png"></img>
-        <img id="two" src="two.png"></img>
-        <img id="three" src="three.png"></img>
+    <div id="UItext">
+        <img id="one" src="one.png" alt="one">
+        <img id="two" src="two.png" alt="two">
+        <img id="three" src="three.png" alt="three">
     </div>
     <div id="transform-controls">
         <button id="tap-to-place">Place Model</button>
@@ -265,21 +358,21 @@
         <button id="silver">Silver</button>
     </div>
     <div id="back-button">
-        <button id="back"><img src="Back.png" style="width:72px;height:40px;"></button>       
+        <button id="back"><img src="Back.png" style="width:72px;height:40px;" alt="back"></button>
     </div>
     <div id="model-controls">
-        <button id="model1"><img src="what.png" style="width:130px;height:40px; "></button>
-        <button id="model2"><img src="why.png" style="width:130px;height:40px;"></button>        
+        <button id="model1"><img src="what.png" style="width:130px;height:40px;" alt="model1"></button>
+        <button id="model2"><img src="why.png" style="width:130px;height:40px;" alt="model2"></button>
     </div>
     <div id="insidebuttons-controls">
-        <button id="ins1"><img src="intro.png" style="width:72px;height:40px;"></button>
-        <button id="ins2"><img src="parts.png" style="width:72px;height:40px;"></button>
-        <button id="ins3"><img src="usage.png" style="width:72px;height:40px;"></button>
+        <button id="ins1"><img src="intro.png" style="width:72px;height:40px;" alt="ins1"></button>
+        <button id="ins2"><img src="parts.png" style="width:72px;height:40px;" alt="ins2"></button>
+        <button id="ins3"><img src="usage.png" style="width:72px;height:40px;" alt="ins3"></button>
     </div>
     <div id="insidebuttons-controls1">
-        <button id="ins4"><img src="usp1.png" style="width:72px;height:40px;"></button>
-        <button id="ins5"><img src="usp2.png" style="width:72px;height:40px;"></button>
-        <button id="ins6"><img src="usp3.png" style="width:72px;height:40px;"></button>
+        <button id="ins4"><img src="usp1.png" style="width:72px;height:40px;" alt="ins4"></button>
+        <button id="ins5"><img src="usp2.png" style="width:72px;height:40px;" alt="ins5"></button>
+        <button id="ins6"><img src="usp3.png" style="width:72px;height:40px;" alt="ins6"></button>
     </div>
     <div id="loading-screen">Loading...</div>
     <div id="error-screen">
