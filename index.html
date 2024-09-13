@@ -176,12 +176,12 @@
             display: none;
             scale: .7;
                 }
-       @media screen and (max-width:768px) {
+       @media screen and (max-width:600px) {
            #model-controls {
             display: none;
             position: absolute;
             left: 50%;
-            transform: translate(-45%, 250%);
+            transform: translate(-45%, 450%);
             padding: 20px;
             margin: auto;
             margin-left: auto;
@@ -199,6 +199,30 @@
            
         }
        }
+       /* For tablets (iPad and similar) */
+        @media (min-width: 601px) and (max-width: 1024px) {
+        #model-controls {
+            display: none;
+            position: absolute;
+            left: 50%;
+            transform: translate(-45%, 450%);
+            padding: 20px;
+            margin: auto;
+            margin-left: auto;
+            margin-right: auto;    
+        }
+             #insidebuttons-controls{
+            display: none;
+            position: static;
+            top: 50%;
+            left: 50%;
+            transform: translate(15%, 370%);
+            padding: 20px;
+            margin: auto; 
+            padding: 25px;
+           
+        }
+        }  
            
     </style>
 </head>
