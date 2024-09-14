@@ -6,6 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Three.js and OnirixSDK Example</title>
     <style>
+        .container {
+            display: flex;
+            justify-content: space-between; /* Distributes space between items */
+            align-items: center; /* Centers items vertically if they have different heights */
+            padding: 10px; /* Optional: adds padding around the container */
+            border: 1px solid #ccc; /* Optional: for visual reference */
+        }
         body {
             margin: 0;
             overflow: hidden;
@@ -281,7 +288,12 @@
   <source src="https://commondatastorage.googleapis.com/codkulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverwritten_Role_Playing_Game.mp3" type="audio/mp3">
   Your browser does not support the audio element.
 </audio>
+    <div class="container">
+        <div class="left-item">Left Item</div>
+        <div class="right-item">Right Item</div>
+    </div>
 
+  
     <div id="transform-controls">
         <button id="tap-to-place">Place Model</button>
     </div>
