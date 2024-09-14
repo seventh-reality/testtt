@@ -278,8 +278,16 @@
 
 <body>
     <audio id="myAudio" autoplay>
-  <source src="Background Music.mp3" type="audio/mp3">
-    </audio>
+  <source src="Background Music.mp3" type="audio/ogg">
+  <source src="horse.mp3" type="audio/mpeg">
+  </audio>
+  <script>
+    function myFunction() {
+      var x = document.getElementById("myAudio").autoplay;
+      document.getElementById("demo").innerHTML = x;
+    }
+    myFunction();
+  </script>
 
     <div id="transform-controls">
         <button id="tap-to-place">Place Model</button>
@@ -725,10 +733,7 @@
                 console.error("Error initializing Onirix SDK", error);
                 oxUI.showError("Initialization Error", error.message);
             });
-        function myFunction() {
-  var x = document.getElementById("myAudio").autoplay;
-  document.getElementById("demo").innerHTML = x;
-}
+       
     </script>
 </body>
 
