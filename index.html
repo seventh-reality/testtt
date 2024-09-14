@@ -281,13 +281,6 @@
   <source src="Background Music.mp3" type="audio/ogg">
   <source src="horse.mp3" type="audio/mpeg">
   </audio>
-  <script>
-    function myFunction() {
-      var x = document.getElementById("myAudio").autoplay;
-      document.getElementById("demo").innerHTML = x;
-    }
-    myFunction();
-  </script>
 
     <div id="transform-controls">
         <button id="tap-to-place">Place Model</button>
@@ -322,6 +315,11 @@
     </div>
 
     <script type="module">
+        function myFunction() {
+      var x = document.getElementById("myAudio").autoplay;
+      document.getElementById("demo").innerHTML = x;
+    }
+    myFunction();
         
         import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.6.5/dist/ox-sdk.esm.js";
         import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
