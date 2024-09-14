@@ -232,7 +232,14 @@
             border: 0;
             
         }
-           
+        .container {
+            display: flex;
+            justify-content: space-between; /* Distributes space between items */
+            align-items: center; /* Centers items vertically if they have different heights */
+            padding: 10px; /* Optional: adds padding around the container */
+            border: 1px solid #ccc; /* Optional: for visual reference */
+            scale:.5;
+        }   
        }
        /* For tablets (iPad and similar) */
         @media (min-width: 601px) and (max-width: 1024px) {
