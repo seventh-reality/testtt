@@ -171,16 +171,6 @@
             display: none;
             scale: .7;
                 }
-        #Logo1{
-           width:261px;
-           height:162px;
-           scale:.8; 
-        }
-        #Logo2{
-           width:261px;
-           height:162px;
-           scale:.8; 
-        }
        @media screen and (max-width:600px) {
            #model-controls {
             display: none;
@@ -235,18 +225,6 @@
             border: 0;
             
         }
-        #Logo1{
-           width:261px;
-           height:162px;
-           scale:.5;
-           transform: translate(-50%,-45%); 
-        }
-        #Logo2{
-           width:261px;
-           height:162px;
-           scale:.5;
-           transform: translate(-50%,-45%); 
-        }      
            
        }
        /* For tablets (iPad and similar) */
@@ -299,10 +277,10 @@
 </head>
 
 <body>
-    <audio id="myAudio" autoplay>
-  <source src="Background Music.mp3" type="audio/ogg">      
-  <source src="Background Music.mp3" type="audio/mp3">
-  </audio>
+    <audio autoplay>
+  <source src="https://commondatastorage.googleapis.com/codkulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverwritten_Role_Playing_Game.mp3" type="audio/mp3">
+  Your browser does not support the audio element.
+</audio>
 
     <div id="transform-controls">
         <button id="tap-to-place">Place Model</button>
@@ -312,12 +290,6 @@
         <button id="blue">Blue</button>
         <button id="orange">Orange</button>
         <button id="silver">Silver</button>
-    </div>
-    <div id="Logo1">
-       <img src="4.png" ></img>    
-    </div>
-    <div id="Logo2">
-       <img src="Cam.png" ></img>    
     </div>
     <div id="back-button">
         <button id="back"><img src="Back.png" style="width:72px;height:40px;"></button>       
@@ -343,7 +315,6 @@
     </div>
 
     <script type="module">
-        
         import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.6.5/dist/ox-sdk.esm.js";
         import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
         import { GLTFLoader } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js";
@@ -754,7 +725,6 @@
                 console.error("Error initializing Onirix SDK", error);
                 oxUI.showError("Initialization Error", error.message);
             });
-       
     </script>
 </body>
 
