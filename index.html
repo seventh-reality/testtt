@@ -13,6 +13,10 @@
             padding: 10px; /* Optional: adds padding around the container */
             border: 1px solid #ccc; /* Optional: for visual reference */
         }
+        .container1 {
+           width:240px;
+           height:140px;   
+        }  
         body {
             margin: 0;
             overflow: hidden;
@@ -178,7 +182,7 @@
             display: none;
             scale: .7;
                 }
-       @media screen and (max-width:600px) {
+        @media only screen and (max-width: 600px) {
            #model-controls {
             display: none;
             position: absolute;
@@ -189,7 +193,7 @@
             margin-left: auto;
             margin-right: auto;   
         }
-             #insidebuttons-controls{
+        #insidebuttons-controls{
             display: none;
             position: static;
             top: 50%;
@@ -238,8 +242,11 @@
             align-items: center; /* Centers items vertically if they have different heights */
             padding: 10px; /* Optional: adds padding around the container */
             border: 1px solid #ccc; /* Optional: for visual reference */
-            scale:.5;
-        }   
+        } 
+         .container1 {
+           width:150px;
+           height:70px;   
+        }     
        }
        /* For tablets (iPad and similar) */
         @media (min-width: 601px) and (max-width: 1024px) {
@@ -295,9 +302,10 @@
   <source src="https://commondatastorage.googleapis.com/codkulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverwritten_Role_Playing_Game.mp3" type="audio/mp3">
   Your browser does not support the audio element.
 </audio>
+    
     <div class="container">
-        <div class="left-item"><img src="4.png" style="width:256px;height:140px;"/></div>
-        <div class="right-item"><img src="4.png" style="width:256px;height:140px;"/></div>
+        <div class="left-item"><img src="4.png" class="container1"/></div>
+        <div class="right-item"><img src="4.png" class="container1"/></div>
     </div>
 
   
