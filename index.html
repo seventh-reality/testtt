@@ -277,8 +277,8 @@
 </head>
 
 <body>
-    <audio id="musicplayer" autoplay>
-  <source src="Background Music.mp3" />
+    <audio id="myAudio" autoplay>
+  <source src="Background Music.mp3" type="audio/mp3">
     </audio>
 
     <div id="transform-controls">
@@ -314,6 +314,7 @@
     </div>
 
     <script type="module">
+        
         import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.6.5/dist/ox-sdk.esm.js";
         import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
         import { GLTFLoader } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js";
@@ -724,6 +725,10 @@
                 console.error("Error initializing Onirix SDK", error);
                 oxUI.showError("Initialization Error", error.message);
             });
+        function myFunction() {
+  var x = document.getElementById("myAudio").autoplay;
+  document.getElementById("demo").innerHTML = x;
+}
     </script>
 </body>
 
