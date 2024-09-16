@@ -344,7 +344,7 @@
         import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
         import { GLTFLoader } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js";
         import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js";
-
+        var scene = new THREE.Scene();
         class OxExperience {
             _renderer = null;
             _scene = null;
@@ -356,9 +356,9 @@
             _animationMixers = [];
             _clock = null;
             _carPlaced = false;
-
+            scene.scale.set(2, 2, 2); 
             oxSDK;
-
+            
             async init() {
                 try {
                     this._raycaster = new THREE.Raycaster();
