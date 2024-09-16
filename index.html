@@ -361,6 +361,14 @@
 
             async init() {
                 try {
+                      const renderer = new THREE.WebGLRenderer({antialias: true});
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  invalidation.then(() => (controls.dispose(), renderer.dispose()));
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(devicePixelRatio);
+  controls.addEventListener("change", () => renderer.render(scene, camera));
+  renderer.render(scene, camera);
+  return renderer.domElement;
                     this._raycaster = new THREE.Raycaster();
                     this._clock = new THREE.Clock(true);
 
@@ -469,7 +477,16 @@
             isCarPlaced() {
                 return this._carPlaced;
             }
-
+           camera = {
+  const fov = 45;
+  const aspect = width / height;
+  const near = 1;
+  const far = 1000;
+  const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+  camera.position.set(2, 2, -2)
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
+  return camera;
+}
             setupRenderer(renderCanvas) {
                 try {
                     const width = renderCanvas.width;
