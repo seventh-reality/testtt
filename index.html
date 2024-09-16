@@ -344,7 +344,7 @@
         import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
         import { GLTFLoader } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js";
         import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js";
-       var group = new THREE.Group();
+        var group = new THREE.Group();
         class OxExperience {
             _renderer = null;
             _scene = null;
@@ -366,7 +366,7 @@
                     this._clock = new THREE.Clock(true);
 
                     const renderCanvas = await this.initSDK();
-                    const controls = new OrbitControls(camera, renderer.domElement);
+                    
                     this.setupRenderer(renderCanvas);
                     this.setupControls(renderCanvas);
 
