@@ -359,7 +359,7 @@
             _scale = 10;
             
             oxSDK;
-            controls = new OrbitControls(camera, renderer.domElement);
+            
             async init() {
                 try {
                     this._raycaster = new THREE.Raycaster();
@@ -471,6 +471,7 @@
             isCarPlaced() {
                 return this._carPlaced;
             }
+            _controls = new OrbitControls(camera, renderer.domElement);
 
             setupRenderer(renderCanvas) {
                 try {
