@@ -366,6 +366,7 @@
                     this._clock = new THREE.Clock(true);
 
                     const renderCanvas = await this.initSDK();
+                    const controls = new OrbitControls(camera, renderer.domElement);
                     this.setupRenderer(renderCanvas);
                     this.setupControls(renderCanvas);
 
@@ -373,7 +374,7 @@
                     this._envMap = textureLoader.load("envmap.jpg");
                     this._envMap.mapping = THREE.EquirectangularReflectionMapping;
                     this._envMap.encoding = THREE.sRGBEncoding;
-
+                    
                     this.oxSDK.subscribe(OnirixSDK.Events.OnFrame, () => {
                         try {
                             const delta = this._clock.getDelta();
@@ -470,8 +471,8 @@
             isCarPlaced() {
                 return this._carPlaced;
             }
-            _controls = new OrbitControls(camera, renderer.domElement);
-
+           
+            camera.position.set(0, 5, 10); // Adjust as needed
             setupRenderer(renderCanvas) {
                 try {
                     const width = renderCanvas.width;
