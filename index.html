@@ -344,7 +344,7 @@
         import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
         import { GLTFLoader } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js";
         import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js";
-        var scene = new THREE.Scene();
+       var group = new THREE.Group();
         class OxExperience {
             _renderer = null;
             _scene = null;
@@ -736,7 +736,13 @@
                 this._errorScreen.style.display = "block";
             }
         }
+        group.add(object1);
+        group.add(object2);
+        // Add the group to the scene
+        scene.add(group);
 
+        // Scale the group
+        group.scale.set(2, 2, 2);  // Scale uniformly
         const oxExp = new OxExperience();
         const oxUI = new OxExperienceUI();
         scene.scale.set(10, 10, 10); 
