@@ -461,6 +461,7 @@
                     throw err;
                 }
             }
+            
 
             placeCar() {
                 this._carPlaced = true;
@@ -508,7 +509,7 @@
                     console.error("Error adding lights", err);
                 }
             }
-
+          controls = new OrbitControls(camera, renderer.domElement);
             setupControls(renderCanvas) {
                 try {
                     this._controls = new OrbitControls(this._camera, renderCanvas);
