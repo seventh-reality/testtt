@@ -344,7 +344,7 @@
         import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
         import { GLTFLoader } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js";
         import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js";
-
+        
         class OxExperience {
             _renderer = null;
             _scene = null;
@@ -367,6 +367,9 @@
                     const renderCanvas = await this.initSDK();
                     this.setupRenderer(renderCanvas);
                     this.setupControls(renderCanvas);
+                    let isRotating = false;
+                    let touchStartAngle = 0;
+                    let initialRotationY = 0;
 
                     const textureLoader = new THREE.TextureLoader();
                     this._envMap = textureLoader.load("envmap.jpg");
