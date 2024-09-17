@@ -472,7 +472,7 @@
             isCarPlaced() {
                 return this._carPlaced;
             }
-
+            
             setupRenderer(renderCanvas) {
                 try {
                     const width = renderCanvas.width;
@@ -593,7 +593,39 @@
                 audio.play();
             }
         }
+         renderer.domElement.addEventListener('touchstart', (event) => {
+    if (event.touches.length === 2) {
+        isRotating = true;
+        const touch1 = event.touches[0];
+        const touch2 = event.touches[1];
 
+        const deltaX = touch2.pageX - touch1.pageX;
+        const deltaY = touch2.pageY - touch1.pageY;
+        touchStartAngle = Math.atan2(deltaY, deltaX);
+        initialRotationY = controls.getAzimuthalAngle();
+    }
+});
+
+renderer.domElement.addEventListener('touchmove', (event) => {
+    if (isRotating && event.touches.length === 2) {
+        const touch1 = event.touches[0];
+        const touch2 = event.touches[1];
+
+        const deltaX = touch2.pageX - touch1.pageX;
+        const deltaY = touch2.pageY - touch1.pageY;
+        const currentAngle = Math.atan2(deltaY, deltaX);
+
+        const angleDiff = currentAngle - touchStartAngle;
+
+        controls.rotateLeft(angleDiff); // Rotate camera based on the angle difference
+    }
+});
+
+renderer.domElement.addEventListener('touchend', (event) => {
+    if (event.touches.length < 2) {
+        isRotating = false;
+    }
+});
         class OxExperienceUI {
             _loadingScreen = null;
             _errorScreen = null;
