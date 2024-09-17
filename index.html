@@ -593,7 +593,7 @@
                 audio.play();
             }
         }
-         renderer.domElement.addEventListener('touchstart', (event) => {
+         _renderer.domElement.addEventListener('touchstart', (event) => {
     if (event.touches.length === 2) {
         isRotating = true;
         const touch1 = event.touches[0];
@@ -606,7 +606,7 @@
     }
 });
 
-renderer.domElement.addEventListener('touchmove', (event) => {
+_renderer.domElement.addEventListener('touchmove', (event) => {
     if (isRotating && event.touches.length === 2) {
         const touch1 = event.touches[0];
         const touch2 = event.touches[1];
@@ -621,7 +621,7 @@ renderer.domElement.addEventListener('touchmove', (event) => {
     }
 });
 
-renderer.domElement.addEventListener('touchend', (event) => {
+_renderer.domElement.addEventListener('touchend', (event) => {
     if (event.touches.length < 2) {
         isRotating = false;
     }
