@@ -358,11 +358,12 @@
 </head>
 
 <body>
-    <audio autoplay>
+    <!-- <audio autoplay>
   <source src="https://commondatastorage.googleapis.com/codkulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverwritten_Role_Playing_Game.mp3" type="audio/mp3">
   Your browser does not support the audio element.
-</audio>
-    
+</audio> -->
+<audio id="myAudio" src="Background_Music.mp3" preload="auto"></audio>
+
     <div class="container">
         <div class="left-item"><img id="logoo" src="4.png" class="container1"/></div>
         <div class="right-item"><img id="logooo" src="Cam.png" class="container1"/></div>
@@ -402,6 +403,12 @@
     </div>
 
     <script type="module">
+         window.onload = function() {
+        var audio = document.getElementById('myAudio');
+        audio.play().catch(function(error) {
+            alert('Playback prevented:', error);
+        });
+    };
         import OnirixSDK from "https://unpkg.com/@onirix/ar-engine-sdk@1.6.5/dist/ox-sdk.esm.js";
         import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
         import { GLTFLoader } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js";
