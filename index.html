@@ -15,6 +15,7 @@
   <button id="enter-ar">Enter AR</button>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
+    
     let xrSession = null;
     let renderer, scene, camera;
     let model = null;  // Placeholder for the 3D model
@@ -86,6 +87,17 @@
         renderer.render(scene, camera);
       }
     }
+    WebView myWebView = (WebView) findViewById(R.id.webview);
+WebSettings webSettings = myWebView.getSettings();
+webSettings.setJavaScriptEnabled(true);
+myWebView.loadUrl("file:///android_asset/index.html");  // Load your WebXR page
+let webView = WKWebView(frame: self.view.frame)
+if let url = Bundle.main.url(forResource: "index", withExtension: "html") {
+    webView.load(URLRequest(url: url))
+}
+self.view.addSubview(webView)
+
+    
 
     initializeWebXR();
   </script>
