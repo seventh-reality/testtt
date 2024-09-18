@@ -702,7 +702,7 @@
                 // Stop and remove the current model from the scene
                 if (this._currentModel) {
                     this._scene.remove(this._currentModel);
-                    
+
                     // Stop all animations of the current model
                     const currentMixer = this._animationMixers[index];
                     if (currentMixer) {
@@ -714,7 +714,7 @@
                 this._currentModel = this._models[index];
                 if (this._currentModel) {
                     this._scene.add(this._currentModel);
-                    
+
                     // Initialize animation if the model has animations
                     const mixer = new THREE.AnimationMixer(this._currentModel);
                     const gltf = this._gltfData[index]; // Assuming you store the GLTF data
@@ -735,7 +735,35 @@
             //     audio.play();
             // }
         }
+        let previousTouch = null;
+       function onTouchStart(event) {
+            if (event.touches.length === 1) {
+                previousTouch = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+            }
+        }
 
+        function onTouchMove(event) {
+            if (event.touches.length === 1 && previousTouch) {
+                const touch = event.touches[0];
+                const deltaX = touch.clientX - previousTouch.x;
+                const deltaY = touch.clientY - previousTouch.y;
+
+                // Update cube rotation based on touch movement
+                cube.rotation.y += deltaX * 0.01; // Adjust sensitivity as needed
+                cube.rotation.x += deltaY * 0.01;
+
+                // Update previous touch position
+                previousTouch = { x: touch.clientX, y: touch.clientY };
+            }
+        }
+
+         function onTouchEnd() {
+            previousTouch = null; // Reset on touch end
+        }
+        // Event listeners
+        window.addEventListener('touchstart', onTouchStart);
+        window.addEventListener('touchmove', onTouchMove);
+        window.addEventListener('touchend', onTouchEnd);
         class OxExperienceUI {
             _loadingScreen = null;
             _errorScreen = null;
@@ -893,7 +921,7 @@
 
             // Set the new audio source and play
             audio.src = audioFile;
-            audio.play().catch(function(error) {
+            audio.play().catch(function (error) {
                 console.log('Playback prevented:', error);
             });
         }
