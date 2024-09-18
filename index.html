@@ -474,6 +474,7 @@
                     modelsToLoad.forEach((modelUrl, index) => {
                         gltfLoader.load(modelUrl, (gltf) => {
                             try {
+                                this._scene.scale.set(0.5, 0.5, 0.5);
                                 const model = gltf.scene;
                                 this.addTouchEvents();
                                 model.traverse((child) => {
@@ -563,7 +564,7 @@
         window.addEventListener('touchstart', (event) => {
             if (event.touches.length === 2) {
                 this._initialPinchDistance = this.getPinchDistance(event.touches);
-                this._initialScale = this._model.scale.x; // Assuming uniform scaling
+                this._initialScale = this._scene.scale.x; // Assuming uniform scaling
             }
         });
 
