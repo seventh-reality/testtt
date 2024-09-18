@@ -724,6 +724,9 @@
                             mixer.clipAction(clip).play();
                         });
                         this._animationMixers[index] = mixer; // Store the mixer for the new model
+                        setTimeout(() => {
+                            mixer.stopAllAction();
+                        }, 2000);
                     }
                 }
             }
