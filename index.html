@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Three.js and OnirixSDK Example</title>
     <style>
+        #rotation-slider, #scale-slider {
+    display: block;
+    width: 100%;
+    margin: 20px auto;
+} 
         #logoo {
             scale: .6;
         }
@@ -523,7 +528,7 @@
                         gltfLoader.load(modelUrl, (gltf) => {
                             try {
                                 const model = gltf.scene;
-
+                                this._scene.scale.set(0.5, 0.5, 0.5);
                                 model.traverse((child) => {
                                     if (child.material) {
                                         child.material.envMap = this._envMap;
@@ -583,6 +588,13 @@
             isCarPlaced() {
                 return this._carPlaced;
             }
+            scaleCar(value) {
+        this._model.scale.set(value, value, value);
+    }
+
+    rotateCar(value) {
+        this._model.rotation.y = value;
+    }
 
             setupRenderer(renderCanvas) {
                 try {
@@ -730,6 +742,13 @@
                     }
                 }
             }
+            onScaleChange(listener) {
+        this._scaleSlider.addEventListener('input', () => { listener(this._scaleSlider.value / 100) });
+    }
+
+    onRotationChange(listener) {
+        this._rotationSlider.addEventListener('input', () => { listener(this._rotationSlider.value * Math.PI / 180) });
+    }
             // playAudio(audioFile) {
             //     const audio = new Audio(audioFile);
             //     audio.play();
@@ -776,7 +795,8 @@
                     this._errorScreen = document.querySelector("#error-screen");
                     this._errorTitle = document.querySelector("#error-title");
                     this._errorMessage = document.querySelector("#error-message");
-
+                    this._scaleSlider = document.querySelector("#scale-slider");
+                    this._rotationSlider = document.querySelector("#rotation-slider");
                     this._transformControls = document.querySelector("#transform-controls");
                     this._colorControls = document.querySelector("#color-controls");
                     this._modelControls = document.querySelector("#model-controls");
@@ -925,8 +945,11 @@
                 console.log('Playback prevented:', error);
             });
         }
+        oxUI.onRotationChange((value) => { oxExp.rotateCar(value) })
+    oxUI.onScaleChange((value) => { oxExp.scaleCar(value) })
         const oxExp = new OxExperience();
         const oxUI = new OxExperienceUI();
+        
 
         oxExp
             .init()
