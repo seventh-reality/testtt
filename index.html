@@ -418,7 +418,8 @@
             _animationMixers = [];
             _clock = null;
             _carPlaced = false;
-
+            _initialPinchDistance = null; // To store the initial pinch distance
+            _initialScale = 1; // To store the initial scale of the model
             oxSDK;
 
             async init() {
@@ -474,7 +475,7 @@
                         gltfLoader.load(modelUrl, (gltf) => {
                             try {
                                 const model = gltf.scene;
-                                
+                                this.addTouchEvents();
                                 model.traverse((child) => {
                                     if (child.material) {
                                         child.material.envMap = this._envMap;
@@ -557,6 +558,38 @@
                     console.error("Error setting up renderer", err);
                 }
             }
+            addTouchEvents() {
+        // Add touchstart event listener
+        window.addEventListener('touchstart', (event) => {
+            if (event.touches.length === 2) {
+                this._initialPinchDistance = this.getPinchDistance(event.touches);
+                this._initialScale = this._model.scale.x; // Assuming uniform scaling
+            }
+        });
+
+        // Add touchmove event listener
+        window.addEventListener('touchmove', (event) => {
+            if (event.touches.length === 2) {
+                const currentDistance = this.getPinchDistance(event.touches);
+                const scaleChange = currentDistance / this._initialPinchDistance;
+                this.scaleCar(this._initialScale * scaleChange);
+            }
+        });
+
+        // Optionally: touchend can reset the pinch distance when the pinch gesture ends
+        window.addEventListener('touchend', (event) => {
+            if (event.touches.length < 2) {
+                this._initialPinchDistance = null;
+            }
+        });
+    }
+
+    getPinchDistance(touches) {
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
 
             addLights() {
                 try {
