@@ -536,9 +536,9 @@
                                     gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
                                     this._animationMixers.push(mixer);
 
-                                    // setTimeout(() => {
-                                    //     mixer.stopAllAction();
-                                    // }, 50000);
+                                    setTimeout(() => {
+                                        mixer.stopAllAction();
+                                    }, 10000);
                                 }
 
                                 this._models[index] = model;
