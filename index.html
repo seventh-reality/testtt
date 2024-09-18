@@ -520,39 +520,39 @@
                     const modelsToLoad = ["Leg.glb", "Hip.glb", "Hip_Anim.glb", "USP_1.glb", "UPS_2.glb", "UPS_3.glb"];
                     const gltfLoader = new GLTFLoader();
                     modelsToLoad.forEach((modelUrl, index) => {
-                    //     gltfLoader.load(modelUrl, (gltf) => {
-                    //         try {
-                    //             const model = gltf.scene;
+                        gltfLoader.load(modelUrl, (gltf) => {
+                            try {
+                                const model = gltf.scene;
 
-                    //             model.traverse((child) => {
-                    //                 if (child.material) {
-                    //                     child.material.envMap = this._envMap;
-                    //                     child.material.needsUpdate = true;
-                    //                 }
-                    //             });
+                                model.traverse((child) => {
+                                    if (child.material) {
+                                        child.material.envMap = this._envMap;
+                                        child.material.needsUpdate = true;
+                                    }
+                                });
 
-                    //             if (gltf.animations && gltf.animations.length) {
-                    //                 const mixer = new THREE.AnimationMixer(model);
-                    //                 gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
-                    //                 this._animationMixers.push(mixer);
+                                if (gltf.animations && gltf.animations.length) {
+                                    const mixer = new THREE.AnimationMixer(model);
+                                    gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
+                                    this._animationMixers.push(mixer);
 
-                    //                 setTimeout(() => {
-                    //                     mixer.stopAllAction();
-                    //                 }, 10000);
-                    //             }
+                                    setTimeout(() => {
+                                        mixer.stopAllAction();
+                                    }, 10000);
+                                }
 
-                    //             this._models[index] = model;
-                    //             if (index === 0) {
-                    //                 this._currentModel = model;
-                    //                 this._modelPlaced = true;
-                    //                 this._scene.add(model);
-                    //             }
-                    //         } catch (err) {
-                    //             console.error("Error loading model", err);
-                    //         }
-                    //     }, undefined, (error) => {
-                    //         console.error("Model loading error", error);
-                    //     });
+                                this._models[index] = model;
+                                if (index === 0) {
+                                    this._currentModel = model;
+                                    this._modelPlaced = true;
+                                    this._scene.add(model);
+                                }
+                            } catch (err) {
+                                console.error("Error loading model", err);
+                            }
+                        }, undefined, (error) => {
+                            console.error("Model loading error", error);
+                        });
                     });
 
                     this.addLights();
@@ -689,16 +689,44 @@
                 }
             }
 
+            // switchModel(index) {
+            //     if (this._currentModel) {
+            //         this._scene.remove(this._currentModel);
+            //     }
+            //     this._currentModel = this._models[index];
+            //     if (this._currentModel) {
+            //         this._scene.add(this._currentModel);
+            //     }
+            // }
             switchModel(index) {
+                // Stop and remove the current model from the scene
                 if (this._currentModel) {
                     this._scene.remove(this._currentModel);
+                    
+                    // Stop all animations of the current model
+                    const currentMixer = this._animationMixers[index];
+                    if (currentMixer) {
+                        currentMixer.stopAllAction();
+                    }
                 }
+
+                // Set the new model as the current model
                 this._currentModel = this._models[index];
                 if (this._currentModel) {
                     this._scene.add(this._currentModel);
+                    
+                    // Initialize animation if the model has animations
+                    const mixer = new THREE.AnimationMixer(this._currentModel);
+                    const gltf = this._gltfData[index]; // Assuming you store the GLTF data
+
+                    if (gltf && gltf.animations && gltf.animations.length) {
+                        gltf.animations.forEach((clip) => {
+                            mixer.clipAction(clip).play();
+                        });
+                        this._animationMixers[index] = mixer; // Store the mixer for the new model
+                    }
                 }
             }
-
             // playAudio(audioFile) {
             //     const audio = new Audio(audioFile);
             //     audio.play();
