@@ -699,10 +699,10 @@
                 }
             }
 
-            playAudio(audioFile) {
-                const audio = new Audio(audioFile);
-                audio.play();
-            }
+            // playAudio(audioFile) {
+            //     const audio = new Audio(audioFile);
+            //     audio.play();
+            // }
         }
 
         class OxExperienceUI {
@@ -750,7 +750,7 @@
 
                     document.querySelector("#model1").addEventListener("click", () => {
                         oxExp.switchModel(0);
-                        oxExp.playAudio("v.mp3");
+                        playAudio("v.mp3");
 
                         document.getElementById('insidebuttons-controls').style.display = 'block';
                         document.getElementById('insidebuttons-controls1').style.display = 'none';
@@ -760,7 +760,7 @@
                     });
                     document.querySelector("#model2").addEventListener("click", () => {
                         oxExp.switchModel(0);
-                        oxExp.playAudio("v.mp3");
+                        playAudio("v.mp3");
 
                         document.getElementById('insidebuttons-controls1').style.display = 'block';
                         document.getElementById('insidebuttons-controls').style.display = 'none';
@@ -771,7 +771,7 @@
                     });
                     document.querySelector("#back").addEventListener("click", () => {
                         oxExp.switchModel(0);
-                        oxExp.playAudio("");
+                        // playAudio("");
                         document.getElementById('insidebuttons-controls1').style.display = 'none';
                         document.getElementById('insidebuttons-controls').style.display = 'none';
                         document.getElementById('back-button').style.display = 'none';
@@ -790,7 +790,7 @@
                     });
                     document.querySelector("#ins2").addEventListener("click", () => {
                         oxExp.switchModel(1);
-                        // oxExp.playAudio("");
+                        playAudio("Intro.mp3");
 
                         document.getElementById('insidebuttons-controls').style.display = 'block';
                         document.getElementById('insidebuttons-controls1').style.display = 'none';
@@ -809,7 +809,7 @@
                     });
                     document.querySelector("#ins4").addEventListener("click", () => {
                         oxExp.switchModel(3);
-                        // oxExp.playAudio("USP_1.mp3");
+                        playAudio("USP_1.mp3");
 
                         document.getElementById('insidebuttons-controls').style.display = 'none';
                         document.getElementById('insidebuttons-controls1').style.display = 'block';
@@ -818,7 +818,7 @@
                     });
                     document.querySelector("#ins5").addEventListener("click", () => {
                         oxExp.switchModel(4);
-                        oxExp.playAudio("USP_2.mp3");
+                        playAudio("USP_2.mp3");
 
                         document.getElementById('insidebuttons-controls').style.display = 'none';
                         document.getElementById('insidebuttons-controls1').style.display = 'block';
@@ -827,7 +827,7 @@
                     });
                     document.querySelector("#ins6").addEventListener("click", () => {
                         oxExp.switchModel(5);
-                        oxExp.playAudio("USP_3.mp3");
+                        playAudio("USP_3.mp3");
 
                         document.getElementById('insidebuttons-controls').style.display = 'none';
                         document.getElementById('insidebuttons-controls1').style.display = 'block';
