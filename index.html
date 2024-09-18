@@ -689,44 +689,44 @@
                 }
             }
 
-            switchModel(index) {
-                if (this._currentModel) {
-                    this._scene.remove(this._currentModel);
-                }
-                this._currentModel = this._models[index];
-                if (this._currentModel) {
-                    this._scene.add(this._currentModel);
-                }
-            }
             // switchModel(index) {
-            //     // Stop and remove the current model from the scene
             //     if (this._currentModel) {
             //         this._scene.remove(this._currentModel);
-                    
-            //         // Stop all animations of the current model
-            //         const currentMixer = this._animationMixers[index];
-            //         if (currentMixer) {
-            //             currentMixer.stopAllAction();
-            //         }
             //     }
-
-            //     // Set the new model as the current model
             //     this._currentModel = this._models[index];
             //     if (this._currentModel) {
             //         this._scene.add(this._currentModel);
-                    
-            //         // Initialize animation if the model has animations
-            //         const mixer = new THREE.AnimationMixer(this._currentModel);
-            //         const gltf = this._gltfData[index]; // Assuming you store the GLTF data
-
-            //         if (gltf && gltf.animations && gltf.animations.length) {
-            //             gltf.animations.forEach((clip) => {
-            //                 mixer.clipAction(clip).play();
-            //             });
-            //             this._animationMixers[index] = mixer; // Store the mixer for the new model
-            //         }
             //     }
             // }
+            switchModel(index) {
+                // Stop and remove the current model from the scene
+                if (this._currentModel) {
+                    this._scene.remove(this._currentModel);
+                    
+                    // Stop all animations of the current model
+                    const currentMixer = this._animationMixers[index];
+                    if (currentMixer) {
+                        currentMixer.stopAllAction();
+                    }
+                }
+
+                // Set the new model as the current model
+                this._currentModel = this._models[index];
+                if (this._currentModel) {
+                    this._scene.add(this._currentModel);
+                    
+                    // Initialize animation if the model has animations
+                    const mixer = new THREE.AnimationMixer(this._currentModel);
+                    const gltf = this._gltfData[index]; // Assuming you store the GLTF data
+
+                    if (gltf && gltf.animations && gltf.animations.length) {
+                        gltf.animations.forEach((clip) => {
+                            mixer.clipAction(clip).play();
+                        });
+                        this._animationMixers[index] = mixer; // Store the mixer for the new model
+                    }
+                }
+            }
             // playAudio(audioFile) {
             //     const audio = new Audio(audioFile);
             //     audio.play();
