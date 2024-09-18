@@ -962,6 +962,8 @@
                 console.error("Error initializing Onirix SDK", error);
                 oxUI.showError("Initialization Error", error.message);
             });
+        oxUI.onRotationChange((value) => { oxExp.rotateCar(value) })
+    oxUI.onScaleChange((value) => { oxExp.scaleCar(value) })
     </script>
 </body>
 
