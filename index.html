@@ -14,12 +14,13 @@
 <body>
   <button id="enter-ar">Enter AR</button>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Include GLTFLoader for model loading -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
   <script>
-    
     let xrSession = null;
-    let renderer, scene, camera;
-    let model = null;  // Placeholder for the 3D model
-    
+    let renderer, scene, camera, reticle;
+    let model = null;
+
     async function initializeWebXR() {
       if (navigator.xr) {
         const isARSupported = await navigator.xr.isSessionSupported('immersive-ar');
@@ -46,7 +47,7 @@
       renderer.xr.enabled = true;
       renderer.setSize(window.innerWidth, window.innerHeight);
       document.body.appendChild(renderer.domElement);
-      
+
       // Set up the scene
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -61,18 +62,27 @@
       loader.load('Steeradtext.glb', (gltf) => {
         model = gltf.scene;
         scene.add(model);
+        model.visible = false;  // Hide the model until hit test finds a place to put it
       });
+
+      // Reticle for hit test
+      const geometry = new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2);
+      const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      reticle = new THREE.Mesh(geometry, material);
+      reticle.visible = false;
+      scene.add(reticle);
 
       // Start the XR session
       xrSession.updateRenderState({ baseLayer: new XRWebGLLayer(xrSession, renderer.getContext()) });
-      xrSession.requestReferenceSpace('local').then((referenceSpace) => {
-        xrSession.requestAnimationFrame((time, frame) => renderScene(time, frame, referenceSpace));
-      });
+      const referenceSpace = await xrSession.requestReferenceSpace('local-floor');
+      const hitTestSource = await xrSession.requestHitTestSource({ space: referenceSpace });
+
+      xrSession.requestAnimationFrame((time, frame) => renderScene(time, frame, referenceSpace, hitTestSource));
     }
 
-    function renderScene(time, frame, referenceSpace) {
+    function renderScene(time, frame, referenceSpace, hitTestSource) {
       const session = frame.session;
-      session.requestAnimationFrame((t, f) => renderScene(t, f, referenceSpace));
+      session.requestAnimationFrame((t, f) => renderScene(t, f, referenceSpace, hitTestSource));
 
       const pose = frame.getViewerPose(referenceSpace);
       if (pose) {
@@ -84,20 +94,26 @@
           camera.updateMatrixWorld(true);
         }
 
+        const hitTestResults = frame.getHitTestResults(hitTestSource);
+        if (hitTestResults.length > 0) {
+          const hit = hitTestResults[0];
+          const hitPose = hit.getPose(referenceSpace);
+
+          // Update the reticle position
+          reticle.visible = true;
+          reticle.position.set(hitPose.transform.position.x, hitPose.transform.position.y, hitPose.transform.position.z);
+          reticle.updateMatrixWorld(true);
+
+          // Show model if reticle is visible
+          if (!model.visible) {
+            model.position.copy(reticle.position);
+            model.visible = true;
+          }
+        }
+
         renderer.render(scene, camera);
       }
     }
-    WebView myWebView = (WebView) findViewById(R.id.webview);
-WebSettings webSettings = myWebView.getSettings();
-webSettings.setJavaScriptEnabled(true);
-myWebView.loadUrl("file:///android_asset/index.html");  // Load your WebXR page
-let webView = WKWebView(frame: self.view.frame)
-if let url = Bundle.main.url(forResource: "index", withExtension: "html") {
-    webView.load(URLRequest(url: url))
-}
-self.view.addSubview(webView)
-
-    
 
     initializeWebXR();
   </script>
