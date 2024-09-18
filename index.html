@@ -467,7 +467,7 @@
             _animationMixers = [];
             _clock = null;
             _carPlaced = false;
-
+            _gltfData = [];
             oxSDK;
 
             async init() {
@@ -540,7 +540,7 @@
                                         mixer.stopAllAction();
                                     }, 10000);
                                 }
-
+                                this._gltfData[index] = gltf;
                                 this._models[index] = model;
                                 if (index === 0) {
                                     this._currentModel = model;
