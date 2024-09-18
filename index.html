@@ -410,6 +410,7 @@
         <source src="Background_Music.mp3" type="audio/mp3">
         Your browser does not support the audio element.
     </audio>
+    <audio id="audioPlayer" preload="auto"></audio>
 
     <div class="container">
         <div class="left-item"><img id="logoo" src="4.png" class="container1" /></div>
@@ -779,7 +780,7 @@
                     });
                     document.querySelector("#ins1").addEventListener("click", () => {
                         oxExp.switchModel(0);
-                        oxExp.playAudio("Intro.mp3");
+                        playAudio("Intro.mp3");
 
                         document.getElementById('insidebuttons-controls').style.display = 'block';
                         document.getElementById('insidebuttons-controls1').style.display = 'none';
@@ -789,7 +790,7 @@
                     });
                     document.querySelector("#ins2").addEventListener("click", () => {
                         oxExp.switchModel(1);
-                        oxExp.playAudio("");
+                        // oxExp.playAudio("");
 
                         document.getElementById('insidebuttons-controls').style.display = 'block';
                         document.getElementById('insidebuttons-controls1').style.display = 'none';
@@ -798,7 +799,8 @@
                     });
                     document.querySelector("#ins3").addEventListener("click", () => {
                         oxExp.switchModel(2);
-                        oxExp.playAudio("Usage.mp3");
+                        playAudio("Usage.mp3");
+
 
                         document.getElementById('insidebuttons-controls').style.display = 'block';
                         document.getElementById('insidebuttons-controls1').style.display = 'none';
@@ -807,7 +809,7 @@
                     });
                     document.querySelector("#ins4").addEventListener("click", () => {
                         oxExp.switchModel(3);
-                        oxExp.playAudio("USP_1.mp3");
+                        // oxExp.playAudio("USP_1.mp3");
 
                         document.getElementById('insidebuttons-controls').style.display = 'none';
                         document.getElementById('insidebuttons-controls1').style.display = 'block';
@@ -849,7 +851,21 @@
                 this._errorScreen.style.display = "block";
             }
         }
+        var audio = document.getElementById('audioPlayer');
 
+        function playAudio(audioFile) {
+            // Stop current audio if playing
+            if (!audio.paused) {
+                audio.pause();
+                audio.currentTime = 0; // Reset time to start
+            }
+
+            // Set the new audio source and play
+            audio.src = audioFile;
+            audio.play().catch(function(error) {
+                console.log('Playback prevented:', error);
+            });
+        }
         const oxExp = new OxExperience();
         const oxUI = new OxExperienceUI();
 
