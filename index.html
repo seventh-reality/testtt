@@ -6,12 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Three.js and OnirixSDK Example</title>
     <style>
-        #rotation-slider, #scale-slider {
-    display: block;
-    width: 100%;
-    margin: 20px auto;
-} 
-
         #logoo {
             scale: .6;
         }
@@ -426,8 +420,6 @@
 
     <div id="transform-controls">
         <button id="tap-to-place">Place Model</button>
-        <input id="rotation-slider" type="range" min="0" max="360" value="180">
-        <input id="scale-slider" type="range" min="10" max="100" value="50">
     </div>
     <div id="color-controls">
         <button id="black">Black</button>
@@ -531,7 +523,7 @@
                         gltfLoader.load(modelUrl, (gltf) => {
                             try {
                                 const model = gltf.scene;
-                                this._models.scale.set(0.5, 0.5, 0.5);
+
                                 model.traverse((child) => {
                                     if (child.material) {
                                         child.material.envMap = this._envMap;
@@ -686,14 +678,6 @@
                     console.error("Error handling resize", err);
                 }
             }
-            scaleCar(value) {
-        this._model.scale.set(value, value, value);
-    }
-
-    rotateCar(value) {
-        this._model.rotation.y = value;
-    }
-
 
             changeModelsColor(value) {
                 if (this._currentModel) {
@@ -785,21 +769,14 @@
             _errorScreen = null;
             _errorTitle = null;
             _errorMessage = null;
-            onScaleChange(listener) {
-                    this._scaleSlider.addEventListener('input', () => { listener(this._scaleSlider.value / 100) });
-                       }
 
-                    onRotationChange(listener) {
-                    this._rotationSlider.addEventListener('input', () => { listener(this._rotationSlider.value * Math.PI / 180) });
-                       }
             init() {
                 try {
                     this._loadingScreen = document.querySelector("#loading-screen");
                     this._errorScreen = document.querySelector("#error-screen");
                     this._errorTitle = document.querySelector("#error-title");
                     this._errorMessage = document.querySelector("#error-message");
-                    this._scaleSlider = document.querySelector("#scale-slider");
-                    this._rotationSlider = document.querySelector("#rotation-slider");
+
                     this._transformControls = document.querySelector("#transform-controls");
                     this._colorControls = document.querySelector("#color-controls");
                     this._modelControls = document.querySelector("#model-controls");
@@ -816,7 +793,6 @@
                         this._insidebuttonscontrols1.style.display = "none";
                         this._backbutton.style.display = "none";
                     });
-                    
 
                     document.querySelector("#black").addEventListener("click", () => {
                         oxExp.changeModelsColor(0x000000);
@@ -872,7 +848,7 @@
 
                     });
                     document.querySelector("#ins2").addEventListener("click", () => {
-                        oxExp.switchModel(1);
+                        oxExp.switchModel(2);
                         playAudio("Intro.mp3");
 
                         document.getElementById('insidebuttons-controls').style.display = 'block';
@@ -915,7 +891,7 @@
                         document.getElementById('insidebuttons-controls').style.display = 'none';
                         document.getElementById('insidebuttons-controls1').style.display = 'block';
                         document.getElementById('back-button').style.display = 'block';
-                    
+
                     });
 
                 } catch (err) {
