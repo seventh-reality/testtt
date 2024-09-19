@@ -6,6 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Three.js and OnirixSDK Example</title>
     <style>
+        #rotation-slider, #scale-slider {
+    display: block;
+    width: 100%;
+    margin: 20px auto;
+} 
+
         #logoo {
             scale: .6;
         }
@@ -420,6 +426,8 @@
 
     <div id="transform-controls">
         <button id="tap-to-place">Place Model</button>
+        <input id="rotation-slider" type="range" min="0" max="360" value="180">
+        <input id="scale-slider" type="range" min="10" max="100" value="50">
     </div>
     <div id="color-controls">
         <button id="black">Black</button>
@@ -523,7 +531,7 @@
                         gltfLoader.load(modelUrl, (gltf) => {
                             try {
                                 const model = gltf.scene;
-
+                                this._models.scale.set(0.5, 0.5, 0.5);
                                 model.traverse((child) => {
                                     if (child.material) {
                                         child.material.envMap = this._envMap;
@@ -678,6 +686,14 @@
                     console.error("Error handling resize", err);
                 }
             }
+            scaleCar(value) {
+        this._model.scale.set(value, value, value);
+    }
+
+    rotateCar(value) {
+        this._model.rotation.y = value;
+    }
+
 
             changeModelsColor(value) {
                 if (this._currentModel) {
@@ -776,7 +792,8 @@
                     this._errorScreen = document.querySelector("#error-screen");
                     this._errorTitle = document.querySelector("#error-title");
                     this._errorMessage = document.querySelector("#error-message");
-
+                    this._scaleSlider = document.querySelector("#scale-slider");
+                    this._rotationSlider = document.querySelector("#rotation-slider");
                     this._transformControls = document.querySelector("#transform-controls");
                     this._colorControls = document.querySelector("#color-controls");
                     this._modelControls = document.querySelector("#model-controls");
@@ -793,6 +810,13 @@
                         this._insidebuttonscontrols1.style.display = "none";
                         this._backbutton.style.display = "none";
                     });
+                    onScaleChange(listener) {
+        this._scaleSlider.addEventListener('input', () => { listener(this._scaleSlider.value / 100) });
+    }
+
+    onRotationChange(listener) {
+        this._rotationSlider.addEventListener('input', () => { listener(this._rotationSlider.value * Math.PI / 180) });
+    }
 
                     document.querySelector("#black").addEventListener("click", () => {
                         oxExp.changeModelsColor(0x000000);
@@ -925,6 +949,9 @@
                 console.log('Playback prevented:', error);
             });
         }
+        oxUI.onRotationChange((value) => { oxExp.rotateCar(value) })
+        oxUI.onScaleChange((value) => { oxExp.scaleCar(value) })
+
         const oxExp = new OxExperience();
         const oxUI = new OxExperienceUI();
 
@@ -938,6 +965,20 @@
                 console.error("Error initializing Onirix SDK", error);
                 oxUI.showError("Initialization Error", error.message);
             });
+           catch (error) {
+    switch (error.name) {
+        case 'INTERNAL_ERROR':
+            oxUI.showError('Internal Error', 'An unespecified error has occurred. Your device might not be compatible with this experience.');
+            break;
+        case 'CAMERA_ERROR':
+            oxUI.showError('Camera Error', 'Could not access to your device\'s camera. Please, ensure you have given required permissions from your browser settings.');
+            break;
+        case 'SENSORS_ERROR':
+            oxUI.showError('Sensors Error', 'Could not access to your device\'s motion sensors. Please, ensure you have given required permissions from your browser settings.');
+            break;
+        case 'LICENSE_ERROR':
+            oxUI.showError('License Error', 'This experience does not exist or has been unpublished.');
+    }
     </script>
 </body>
 
